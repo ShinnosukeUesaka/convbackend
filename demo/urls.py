@@ -2,8 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('conversation/', views.create_conversation, name='create_conversation'),
-    path('conversation/<int:conversation_id>/chat', views.chat, name='chat'),
-    path('conversation/<int:conversation_id>/logs/', views.edit_log, name='get_log'),
-    path('conversation/<int:conversation_id>/logs/<int:logitem_id>/', views.edit_log, name='edit_log')
+    path('conversation/', views.conversations_view, name='conversations_view'),
+    path('conversation/<int:conversation_id>/', views.log_view, name='chat'),
+    path('conversation/<int:conversation_id>/log/', views.log_view, name='log_view'),
+    path('conversation/<int:conversation_id>/log/<int:logitem_id>/', views.edit_log, name='edit_log')
 ]

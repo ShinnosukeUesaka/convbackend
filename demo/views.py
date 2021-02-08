@@ -26,30 +26,41 @@ def chat(request, conversation_id):
         logitem_ai = LogItem.objects.create(log=log, text=response, name_text=scenario.ai_name)
         logitem_ai.save()
 
-        return JsonResponse({'response': response})
+        return JsonResponse({'response': serialize(logitem_ai)})
 
 @csrf_exempt
-def create_conversation(request):
+def conversations_view(request):
     if request.method == 'POST':
+        #create new conversation
         print(json.loads(request.body))
-        #scenario = Scenario.objects.get(pk=request.POST.get('scenario_id'))
         scenario = Scenario.objects.get(pk=json.loads(request.body)['scenario_id'])
         conversation = Conversation.objects.create(scenario=scenario)
         log = Log.objects.create(conversation = conversation)
+        log_item = LogItem.objects.create(log=log, type = LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt)
+
         conversation.save
         log.save
+        log_item.save
+
         return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
-    #delete実装
+
+
+def log_view(request, conversation_id):
+    log_tems = LogItem.objects.filter(log__conversation__id=conversation_id).filter(is_visible=True)
+    return serialize(log_items)
+
 
 def edit_log(request):
     return
 
-def reload_ai(request):
-    return
 
+
+
+# 以降 tools
 
 def gpt(log_texts):
     return 'hi'
+
 
 def prepare_log_text(conversation):
     logtext = ""
@@ -61,6 +72,7 @@ def prepare_log_text(conversation):
             logtext += log.name_text + ": " + log.log_text + "\n"
         elif logtype == LogItem.Type.INITIAL_PROMPT or logtype == LogItem.Type.NARRATION:
             logtext += log.text  + "\n"
-    logtext += log.name_text + ": "
+
+    logtext += conversation.scenario_id.ai_name + ": "
 
     return logtext

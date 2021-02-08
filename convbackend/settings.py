@@ -22,8 +22,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '3zku)&qr$mv)p(abtpw1tvanq5a%o&!cer-b76-4zxdx84^-q%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -31,7 +29,7 @@ DEBUG = False
 ALLOWED_HOSTS = ['*']
 
 
-# Application definition
+# Application definitdion
 
 INSTALLED_APPS = [
     'demo.apps.DemoConfig',

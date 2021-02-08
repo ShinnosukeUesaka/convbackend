@@ -12,6 +12,8 @@ class Scenario(models.Model):
     info = models.CharField(max_length=100)
     description = models.CharField(max_length=100)
 
+    
+
     class Duration(models.IntegerChoices):
         #https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
         Five = 5, '5分'
@@ -66,7 +68,7 @@ class LogItem(models.Model):
     name_text = models.CharField(max_length=20)
 
     text = models.CharField(max_length=200)
-    is_hidden = models.BooleanField()
+    is_visible = models.BooleanField(default=True)
 
     class Type(models.IntegerChoices):
         #https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types

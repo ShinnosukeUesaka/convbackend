@@ -11,8 +11,14 @@ class Scenario(models.Model):
     summarize_token = models.IntegerField()
     info = models.CharField(max_length=100)
     description = models.CharField(max_length=100)
+    response_length = models.IntegerField(default=150)
+    temperature = models.DecimalField(max_digits=4, decimal_places=3, default=0.9)
+    top_p = models.DecimalField(max_digits=4, decimal_places=3, default=1)
+    frequency_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0)
+    presence_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0.6)
 
-    
+
+
 
     class Duration(models.IntegerChoices):
         #https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types

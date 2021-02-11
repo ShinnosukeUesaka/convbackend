@@ -1,0 +1,17 @@
+[
+  {"model": "demo.scenario",
+    "pk": 1,
+    "fields": {"title": "Buy tickets",
+      "initial_prompt": "The following is a conversation at a ticket office of a movie theater. The ticket is 10$ for adults and 5$ for children. Tickets for Star Wars is already sold out.",
+      "ai_name": "Clerk",
+      "human_name": "Man",
+      "summarize_token": 12,
+      "info": "Place: movie theater, Mission: Buy two movie tickets for adult",
+      "description": "A sample scenario.",
+      "response_length": 150,
+      "temperature": "0.900",
+      "top_p": "1.000",
+      "frequency_penalty": "0.000",
+      "presence_penalty": "0.600",
+      "duration": 5,
+      "level": 2}}]

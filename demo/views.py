@@ -7,10 +7,10 @@ from restless.models import serialize
 from .models import Conversation, Scenario, Log, LogItem
 
 
-def chat(request, conversation_id):
+def chat(request):
     if request.method == 'post':
         data = json.loads(request.body)
-        conversation = Conversation.objects.get(pk=conversation_id)
+        conversation = Conversation.objects.get(pk=data['conversation_id'])
         log = conversation.log
         scenario = conversation.scenario
 

@@ -1,10 +1,9 @@
 name: CI
 
-# Controls when the action will run. 
 on:
   push:
-    branches: [ production ]
-  workflow_dispatch: [ production ]
+    branches:
+      - production
 
 jobs:
   heroku-push:

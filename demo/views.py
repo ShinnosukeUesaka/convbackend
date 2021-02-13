@@ -46,7 +46,12 @@ def chat(request: HttpRequest):
     })
     if not ok:
         return JsonResponse(err), 400
-    conversation = Conversation.objects.get(pk=data['conversation_id'])
+
+    conversation = None
+    if data['conversation_id'] == -1:
+        conversation = Conversation.objects.create(scenario=Scenario.objects.get(pk=1)) # for testing
+    else:
+        conversation = Conversation.objects.get(pk=data['conversation_id'])
     log = conversation.log
     scenario = conversation.scenario
 

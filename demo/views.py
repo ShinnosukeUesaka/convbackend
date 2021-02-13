@@ -1,12 +1,10 @@
-from django.shortcuts import render
-from django.http import JsonResponse
-
-from restless.models import serialize
-from .models import Conversation, Scenario, Log, LogItem
-
-from django.views.decorators.csrf import csrf_exempt
-
 import json
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from restless.models import serialize
+
+from .models import Conversation, Scenario, Log, LogItem
 
 
 def chat(request, conversation_id):
@@ -32,17 +30,24 @@ def chat(request, conversation_id):
 def conversations_view(request):
     if request.method == 'POST':
         # create new conversation
-        print(json.loads(request.body))
-        scenario = Scenario.objects.get(pk=json.loads(request.body)['scenario_id'])
+        data = json.loads(request.body)
+        if not isinstance(data['scenario_id'], int):
+            return JsonResponse({
+                'type': 'error.typing',
+                'msg': 'scenario_id must be integer',
+            }), 400
+        scenario = Scenario.objects.get(pk=data['scenario_id'])
         conversation = Conversation.objects.create(scenario=scenario)
         log = Log.objects.create(conversation=conversation)
         log_item = LogItem.objects.create(log=log, type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt)
-
-        conversation.save
-        log.save
-        log_item.save
-
+        conversation.save()
+        log.save()
+        log_item.save()
         return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
+    return JsonResponse({
+        'type': 'error.http',
+        'msg': 'must be POST',
+    }), 400
 
 
 def log_view(request, conversation_id):
@@ -54,13 +59,20 @@ def edit_log(request):
     return
 
 
+class LogText(str): pass
+
+
 # 以降 tools
 
-def gpt(log_texts):
+def gpt(log_texts: LogText) -> str:
     return 'hi'
 
 
-def prepare_log_text(conversation):
+def gpt_check_coversation(conversation: Conversation) -> bool:
+    return True
+
+
+def prepare_log_text(conversation: LogItem) -> LogText:
     logtext = ""
     log_list = conversation.log.log_item.objects.all
 
@@ -73,4 +85,4 @@ def prepare_log_text(conversation):
 
     logtext += conversation.scenario_id.ai_name + ": "
 
-    return logtext
+    return LogText(logtext)

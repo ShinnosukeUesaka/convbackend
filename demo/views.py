@@ -16,8 +16,8 @@ def make_error(id_: str, msg: str) -> Dict:
     }
 
 
-def make_must_post() -> Dict:
-    return make_error('error.http.must_be_post', 'must be POST')
+def make_must_post() -> JsonResponse:
+    return JsonResponse(make_error('error.http.must_be_post', 'must be POST'))
 
 
 def assert_keys(data: Dict, keys: Dict[str, type]) -> Tuple[Dict, bool]:
@@ -134,7 +134,7 @@ def prepare_log_text(conversation: LogItem) -> LogText:
     log_list = conversation.log.log_item.objects.all
 
     for log in log_list:
-        logtype = log.type
+        logtype  = log.type
         if logtype == LogItem.Type.AI or logtype == LogItem.Type.HUMAN:
             logtext += log.name_text + ": " + log.log_text + "\n"
         elif logtype == LogItem.Type.INITIAL_PROMPT or logtype == LogItem.Type.NARRATION:

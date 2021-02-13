@@ -81,7 +81,7 @@ class LogItem(models.Model):
 class Conversation(models.Model):
     scenario: Scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
 
-    log_items: List[LogItem] = models.ManyToManyField(LogItem)
+    log_items = models.ManyToManyField(LogItem)
 
     def prepare(self):
         logtext = ''

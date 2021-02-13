@@ -56,7 +56,7 @@ def chat(request: HttpRequest) -> HttpResponse:
     log = conversation.log
     scenario = conversation.scenario
 
-    logitem_human = LogItem.objets.create(log=log, text=data['user_input'], name_text=scenario.human_name)
+    logitem_human = LogItem.objects.create(log=log, text=data['user_input'], name_text=scenario.human_name)
     logitem_human.save()
 
     log_text = prepare_log_text(conversation)

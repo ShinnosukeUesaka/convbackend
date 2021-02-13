@@ -69,7 +69,7 @@ class Log(models.Model):
     conversation = models.OneToOneField(Conversation, on_delete=models.CASCADE, primary_key=True)
 
     def __str__(self):
-        return self.conversation.scenario.title
+        return f'Log of {self.conversation.scenario.title}'
 
 
 class LogItem(models.Model):

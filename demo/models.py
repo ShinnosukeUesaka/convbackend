@@ -85,7 +85,7 @@ class Conversation(models.Model):
 
     def prepare(self):
         logtext = ''
-        for log_item in self.log_items:
+        for log_item in self.log_items.all():
             if log_item.type in (LogItem.Type.AI, LogItem.Type.HUMAN):
                 logtext += f'{log_item.name}: {log_item.text}\n'
             elif log_item.type in (LogItem.Type.INITIAL_PROMPT, LogItem.Type.NARRATION):

@@ -139,7 +139,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
-SECRET_KEY = os.environ['SECRET_KEY']
+SECRET_KEY = os.environ.get('SECRET_KEY', None)
 try:
     import django_heroku #追加
     django_heroku.settings(locals())
@@ -150,7 +150,8 @@ except ImportError:
 try:
     from .local_settings import *
 except ImportError:
-    pass
+    if SECRET_KEY == None:
+        raise RuntimeError('SECRET_KEY is not available in environ vars, and local_settings fails to import.')
 
 
 if not DEBUG:

@@ -56,7 +56,7 @@ def chat(request: HttpRequest) -> HttpResponse:
         conv = Conversation.objects.get(pk=data['conversation_id'])
     scenario = conv.scenario
 
-    logitem_human = LogItem.objects.create(text=data['user_input'], name_text=scenario.human_name, type=LogItem.Type.HUMAN)
+    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN)
     conv.log_items.append(logitem_human)
     logitem_human.save()
     conv.save()
@@ -64,8 +64,10 @@ def chat(request: HttpRequest) -> HttpResponse:
     log_text = conv.prepare()
     response = gpt(log_text)
 
-    logitem_ai = LogItem.objects.create(log=conv.log, text=response, name_text=scenario.ai_name)
+    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name)
+    conv.log_items.append(logitem_ai)
     logitem_ai.save()
+    conv.save()
 
     return JsonResponse({'response': serialize(logitem_ai)})
 

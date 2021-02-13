@@ -7,6 +7,18 @@ from restless.models import serialize
 from .models import Conversation, Scenario, Log, LogItem
 
 
+def make_error(id_: str, msg: str) -> Dict:
+    return {
+        'type': id_,
+        'msg': msg,
+    }
+
+
+def make_must_post() -> Dict:
+    return make_error('error.http.must_be_post', 'must be POST')
+
+
+@csrf_exempt  # REST-like API anyway, who cares lol
 def chat(request):
     if request.method == 'post':
         data = json.loads(request.body)
@@ -24,9 +36,10 @@ def chat(request):
         logitem_ai.save()
 
         return JsonResponse({'response': serialize(logitem_ai)})
+    return JsonResponse(make_must_post()), 400
 
 
-@csrf_exempt
+@csrf_exempt  # REST-like API anyway, who cares lol
 def conversations_view(request):
     if request.method == 'POST':
         # create new conversation
@@ -44,10 +57,7 @@ def conversations_view(request):
         log.save()
         log_item.save()
         return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
-    return JsonResponse({
-        'type': 'error.http',
-        'msg': 'must be POST',
-    }), 400
+    return JsonResponse(make_must_post()), 400
 
 
 def log_view(request, conversation_id):

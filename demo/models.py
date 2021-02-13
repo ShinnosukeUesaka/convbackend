@@ -3,6 +3,8 @@ from django.db import models
 
 # Create your models here.
 # https://www.webforefront.com/django/modeldatatypesandvalidation.html
+from demo.views import LogText
+
 
 class Scenario(models.Model):
     title = models.CharField(max_length=50)
@@ -59,7 +61,19 @@ class OptionItem(models.Model):
 
 
 class Conversation(models.Model):
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+    scenario: Scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+
+    def prepare(self) -> LogText:
+        logtext = ''
+        for log in self.log.log_item.objects.all:
+            if log.type in (LogItem.Type.AI, LogItem.Type.HUMAN):
+                logtext += f'{log.name_text}: {log.log_text}\n'
+            elif log.type in (LogItem.Type.INITIAL_PROMPT, LogItem.Type.NARRATION):
+                logtext += f'{log.text}\n'
+
+        logtext += f'{self.scenario.ai_name}: '
+
+        return LogText(logtext)
 
     def __str__(self):
         return self.scenario.title

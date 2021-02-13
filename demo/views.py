@@ -48,7 +48,7 @@ def chat(request: HttpRequest) -> HttpResponse:
     if not ok:
         return HttpResponseBadRequest(err)
 
-    conversation = None
+    conversation: Conversation = Conversation()
     if data['conversation_id'] == -1:
         conversation = Conversation.objects.create(scenario=Scenario.objects.get(pk=1))  # for testing
     else:
@@ -59,7 +59,8 @@ def chat(request: HttpRequest) -> HttpResponse:
     logitem_human = LogItem.objects.create(log=log, text=data['user_input'], name_text=scenario.human_name)
     logitem_human.save()
 
-    log_text = prepare_log_text(conversation)
+    log_text = conversation.prepare()
+    # log_text = prepare_log_text(conversation)
     response = gpt(log_text)
 
     logitem_ai = LogItem.objects.create(log=log, text=response, name_text=scenario.ai_name)
@@ -131,7 +132,7 @@ def gpt(log_texts: LogText) -> str:
     ))
 
 
-def gpt_check_coversation(conversation: Conversation) -> bool:
+def gpt_check_coversation(log_texts: LogText) -> bool:
     return True
 
 

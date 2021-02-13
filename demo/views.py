@@ -1,5 +1,4 @@
 import json
-from typing import Dict
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -20,10 +19,10 @@ def make_must_post() -> Dict:
 
 
 @csrf_exempt  # REST-like API anyway, who cares lol
-def chat(request, conversation_id):
+def chat(request):
     if request.method == 'post':
         data = json.loads(request.body)
-        conversation = Conversation.objects.get(pk=conversation_id)
+        conversation = Conversation.objects.get(pk=data['conversation_id'])
         log = conversation.log
         scenario = conversation.scenario
 

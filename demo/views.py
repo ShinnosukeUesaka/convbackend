@@ -20,19 +20,19 @@ def make_must_post() -> JsonResponse:
     return JsonResponse(make_error('error.http.must_be_post', 'must be POST'))
 
 
-def assert_keys(data: Dict, keys: Dict[str, type]) -> Tuple[Dict, bool]:
+def assert_keys(data: Dict, keys: Dict[str, type]) -> Tuple[JsonResponse, bool]:
     for key, type_ in keys.items():
         scope = data
         for keyin in key.split('.'):
             if not isinstance(scope, Dict):
-                return make_error('error.body.typing', f'must be all dicts until the last {key}'), False
+                return JsonResponse(make_error('error.body.typing', f'must be all dicts until the last {key}')), False
             if keyin in scope:
                 scope = scope[keyin]
             else:
-                return make_error('error.body.key', f'must have {key}'), False
+                return JsonResponse(make_error('error.body.key', f'must have {key}')), False
         if not isinstance(scope, type_):
-            return make_error('error.body.typing', f'must be {type_}, not {type(scope)}'), False
-    return {}, True
+            return JsonResponse(make_error('error.body.typing', f'must be {type_}, not {type(scope)}')), False
+    return JsonResponse({}), True
 
 
 @csrf_exempt  # REST-like API anyway, who cares lol

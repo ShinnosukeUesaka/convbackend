@@ -5,20 +5,8 @@ from django.db import models
 
 class Scenario(models.Model):
     title = models.CharField(max_length=50)
-    initial_prompt = models.CharField(max_length=200)
-    ai_name = models.CharField(max_length=20)
-    human_name = models.CharField(max_length=20)
-    summarize_token = models.IntegerField()
     info = models.CharField(max_length=100)
     description = models.CharField(max_length=100)
-    response_length = models.IntegerField(default=150)
-    temperature = models.DecimalField(max_digits=4, decimal_places=3, default=0.9)
-    top_p = models.DecimalField(max_digits=4, decimal_places=3, default=1)
-    frequency_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0)
-    presence_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0.6)
-
-
-
 
     class Duration(models.IntegerChoices):
         #https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
@@ -35,6 +23,19 @@ class Scenario(models.Model):
         ADVANCED = 3,'上級者'
 
     level = models.IntegerField(choices=Level.choices)
+
+    initial_prompt = models.CharField(max_length=200)
+    ai_name = models.CharField(max_length=20)
+    human_name = models.CharField(max_length=20)
+    summarize_token = models.IntegerField()
+
+    #以下GPTの設定。GPTのAPIレファレンス参照
+    response_length = models.IntegerField(default=150)
+    temperature = models.DecimalField(max_digits=4, decimal_places=3, default=0.9)
+    top_p = models.DecimalField(max_digits=4, decimal_places=3, default=1)
+    frequency_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0)
+    presence_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0.6)
+
 
     def __str__(self):
         return self.title

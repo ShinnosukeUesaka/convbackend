@@ -1,7 +1,7 @@
 import json
 from typing import Dict, Tuple
 
-from django.http import JsonResponse, HttpRequest
+from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from restless.models import serialize
 
@@ -65,19 +65,15 @@ def chat(request: HttpRequest):
 @csrf_exempt  # REST-like API anyway, who cares lol
 def conversations_view(request: HttpRequest):
     if not request.method == 'POST':
-        return JsonResponse(make_must_post()), 400
+        return HttpResponseBadRequest(make_must_post())
     # create new conversation
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
         'conversation_id': int,
+        'scenario_id': int,
     })
     if not ok:
-        return JsonResponse(err), 400
-    if not isinstance(data['scenario_id'], int):
-        return JsonResponse({
-            'type': 'error.typing',
-            'msg': 'scenario_id must be integer',
-        }), 400
+        return HttpResponseBadRequest(err)
     scenario = Scenario.objects.get(pk=data['scenario_id'])
     conversation = Conversation.objects.create(scenario=scenario)
     log = Log.objects.create(conversation=conversation)
@@ -91,30 +87,30 @@ def conversations_view(request: HttpRequest):
 @csrf_exempt  # REST-like API anyway, who cares lol
 def log_view(request: HttpRequest):
     if not request.method == 'POST':
-        return JsonResponse(make_must_post()), 400
+        return HttpResponseBadRequest(make_must_post())
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
         'conversation_id': int,
     })
     if not ok:
-        return JsonResponse(err), 400
+        return HttpResponseBadRequest(err)
     conversation_id = data['conversation_id']
     log_items = LogItem.objects.filter(log__conversation__id=conversation_id).filter(is_visible=True)
-    return serialize(log_items), 200
+    return serialize(log_items)
 
 
 @csrf_exempt  # REST-like API anyway, who cares lol
 def log_edit(request: HttpRequest):
     if not request.method == 'POST':
-        return JsonResponse(make_must_post()), 400
+        return HttpResponseBadRequest(make_must_post())
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
         'log_item_id': int,
     })
     if not ok:
-        return JsonResponse(err), 400
+        return HttpResponseBadRequest(err)
     print(data['log_item_id'])
-    return JsonResponse({}), 200
+    return JsonResponse({})
 
 
 class LogText(str):

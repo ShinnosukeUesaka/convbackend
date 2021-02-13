@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -139,6 +139,13 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
+SECRET_KEY = os.environ['SECRET_KEY']
+try:
+    import django_heroku #追加
+except ImportError:
+    print('ignoring django_heroku')
+django_heroku.settings(locals())
+
 
 try:
     from .local_settings import *
@@ -148,8 +155,5 @@ except ImportError:
 
 if not DEBUG:
     SECRET_KEY = os.environ['SECRET_KEY']
-    try:
-        import django_heroku #追加
-    except ImportError:
-        print('ignoring ')
+    import django_heroku #追加
     django_heroku.settings(locals())

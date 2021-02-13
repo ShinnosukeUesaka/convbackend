@@ -1,0 +1,16 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  heroku-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run a multi-line script
+        run: |
+          echo I should push to Heroku now.

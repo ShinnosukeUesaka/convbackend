@@ -7,6 +7,7 @@ from restless.models import serialize
 
 from .models import Conversation, Scenario, Log, LogItem
 from .openai import completion
+from .types import LogText
 
 
 def make_error(id_: str, msg: str, **kwargs) -> Dict:
@@ -118,10 +119,6 @@ def log_edit(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest(err)
     print(data['log_item_id'])
     return JsonResponse({})
-
-
-class LogText(str):
-    pass
 
 
 # 以降 tools

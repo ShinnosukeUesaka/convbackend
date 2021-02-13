@@ -1,0 +1,2 @@
+class LogText(str):
+    pass

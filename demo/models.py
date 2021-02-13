@@ -3,7 +3,7 @@ from django.db import models
 
 # Create your models here.
 # https://www.webforefront.com/django/modeldatatypesandvalidation.html
-from demo.views import LogText
+from demo.types import LogText
 
 
 class Scenario(models.Model):

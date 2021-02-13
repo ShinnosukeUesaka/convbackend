@@ -1,7 +1,7 @@
 import json
 from typing import Dict, Tuple
 
-from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest
+from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from restless.models import serialize
 
@@ -9,10 +9,11 @@ from .models import Conversation, Scenario, Log, LogItem
 from .openai import completion
 
 
-def make_error(id_: str, msg: str) -> Dict:
+def make_error(id_: str, msg: str, **kwargs) -> Dict:
     return {
         'type': id_,
         'msg': msg,
+        **kwargs,
     }
 
 
@@ -36,20 +37,20 @@ def assert_keys(data: Dict, keys: Dict[str, type]) -> Tuple[JsonResponse, bool]:
 
 
 @csrf_exempt  # REST-like API anyway, who cares lol
-def chat(request: HttpRequest):
+def chat(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
-        return JsonResponse(make_must_post()), 400
+        return HttpResponseBadRequest(make_must_post())
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
         'conversation_id': int,
         'user_input': str,
     })
     if not ok:
-        return JsonResponse(err), 400
+        return HttpResponseBadRequest(err)
 
     conversation = None
     if data['conversation_id'] == -1:
-        conversation = Conversation.objects.create(scenario=Scenario.objects.get(pk=1)) # for testing
+        conversation = Conversation.objects.create(scenario=Scenario.objects.get(pk=1))  # for testing
     else:
         conversation = Conversation.objects.get(pk=data['conversation_id'])
     log = conversation.log
@@ -68,7 +69,7 @@ def chat(request: HttpRequest):
 
 
 @csrf_exempt  # REST-like API anyway, who cares lol
-def conversations_view(request: HttpRequest):
+def conversations_view(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_post())
     # create new conversation
@@ -90,7 +91,7 @@ def conversations_view(request: HttpRequest):
 
 
 @csrf_exempt  # REST-like API anyway, who cares lol
-def log_view(request: HttpRequest):
+def log_view(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_post())
     data = json.loads(request.body)
@@ -105,7 +106,7 @@ def log_view(request: HttpRequest):
 
 
 @csrf_exempt  # REST-like API anyway, who cares lol
-def log_edit(request: HttpRequest):
+def log_edit(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_post())
     data = json.loads(request.body)
@@ -139,7 +140,7 @@ def prepare_log_text(conversation: LogItem) -> LogText:
     log_list = conversation.log.log_item.objects.all
 
     for log in log_list:
-        logtype  = log.type
+        logtype = log.type
         if logtype == LogItem.Type.AI or logtype == LogItem.Type.HUMAN:
             logtext += log.name_text + ": " + log.log_text + "\n"
         elif logtype == LogItem.Type.INITIAL_PROMPT or logtype == LogItem.Type.NARRATION:

@@ -1,4 +1,4 @@
-name: CI
+name: Deploy
 
 on:
   push:
@@ -6,11 +6,12 @@ on:
       - production
 
 jobs:
-  heroku-push:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - name: Run a multi-line script
-        run: |
-          echo I should push to Heroku now.
+      - uses: akhileshns/heroku-deploy@v3.10.9 # This is the action
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API}}
+          heroku_app_name: "convbackend"
+          heroku_email: ${{secrets.HEROKU_EMAIL}}

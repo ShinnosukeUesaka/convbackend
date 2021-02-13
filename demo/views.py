@@ -15,7 +15,7 @@ def make_error(id_: str, msg: str) -> Dict:
 
 
 def make_must_post() -> Dict:
-    return make_error('error.typing.must_be_post', 'must be POST')
+    return make_error('error.http.must_be_post', 'must be POST')
 
 
 @csrf_exempt  # REST-like API anyway, who cares lol

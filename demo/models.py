@@ -49,7 +49,7 @@ class Option(models.Model):
         return self.name
 
 
-class OptioinItem(models.Model):
+class OptionItem(models.Model):
     option = models.ForeignKey(Option, on_delete=models.CASCADE)
 
     name = models.CharField(max_length=20)

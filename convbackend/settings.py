@@ -142,9 +142,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 SECRET_KEY = os.environ['SECRET_KEY']
 try:
     import django_heroku #追加
+    django_heroku.settings(locals())
 except ImportError:
     print('ignoring django_heroku')
-django_heroku.settings(locals())
 
 
 try:

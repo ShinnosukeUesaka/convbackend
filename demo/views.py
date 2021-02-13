@@ -122,7 +122,7 @@ class LogText(str): pass
 # 以降 tools
 
 def gpt(log_texts: LogText) -> str:
-    return 'hi'
+    return f'hi, log texts: {log_texts}'
 
 
 def gpt_check_coversation(conversation: Conversation) -> bool:

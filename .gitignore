@@ -1,5 +1,6 @@
 __pycache__
 db.sqlite3
 .DS_Store
-local_settings.py
+**/local_*
 .idea/
+secret_*

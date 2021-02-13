@@ -1,8 +1,7 @@
 import json
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
 from django.http import JsonResponse, HttpRequest
-from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
 from restless.models import serialize
 
@@ -88,9 +87,10 @@ def conversations_view(request: HttpRequest):
     return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
 
 
-@xframe_options_exempt
 @csrf_exempt  # REST-like API anyway, who cares lol
 def log_view(request: HttpRequest):
+    if not request.method == 'POST':
+        return JsonResponse(make_must_post()), 400
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
         'conversation_id': int,
@@ -102,9 +102,10 @@ def log_view(request: HttpRequest):
     return serialize(log_items), 200
 
 
-@xframe_options_exempt
 @csrf_exempt  # REST-like API anyway, who cares lol
 def log_edit(request: HttpRequest):
+    if not request.method == 'POST':
+        return JsonResponse(make_must_post()), 400
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
         'log_item_id': int,

@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from restless.models import serialize
 
 from .models import Conversation, Scenario, LogItem
-from .openai import completion
+from .gpt3 import completion
 from .types import LogText
 
 

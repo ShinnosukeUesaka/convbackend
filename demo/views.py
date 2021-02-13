@@ -94,10 +94,10 @@ def log_view(request: HttpRequest):
         'conversation_id': int,
     })
     if not ok:
-        return JsonResponse(err), 400
+        return JsonResponse(err)
     conversation_id = data['conversation_id']
     log_items = LogItem.objects.filter(log__conversation__id=conversation_id).filter(is_visible=True)
-    return serialize(log_items), 200
+    return serialize(log_items)
 
 
 @csrf_exempt  # REST-like API anyway, who cares lol

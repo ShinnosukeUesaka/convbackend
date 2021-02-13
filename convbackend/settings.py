@@ -10,6 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+try:
+    from . import local_settings
+except ImportError:
+    print('not local')
+
 from pathlib import Path
 
 import dj_database_url
@@ -143,5 +148,8 @@ except ImportError:
 
 if not DEBUG:
     SECRET_KEY = os.environ['SECRET_KEY']
-    import django_heroku #追加
+    try:
+        import django_heroku #追加
+    except ImportError:
+        print('ignoring ')
     django_heroku.settings(locals())

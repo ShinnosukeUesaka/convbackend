@@ -1,5 +1,5 @@
 # convbackend
-##最初にやること
+## 最初にやること
 local_settings.py 作ってデータベース設定する。
 
 python manage.py loaddata scenarios

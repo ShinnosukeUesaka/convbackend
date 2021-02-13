@@ -1,4 +1,5 @@
 import json
+from typing import Dict
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -26,7 +27,7 @@ def chat(request):
         log = conversation.log
         scenario = conversation.scenario
 
-        logitem_human = LogItem.objects.create(log=human, text=data['user_input'], name_text=scenario.human_name)
+        logitem_human = LogItem.objects.create(log=log, text=data['user_input'], name_text=scenario.human_name)
         logitem_human.save()
 
         log_text = prepare_log_text(conversation)

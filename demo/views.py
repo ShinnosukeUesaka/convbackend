@@ -1,7 +1,7 @@
 import json
 from typing import Dict
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpRequest
 from django.views.decorators.csrf import csrf_exempt
 from restless.models import serialize
 
@@ -20,14 +20,14 @@ def make_must_post() -> Dict:
 
 
 @csrf_exempt  # REST-like API anyway, who cares lol
-def chat(request):
+def chat(request: HttpRequest):
     if request.method == 'post':
         data = json.loads(request.body)
         conversation = Conversation.objects.get(pk=data['conversation_id'])
         log = conversation.log
         scenario = conversation.scenario
 
-        logitem_human = LogItem.objects.create(log=log, text=data['user_input'], name_text=scenario.human_name)
+        logitem_human = LogItem.objets.create(log=log, text=data['user_input'], name_text=scenario.human_name)
         logitem_human.save()
 
         log_text = prepare_log_text(conversation)
@@ -41,7 +41,7 @@ def chat(request):
 
 
 @csrf_exempt  # REST-like API anyway, who cares lol
-def conversations_view(request):
+def conversations_view(request: HttpRequest):
     if request.method == 'POST':
         # create new conversation
         data = json.loads(request.body)
@@ -61,12 +61,18 @@ def conversations_view(request):
     return JsonResponse(make_must_post()), 400
 
 
-def log_view(request, conversation_id):
+@csrf_exempt  # REST-like API anyway, who cares lol
+def log_view(request: HttpRequest):
+    data = json.loads(request.body)
+    conversation_id = data['conversation_id']
     log_items = LogItem.objects.filter(log__conversation__id=conversation_id).filter(is_visible=True)
     return serialize(log_items)
 
 
-def edit_log(request):
+@csrf_exempt  # REST-like API anyway, who cares lol
+def log_edit(request: HttpRequest):
+    data = json.loads(request.body)
+    print(data['logitem_id'])
     return
 
 

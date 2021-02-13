@@ -15,4 +15,5 @@ jobs:
           heroku_api_key: ${{secrets.HEROKU_API}}
           heroku_app_name: "convbackend"
           heroku_email: ${{secrets.HEROKU_EMAIL}}
-          branch: "production" 
+          branch: "production"
+          remote_branch: "production" 

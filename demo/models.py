@@ -63,7 +63,7 @@ class OptionItem(models.Model):
 class Conversation(models.Model):
     scenario: Scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
 
-    def prepare(self) -> LogText:
+    def prepare(self):
         logtext = ''
         for log in self.log.log_item.objects.all:
             if log.type in (LogItem.Type.AI, LogItem.Type.HUMAN):

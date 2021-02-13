@@ -5,7 +5,7 @@ from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpR
 from django.views.decorators.csrf import csrf_exempt
 from restless.models import serialize
 
-from .models import Conversation, Scenario, Log, LogItem
+from .models import Conversation, Scenario, LogItem
 from .openai import completion
 from .types import LogText
 
@@ -49,22 +49,20 @@ def chat(request: HttpRequest) -> HttpResponse:
     if not ok:
         return HttpResponseBadRequest(err)
 
-    conversation: Conversation = Conversation()
+    conv: Conversation = Conversation()
     if data['conversation_id'] == -1:
-        conversation = Conversation.objects.create(scenario=Scenario.objects.get(pk=1))  # for testing
+        conv = Conversation.objects.create(scenario=Scenario.objects.get(pk=1))  # for testing
     else:
-        conversation = Conversation.objects.get(pk=data['conversation_id'])
-    log = conversation.log
-    scenario = conversation.scenario
+        conv = Conversation.objects.get(pk=data['conversation_id'])
+    scenario = conv.scenario
 
-    logitem_human = LogItem.objects.create(log=log, text=data['user_input'], name_text=scenario.human_name, type=LogItem.Type.HUMAN)
+    logitem_human = LogItem.objects.create(log=conv.log, text=data['user_input'], name_text=scenario.human_name, type=LogItem.Type.HUMAN)
     logitem_human.save()
 
-    log_text = conversation.prepare()
-    # log_text = prepare_log_text(conversation)
+    log_text = conv.prepare()
     response = gpt(log_text)
 
-    logitem_ai = LogItem.objects.create(log=log, text=response, name_text=scenario.ai_name)
+    logitem_ai = LogItem.objects.create(log=conv.log, text=response, name_text=scenario.ai_name)
     logitem_ai.save()
 
     return JsonResponse({'response': serialize(logitem_ai)})
@@ -83,12 +81,14 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
     if not ok:
         return HttpResponseBadRequest(err)
     scenario = Scenario.objects.get(pk=data['scenario_id'])
-    conversation = Conversation.objects.create(scenario=scenario)
-    log = Log.objects.create(conversation=conversation)
-    log_item = LogItem.objects.create(log=log, type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt)
+    conversation = Conversation.objects.create(
+        scenario=scenario,
+        log_items=[
+            LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt)
+        ],
+    )
     conversation.save()
-    log.save()
-    log_item.save()
+    conversation.log_items[0].save()
     return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
 
 
@@ -140,7 +140,7 @@ def prepare_log_text(conversation: LogItem) -> LogText:
     for log in log_list:
         logtype = log.type
         if logtype == LogItem.Type.AI or logtype == LogItem.Type.HUMAN:
-            logtext += log.name_text + ": " + log.log_text + "\n"
+            logtext += log.name + ": " + log.log_text + "\n"
         elif logtype == LogItem.Type.INITIAL_PROMPT or logtype == LogItem.Type.NARRATION:
             logtext += log.text + "\n"
 

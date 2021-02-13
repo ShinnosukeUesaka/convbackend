@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from restless.models import serialize
 
 from .models import Conversation, Scenario, Log, LogItem
+from .openai import completion
 
 
 def make_error(id_: str, msg: str) -> Dict:
@@ -116,13 +117,16 @@ def log_edit(request: HttpRequest):
     return JsonResponse({}), 200
 
 
-class LogText(str): pass
+class LogText(str):
+    pass
 
 
 # 以降 tools
 
 def gpt(log_texts: LogText) -> str:
-    return f'hi, log texts: {log_texts}'
+    return str(completion(
+        prompt=log_texts,
+    ))
 
 
 def gpt_check_coversation(conversation: Conversation) -> bool:

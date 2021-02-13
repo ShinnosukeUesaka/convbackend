@@ -16,4 +16,4 @@ jobs:
           heroku_app_name: "convbackend"
           heroku_email: ${{secrets.HEROKU_EMAIL}}
           branch: "production"
-          remote_branch: "production" 
+          remote_branch: "master" 

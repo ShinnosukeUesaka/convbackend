@@ -1,7 +1,8 @@
 import json
+import os
 from typing import Dict, Tuple
 
-from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpResponse
+from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from restless.models import serialize
 
@@ -23,6 +24,13 @@ def make_error(id_: str, msg: str, **kwargs) -> Dict:
 
 def make_must_post() -> JsonResponse:
     return JsonResponse(make_error('error.http.must_be_post', 'must be POST'))
+
+
+def check_pass(password: str) -> bool:
+    correct = os.environ.get('CONVBACKEND_PASSWORD', None)
+    if correct is None or correct == '':
+        return False
+    return password == correct
 
 
 def assert_keys(data: Dict, keys: Dict[str, type]) -> Tuple[JsonResponse, bool]:
@@ -49,9 +57,12 @@ def chat(request: HttpRequest) -> HttpResponse:
     err, ok = assert_keys(data, {
         'conversation_id': int,
         'user_input': str,
+        'password': str,
     })
     if not ok:
         return HttpResponseBadRequest(err)
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
 
     conv: Conversation = Conversation()
     if data['conversation_id'] == -1:
@@ -85,9 +96,12 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
         'scenario_id': int,
+        'password': str,
     })
     if not ok:
         return HttpResponseBadRequest(err)
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
 
     scenario = Scenario.objects.get(pk=data['scenario_id'])
     conversation = Conversation.objects.create(
@@ -106,10 +120,14 @@ def log_view(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest(make_must_post())
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
-        'conversation_id': int
+        'conversation_id': int,
+        'password': str,
     })
     if not ok:
         return HttpResponseBadRequest(err)
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
+
     conversation_id = data['conversation_id']
     log_items = LogItem.objects.filter(log__conversation__id=conversation_id).filter(is_visible=True)
     return serialize(log_items)
@@ -126,9 +144,13 @@ def log_edit(request: HttpRequest) -> HttpResponse:
         'log_item_id': int,
         'name': str,
         'text': str,
+        'password': str,
     })
     if not ok:
         return HttpResponseBadRequest(err)
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
+
     item: LogItem = LogItem.objects.get(pk=data['log_item_id'])
     if item.editable:
         item.name = data['name']

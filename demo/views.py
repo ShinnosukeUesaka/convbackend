@@ -65,13 +65,16 @@ def chat(request: HttpRequest) -> HttpResponse:
         return HttpResponseForbidden('incorrect password')
 
     conv: Conversation = Conversation()
+
+    current_log_number = conv.log_items.objects.objects.order_by('log_number').first().log_number
+
     if data['conversation_id'] == -1:
         conv = Conversation.objects.create(scenario=Scenario.objects.get(pk=1))  # for testing
     else:
         conv = Conversation.objects.get(pk=data['conversation_id'])
     scenario = conv.scenario
 
-    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN)
+    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN, log_number=current_log_number+1)
     conv.log_items.add(logitem_human)
     logitem_human.save()
     conv.save()
@@ -79,7 +82,7 @@ def chat(request: HttpRequest) -> HttpResponse:
     log_text = conv.prepare()
     response = gpt(log_text)
 
-    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI)
+    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI, log_number=current_log_number+2)
     conv.log_items.add(logitem_ai)
     logitem_ai.save()
     conv.save()
@@ -107,7 +110,7 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
     conversation = Conversation.objects.create(
         scenario=scenario,
     )
-    conversation.log_items.set([LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt)])
+    conversation.log_items.set([LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt, log_number=1)])
     conversation.save()
     conversation.log_items.all()[0].save()
     return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})

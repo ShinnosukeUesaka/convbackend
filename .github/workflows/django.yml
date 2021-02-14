@@ -1,0 +1,18 @@
+name: Django
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Load Data/Fixtures
+        run: |
+          python3 manage.py loaddata
+      - name: Migrate
+        run: |
+          python3 manage.py migrate

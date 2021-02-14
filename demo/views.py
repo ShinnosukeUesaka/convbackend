@@ -80,7 +80,6 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
     # create new conversation
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
-        'conversation_id': int,
         'scenario_id': int,
     })
     if not ok:

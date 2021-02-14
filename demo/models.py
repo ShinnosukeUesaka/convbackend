@@ -71,7 +71,8 @@ class LogItem(models.Model):
 
     name = models.CharField(max_length=20)
     text = models.CharField(max_length=200)
-    is_visible = models.BooleanField(default=True)
+    visible = models.BooleanField(default=True)
+    editable = models.BooleanField(default=True)
     type = models.IntegerField(choices=Type.choices)
 
     def __str__(self) -> str:

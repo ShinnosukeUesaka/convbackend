@@ -84,6 +84,7 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
     })
     if not ok:
         return HttpResponseBadRequest(err)
+
     scenario = Scenario.objects.get(pk=data['scenario_id'])
     conversation = Conversation.objects.create(
         scenario=scenario,
@@ -143,22 +144,3 @@ def gpt_check_safety(text: str, allow_max: int = 0) -> Tuple[str, bool]:
     else:
         return text, True
 
-
-def gpt_check_coversation(log_texts: LogText) -> bool:
-    return True
-
-
-def prepare_log_text(conversation: LogItem) -> LogText:
-    logtext = ""
-    log_list = conversation.log.log_item.objects.all
-
-    for log in log_list:
-        logtype = log.type
-        if logtype == LogItem.Type.AI or logtype == LogItem.Type.HUMAN:
-            logtext += log.name + ": " + log.log_text + "\n"
-        elif logtype == LogItem.Type.INITIAL_PROMPT or logtype == LogItem.Type.NARRATION:
-            logtext += log.text + "\n"
-
-    logtext += conversation.scenario_id.ai_name + ": "
-
-    return LogText(logtext)

@@ -75,7 +75,10 @@ class LogItem(models.Model):
     type = models.IntegerField(choices=Type.choices)
 
     def __str__(self):
-        return self.text
+        if self.type in (LogItem.Type.AI, LogItem.Type.HUMAN):
+            return f'{self.name}: {self.text}'
+        elif log_item.type in (LogItem.Type.INITIAL_PROMPT, LogItem.Type.NARRATION):
+            return f'{self.text}'
 
 
 class Conversation(models.Model):
@@ -86,10 +89,7 @@ class Conversation(models.Model):
     def prepare(self):
         logtext = ''
         for log_item in self.log_items.all():
-            if log_item.type in (LogItem.Type.AI, LogItem.Type.HUMAN):
-                logtext += f'{log_item.name}: {log_item.text}\n'
-            elif log_item.type in (LogItem.Type.INITIAL_PROMPT, LogItem.Type.NARRATION):
-                logtext += f'{log_item.text}\n'
+            logtext += f'{log_item}\n'
 
         logtext += f'{self.scenario.ai_name}: '
 

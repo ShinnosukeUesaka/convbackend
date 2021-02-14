@@ -5,6 +5,7 @@ from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpR
 from django.views.decorators.csrf import csrf_exempt
 from restless.models import serialize
 
+from . import gpt3
 from .models import Conversation, Scenario, LogItem
 from .gpt3 import completion
 from .types import LogText
@@ -127,10 +128,23 @@ def log_edit(request: HttpRequest) -> HttpResponse:
 
 # 以降 tools
 
-def gpt(log_texts: LogText) -> str:
-    return str(completion(
-        prompt=log_texts,
-    ))
+def gpt(log_texts: LogText, retry: int = 3) -> str:
+    re, ok = gpt_check_safety(str(completion(
+        text=log_texts,
+    )))
+    if not ok and retry <= 0:
+        return 'The AI response included content deemed as sensitive or unsafe, so it was hidden.'
+    if not ok:
+        return gpt(log_texts, retry-1)
+    return re
+
+
+def gpt_check_safety(text: str, allow_max: int = 0) -> Tuple[str, bool]:
+    safety = int(gpt3.content_filter(text))
+    if safety > allow_max:
+        return '', False
+    else:
+        return text, True
 
 
 def gpt_check_coversation(log_texts: LogText) -> bool:

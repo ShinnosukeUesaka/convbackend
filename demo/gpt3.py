@@ -1,75 +1,104 @@
 import os
 import warnings
-from typing import Union, List, Dict, Generator, Any
 
-import openai
+import better_profanity
 import requests
 
+organization: str = os.environ.get("OPENAI_ORG", '')
+api_key: str = os.environ.get("OPENAI_API_KEY", '')
+default_engine: str = 'davinci'  # only using davinci anyway, it's fine for now
+default_context: str = '''The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.
+
+Human: Hello, who are you?
+AI: I am an AI created by OpenAI. How can I help you today?
+Human: '''
+
 try:
-    from local_gpt3 import api_key, organization
+    from local_gpt3 import api_key as api_key_
+    from local_gpt3 import organization as organization_
 
     print('local')
-    openai.organization = organization
-    openai.api_key = api_key
-except ImportError:
+    organization = organization_
+    api_key = api_key_
+except ImportError as err:
+    api_key_, organization_ = '', ''  # workaround for lint
+    print(err)
     print('non local')
-    openai.organization = os.environ.get("OPENAI_ORG")
-    openai.api_key = os.environ.get("OPENAI_API_KEY")
 
-default_engine = 'davinci'  # only using davinci anyway, it's fine for now
+
+def make_header() -> dict:
+    return {
+        'Authorization': f'Bearer {api_key}',
+        'Content-Type': 'application/json',
+    }
 
 
 def completion(
-        prompt: str,
+        text: str,
+        context: str = default_context,
         engine: str = default_engine,
-        max_tokens: int = 16,
-        temperature: float = 1,
-        top_p: float = 1,
-        n: int = 1,
-        stream: bool = False,
-        logprobs: Union[bool, None] = None,
-        echo: bool = False,
-        stop: Union[str, List, None] = None,
-        presence_penalty: float = 0,
-        frequency_penalty: float = 0,
-        best_of: int = 1,
-        logit_bias: Union[Dict[str, float], None] = None,
-):
-    return ["test"]
-    # return openai.Completion.create(
-    #     engine=engine,
-    #     prompt=prompt,
-    #     max_tokens=max_tokens,
-    #     temperature=temperature,
-    #     top_p=top_p,
-    #     n=n,
-    #     stream=stream,
-    #     logprobs=logprobs,
-    #     echo=echo,
-    #     stop=stop,
-    #     presence_penalty=presence_penalty,
-    #     frequency_penalty=frequency_penalty,
-    #     best_of=best_of,
-    #     logit_bias=logit_bias
-    # )
+) -> str:
+    # hardcode options
+    r = requests.post(
+        url=f'https://api.openai.com/v1/engines/{engine}/completions',
+        json={
+            'prompt': f'{context}{text}',
+        },
+        headers=make_header(),
+    )
+    if r.status_code != 200:
+        warnings.warn(RuntimeWarning(f'POST request for OpenAI API failed: status code is {r.status_code}'))
+        return ''
+    return r.json()['choices'][0]['text']
 
 
-class ContentFilterSafety(int):
+# START content_filter
+# Content Filter
+# Used internally to filter GPT-3 generated content using GPT-3 (lol).
+
+
+class ContentSafety(int):
     def __str__(self) -> str:
-        if self == 0:
+        if int(self) == 0:
             return 'safe'
-        elif self == 1:
+        elif int(self) == 1:
             return 'sensitive'
-        elif self == 2:
+        elif int(self) == 2:
             return 'unsafe'
         else:
-            return str(self)
+            return str(int(self))
+
+
+class ContentSafetyPresets:
+    error = ContentSafety(-1)
+    safe = ContentSafety(0)
+    sensitive = ContentSafety(1)
+    unsafe = ContentSafety(2)
 
 
 def content_filter(
+        text: str
+) -> ContentSafety:
+    filters = [
+        content_filter_profanity,  # faster bc not dependent on internet
+        content_filter_gpt,
+    ]
+    for filter_ in filters:
+        current_cs = filter_(text)
+        if ContentSafetyPresets.unsafe == current_cs:
+            return ContentSafetyPresets.unsafe
+        elif ContentSafetyPresets.sensitive == current_cs:
+            return ContentSafetyPresets.sensitive
+        elif ContentSafetyPresets.safe == current_cs:
+            pass
+        elif ContentSafetyPresets.error == current_cs:
+            pass
+    return ContentSafetyPresets.error
+
+
+def content_filter_gpt(
         text: str,
-        engine: str = default_engine,
-) -> ContentFilterSafety:
+) -> ContentSafety:
     r = requests.post(
         url='https://api.openai.com/v1/engines/content-filter-alpha-c4/completions',
         json={
@@ -78,29 +107,26 @@ def content_filter(
             'max_tokens': 1,
             'top_p': 0,
         },
-        headers={
-            'Authorization': f'Bearer {openai.api_key}',
-            'Content-Type': 'application/json',
-        },
+        headers=make_header(),
     )
     if r.status_code != 200:
         warnings.warn(RuntimeWarning(f'POST request for OpenAI API failed: status code is {r.status_code}'))
-        return ContentFilterSafety(-1)
-    return ContentFilterSafety(r.json()['choices'][0]['text'])
-    # try:
-    #     re_raw = openai.Completion.create(
-    #         prompt=f'<|endoftext|>{text}\n--\nLabel:',
-    #         engine=engine,
-    #         temperature=0.0,
-    #         top_p=0,
-    #         max_tokens=1,
-    #     )
-    #     print(re_raw)
-    #     re = int(re_raw['choices'][0]['text'])
-    # except Exception as err:
-    #     warnings.warn(RuntimeWarning(str(err)))
-    #     return -1
-    # return re
+        print(r.text)
+        return ContentSafetyPresets.error
+    return ContentSafety(r.json()['choices'][0]['text'])
+
+
+def content_filter_profanity(text: str) -> ContentSafety:
+    with open('./profane_words.txt') as file:
+        words = file.read().split('\n')
+    better_profanity.profanity.load_censor_words(words)
+    return {
+        True: ContentSafetyPresets.unsafe,
+        False: ContentSafetyPresets.safe,
+    }[better_profanity.profanity.contains_profanity(text)]
+
+
+# END content_filter
 
 
 if __name__ == '__main__':
@@ -110,3 +136,4 @@ if __name__ == '__main__':
     ]
     for prompt in prompts:
         print(f'{prompt}: {content_filter(prompt)}')
+    print(completion('What do you like?\nAI: '))

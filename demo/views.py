@@ -10,6 +10,8 @@ from .models import Conversation, Scenario, LogItem
 from .gpt3 import completion
 from .types import LogText
 
+from ratelimit.decorators import ratelimit
+
 
 def make_error(id_: str, msg: str, **kwargs) -> Dict:
     return {
@@ -38,6 +40,7 @@ def assert_keys(data: Dict, keys: Dict[str, type]) -> Tuple[JsonResponse, bool]:
     return JsonResponse({}), True
 
 
+@ratelimit(rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def chat(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
@@ -73,6 +76,7 @@ def chat(request: HttpRequest) -> HttpResponse:
     return JsonResponse({'response': serialize(logitem_ai)})
 
 
+@ratelimit(rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def conversations_view(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
@@ -95,6 +99,7 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
     return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
 
 
+@ratelimit(rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def log_view(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
@@ -110,6 +115,7 @@ def log_view(request: HttpRequest) -> HttpResponse:
     return serialize(log_items)
 
 
+@ratelimit(rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def log_edit(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
@@ -133,7 +139,7 @@ def gpt(log_texts: LogText, retry: int = 3) -> str:
     if not ok and retry <= 0:
         return 'The AI response included content deemed as sensitive or unsafe, so it was hidden.'
     if not ok:
-        return gpt(log_texts, retry-1)
+        return gpt(log_texts, retry - 1)
     return re
 
 
@@ -143,4 +149,3 @@ def gpt_check_safety(text: str, allow_max: int = 0) -> Tuple[str, bool]:
         return '', False
     else:
         return text, True
-

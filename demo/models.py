@@ -74,6 +74,7 @@ class LogItem(models.Model):
     visible = models.BooleanField(default=True)
     editable = models.BooleanField(default=True)
     type = models.IntegerField(choices=Type.choices)
+    log_number = models.IntegerField()
 
     def __str__(self) -> str:
         if self.type in (LogItem.Type.AI, LogItem.Type.HUMAN):

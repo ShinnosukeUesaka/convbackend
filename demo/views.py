@@ -110,9 +110,10 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
     conversation = Conversation.objects.create(
         scenario=scenario,
     )
-    conversation.log_items.set([LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt, log_number=1)])
+
+    first_log = LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt, log_number=1, conversation=conversation, editable=False)
     conversation.save()
-    conversation.log_items.all()[0].save()
+    first_log.save()
     return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
 
 
@@ -132,8 +133,8 @@ def log_view(request: HttpRequest) -> HttpResponse:
         return HttpResponseForbidden('incorrect password')
 
     conversation_id = data['conversation_id']
-    log_items = Conversation.objects.filter(pk=conversation_id).all()[0].log_items.all().filter(visible=True)
-    return JsonResponse(serialize(log_items))
+    log_items = LogItem.objects.filter(conversation=Conversation.objects.get(pk=conversation_id)).filter(visible=True)
+    return JsonResponse(serialize(log_items), safe=False)
 
 
 @ratelimit(key='ip', rate='60/h')

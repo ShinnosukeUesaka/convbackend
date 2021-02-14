@@ -61,8 +61,6 @@ class OptionItem(models.Model):
         return self.name
 
 
-
-
 class Conversation(models.Model):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
 
@@ -77,6 +75,7 @@ class Conversation(models.Model):
 
     def __str__(self):
         return self.scenario.title
+
 
 class LogItem(models.Model):
     class Type(models.IntegerChoices):

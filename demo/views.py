@@ -88,10 +88,8 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
     scenario = Scenario.objects.get(pk=data['scenario_id'])
     conversation = Conversation.objects.create(
         scenario=scenario,
-        log_items=[
-            LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt)
-        ],
     )
+    conversation.log_items.set([LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt)])
     conversation.save()
     conversation.log_items[0].save()
     return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})

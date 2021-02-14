@@ -193,7 +193,7 @@ def log_edit(request: HttpRequest) -> HttpResponse:
 
 def gpt(log_texts: LogText, retry: int = 3) -> str:
     re, ok = gpt_check_safety(str(completion(
-        prompt=log_texts,
+        prompt_=log_texts,
     )))
     if not ok and retry <= 0:
         return 'The AI response included content deemed as sensitive or unsafe, so it was hidden.'

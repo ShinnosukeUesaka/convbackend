@@ -16,7 +16,7 @@ jobs:
         with:
           go-version: 1
           stable: true
-      - name: Run Make JSON
+      - name: Make JSON from CSV
         run: go run gsheet_to_json.go -o=./demo/fixtures/scenarios.json
       - name: Commit
         uses: docker://cdssnc/auto-commit-github-action

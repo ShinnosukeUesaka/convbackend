@@ -49,7 +49,7 @@ def completion(
     if r.status_code != 200:
         warnings.warn(RuntimeWarning(f'POST request for OpenAI API failed: status code is {r.status_code}'))
         return f'POST request for OpenAI API failed: status code is {r.status_code}: {r.text}'
-    return r.text
+    return r.json()['choices'][0]['text']
 
 
 # START content_filter
@@ -107,7 +107,6 @@ def content_filter_openai(text: str) -> ContentSafety:
     )
     if r.status_code != 200:
         warnings.warn(RuntimeWarning(f'POST request for OpenAI API failed: status code is {r.status_code}'))
-        print(r.text)
         return ContentSafetyPresets.error
     return ContentSafety(r.json()['choices'][0]['text'])
 

@@ -129,7 +129,7 @@ def log_view(request: HttpRequest) -> HttpResponse:
         return HttpResponseForbidden('incorrect password')
 
     conversation_id = data['conversation_id']
-    log_items = LogItem.objects.filter(log__conversation__id=conversation_id).filter(is_visible=True)
+    log_items = LogItem.objects.filter(log__conversation__id=conversation_id).filter(visible=True)
     return serialize(log_items)
 
 
@@ -165,7 +165,7 @@ def log_edit(request: HttpRequest) -> HttpResponse:
 
 def gpt(log_texts: LogText, retry: int = 3) -> str:
     re, ok = gpt_check_safety(str(completion(
-        text=log_texts,
+        prompt=log_texts,
     )))
     if not ok and retry <= 0:
         return 'The AI response included content deemed as sensitive or unsafe, so it was hidden.'

@@ -3,15 +3,21 @@ import warnings
 
 import better_profanity
 import requests
+import openai
 
 organization: str = os.environ.get("OPENAI_ORG", '')
 api_key: str = os.environ.get("OPENAI_API_KEY", '')
+
+openai.api_key = os.environ["OPENAI_API_KEY"]
+
 default_engine: str = 'davinci'  # only using davinci anyway, it's fine for now
 default_context: str = '''The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.
 
 Human: Hello, who are you?
 AI: I am an AI created by OpenAI. How can I help you today?
 Human: '''
+
+
 
 try:
     from local_gpt3 import api_key as api_key_
@@ -34,15 +40,21 @@ def make_header() -> dict:
 
 
 def completion(
-        text: str,
-        context: str = default_context,
-        engine: str = default_engine,
+        prompt: str,
+        engine: str = davinci,
+        temperature: str = 0.9,
+        max_tokens: str =172,
+        top_p: str =1,
+        frequency_penalty: str =0,
+        presence_penalty: str =0.6,
+        stop: list = ["\n"]
 ) -> str:
     # hardcode options
+    '''
     r = requests.post(
         url=f'https://api.openai.com/v1/engines/{engine}/completions',
         json={
-            'prompt': f'{context}{text}',
+            'prompt': f'{text}',
         },
         headers=make_header(),
     )
@@ -50,7 +62,18 @@ def completion(
         warnings.warn(RuntimeWarning(f'POST request for OpenAI API failed: status code is {r.status_code}'))
         return f'POST request for OpenAI API failed: status code is {r.status_code}: {r.text}'
     return r.json()['choices'][0]['text']
-
+    '''
+    response = openai.Completion.create(
+    engine=engine,
+    prompt=prompt,
+    temperature=temperature,
+    max_tokens=max_tokens,
+    top_p=top_p,
+    frequency_penalty=frequency_penalty,
+    presence_penalty=presence_penalty,
+    stop=stop
+    )
+    return response
 
 # START content_filter
 # Content Filter

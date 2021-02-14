@@ -14,3 +14,4 @@ whitenoise==5.2.0
 requests~=2.22.0
 better_profanity
 django-ratelimit
+openai

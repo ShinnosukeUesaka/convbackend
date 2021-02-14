@@ -142,7 +142,7 @@ def log_edit(request: HttpRequest) -> HttpResponse:
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
         'conversation_id': int,
-        'log_item_id': int,
+        'log_number': int,
         'name': str,
         'text': str,
         'password': str,
@@ -152,7 +152,7 @@ def log_edit(request: HttpRequest) -> HttpResponse:
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
 
-    item: LogItem = LogItem.objects.get(pk=data['log_item_id'])
+    item: LogItem = LogItem.objects.filter(conversation=data['conversation_id']).get(log_number=data['log_number'])
     if item.editable:
         item.name = data['name']
         item.text = data['text']

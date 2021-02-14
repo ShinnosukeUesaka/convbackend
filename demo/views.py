@@ -45,7 +45,7 @@ def chat(request: HttpRequest) -> HttpResponse:
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
         'conversation_id': int,
-        'user_input': str,
+        'user_input': str
     })
     if not ok:
         return HttpResponseBadRequest(err)
@@ -117,10 +117,17 @@ def log_edit(request: HttpRequest) -> HttpResponse:
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
         'log_item_id': int,
+        'new_text': str
     })
     if not ok:
         return HttpResponseBadRequest(err)
-    print(data['log_item_id'])
+    log_item = LogItem.objects.get(pk=data['log_item_id'])
+    if log_item.editable == True:
+        log_item.text = data['new_text']
+        log_item.save()
+    else:
+        HttpResponseBadRequest() #エラーメッセージ実装しよう
+
     return JsonResponse({})
 
 

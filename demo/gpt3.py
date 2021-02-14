@@ -117,8 +117,11 @@ def content_filter_gpt(
 
 
 def content_filter_profanity(text: str) -> ContentSafety:
-    with open('./profane_words.txt') as file:
-        words = file.read().split('\n')
+    filename = './profane_words.txt'
+    words = []
+    if filename in os.listdir():
+        with open(filename) as file:
+            words = file.read().split('\n')
     better_profanity.profanity.load_censor_words(words)
     return {
         True: ContentSafetyPresets.unsafe,

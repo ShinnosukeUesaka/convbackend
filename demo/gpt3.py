@@ -41,7 +41,7 @@ def make_header() -> dict:
 
 def completion(
         prompt: str,
-        engine: str = davinci,
+        engine: str = 'davinci',
         temperature: str = 0.9,
         max_tokens: str =172,
         top_p: str =1,

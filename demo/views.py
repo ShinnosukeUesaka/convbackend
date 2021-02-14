@@ -106,7 +106,7 @@ def log_view(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest(make_must_post())
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
-        'conversation_id': int,
+        'conversation_id': int
     })
     if not ok:
         return HttpResponseBadRequest(err)

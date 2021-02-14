@@ -101,7 +101,7 @@ def log_view(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest(make_must_post())
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
-        'conversation_id': int,
+        'conversation_id': int
     })
     if not ok:
         return HttpResponseBadRequest(err)
@@ -143,4 +143,3 @@ def gpt_check_safety(text: str, allow_max: int = 0) -> Tuple[str, bool]:
         return '', False
     else:
         return text, True
-

@@ -66,24 +66,21 @@ def chat(request: HttpRequest) -> HttpResponse:
 
     conv: Conversation = Conversation()
 
-    current_log_number = conv.log_items.objects.objects.order_by('log_number').first().log_number
-
     if data['conversation_id'] == -1:
         conv = Conversation.objects.create(scenario=Scenario.objects.get(pk=1))  # for testing
     else:
         conv = Conversation.objects.get(pk=data['conversation_id'])
     scenario = conv.scenario
+    current_log_number = conv.logitem_set.all().order_by('log_number').last().log_number
 
-    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN, log_number=current_log_number+1)
-    conv.log_items.add(logitem_human)
+    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN, log_number=current_log_number+1, conversation=conv)
     logitem_human.save()
     conv.save()
 
     log_text = conv.prepare()
     response = gpt(log_text)
-
-    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI, log_number=current_log_number+2)
-    conv.log_items.add(logitem_ai)
+    print(response)
+    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI, log_number=current_log_number+2, conversation=conv)
     logitem_ai.save()
     conv.save()
 

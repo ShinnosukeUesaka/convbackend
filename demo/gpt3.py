@@ -73,7 +73,7 @@ def completion(
     presence_penalty=presence_penalty,
     stop=stop
     )
-    return response
+    return response['choices'][0]['text']
 
 # START content_filter
 # Content Filter

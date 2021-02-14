@@ -64,11 +64,11 @@ class OptionItem(models.Model):
 
 
 class Conversation(models.Model):
-    scenario: Scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
 
     def prepare(self):
         logtext = ''
-        for log_item in self.log_items.all():
+        for log_item in self.logitem_set.all():
             logtext += str(log_item) + '\n'
 
         logtext += f'{self.scenario.ai_name}: '

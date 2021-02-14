@@ -1,0 +1,10 @@
+name: Greetings
+
+on:
+  schedule:
+    - cron: '* * * * *'
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    steps: []

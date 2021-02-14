@@ -1,4 +1,4 @@
-name: Greetings
+name: Make JSON
 
 on:
   schedule:
@@ -7,4 +7,13 @@ on:
 jobs:
   greeting:
     runs-on: ubuntu-latest
-    steps: []
+    steps: 
+      - name: Setup Go Env
+        uses: actions/setup-go@v2.1.3
+        with:
+          go-version: 1
+          stable: true
+      - name: Run Make JSON
+        run: go run gsheet_to_json.go -o=./demo/fixtures/scenarios.json
+      - name: Commit
+        uses: docker://cdssnc/auto-commit-github-action

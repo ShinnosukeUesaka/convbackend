@@ -35,14 +35,13 @@ def make_header() -> dict:
 
 def completion(
         text: str,
-        context: str = default_context,
         engine: str = default_engine,
 ) -> str:
     # hardcode options
     r = requests.post(
         url=f'https://api.openai.com/v1/engines/{engine}/completions',
         json={
-            'prompt': f'{context}{text}',
+            'prompt': f'{text}',
         },
         headers=make_header(),
     )

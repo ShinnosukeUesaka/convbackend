@@ -74,10 +74,10 @@ class LogItem(models.Model):
     is_visible = models.BooleanField(default=True)
     type = models.IntegerField(choices=Type.choices)
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.type in (LogItem.Type.AI, LogItem.Type.HUMAN):
             return f'{self.name}: {self.text}'
-        elif log_item.type in (LogItem.Type.INITIAL_PROMPT, LogItem.Type.NARRATION):
+        elif self.type in (LogItem.Type.INITIAL_PROMPT, LogItem.Type.NARRATION):
             return f'{self.text}'
 
 
@@ -89,7 +89,7 @@ class Conversation(models.Model):
     def prepare(self):
         logtext = ''
         for log_item in self.log_items.all():
-            logtext += f'{log_item}\n'
+            logtext += str(log_item) + '\n'
 
         logtext += f'{self.scenario.ai_name}: '
 

@@ -133,7 +133,7 @@ def log_view(request: HttpRequest) -> HttpResponse:
 
     conversation_id = data['conversation_id']
     log_items = LogItem.objects.filter(log__conversation__id=conversation_id).filter(visible=True)
-    return serialize(log_items)
+    return JsonResponse(serialize(log_items))
 
 
 @ratelimit(key='ip', rate='60/h')
@@ -159,7 +159,7 @@ def log_edit(request: HttpRequest) -> HttpResponse:
         item.name = data['name']
         item.text = data['text']
         item.save()
-        return serialize(item)
+        return JsonResponse(serialize(item))
     else:
         return HttpResponseBadRequest()
 

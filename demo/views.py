@@ -106,12 +106,12 @@ def log_view(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest(make_must_post())
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
-        'conversation_id': int,
+        'conversation_id': int
     })
     if not ok:
         return HttpResponseBadRequest(err)
     conversation_id = data['conversation_id']
-    log_items: LogItem = LogItem.objects.filter(log__conversation__id=conversation_id).filter(is_visible=True)
+    log_items = LogItem.objects.filter(log__conversation__id=conversation_id).filter(is_visible=True)
     return serialize(log_items)
 
 
@@ -129,15 +129,14 @@ def log_edit(request: HttpRequest) -> HttpResponse:
     })
     if not ok:
         return HttpResponseBadRequest(err)
-    item: LogItem = LogItem.objects.filter(
-        log__conversation__id=data['conversation_id'],
-    ).filter(
-        is_visible=True,
-    ).all()[data['log_item_id']]
-    item.name = data['name']
-    item.text = data['text']
-    item.save()
-    return serialize(item)
+    item: LogItem = LogItem.objects.get(pk=data['log_item_id'])
+    if item.editable:
+        item.name = data['name']
+        item.text = data['text']
+        item.save()
+        return serialize(item)
+    else:
+        return HttpResponseBadRequest()
 
 
 # 以降 tools

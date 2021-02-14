@@ -4,7 +4,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"flag"
-	"github.com/sirupsen/logrus"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -55,7 +55,7 @@ type JSONDataFields struct {
 func mustInt(s string, row, col int) int {
 	i, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
-		logrus.Fatalf("while parsing int (row: %v, col: %v): %s", row, col, err)
+		log.Fatalf("while parsing int (row: %v, col: %v): %s", row, col, err)
 	}
 	return int(i)
 }
@@ -66,10 +66,10 @@ func main() {
 	flag.Parse()
 	data, err := readCSV(*CSVURL)
 	if err != nil {
-		logrus.Fatalf("while fetching and reading CSV (maybe not published?): %s", err)
+		log.Fatalf("while fetching and reading CSV (maybe not published?): %s", err)
 	}
 	if len(data) == 0 {
-		logrus.Fatal("while validating CSV: length of CSV rows is 0")
+		log.Fatal("while validating CSV: length of CSV rows is 0")
 	}
 	jsonData := make([]JSONData, len(data)-1)
 	for i, row := range data {
@@ -96,20 +96,20 @@ func main() {
 				Level:            mustInt(row[13], i, 13),
 			},
 		}
-		logrus.Infof("done row %v/%v.", i, len(data)-1)
+		log.Printf("done row %v/%v.", i, len(data)-1)
 	}
 	f, err := os.Create(*outPath)
 	if err != nil {
-		logrus.Fatalf("while opening output file: %s", err)
+		log.Fatalf("while opening output file: %s", err)
 	}
 	b, err := json.Marshal(jsonData)
 	if err != nil {
-		logrus.Fatalf("while marshalling data: %s", err)
+		log.Fatalf("while marshalling data: %s", err)
 	}
 	_, err = f.Write(b)
 	if err != nil {
-		logrus.Fatalf("while writing data to file: %s", err)
+		log.Fatalf("while writing data to file: %s", err)
 	}
 	_ = f.Close()
-	logrus.Infof("wrote to %s.", *outPath)
+	log.Printf("wrote to %s.", *outPath)
 }

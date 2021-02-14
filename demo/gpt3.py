@@ -76,12 +76,10 @@ class ContentSafetyPresets:
     unsafe = ContentSafety(2)
 
 
-def content_filter(
-        text: str
-) -> ContentSafety:
+def content_filter(text: str) -> ContentSafety:
     filters = [
         content_filter_profanity,  # faster bc not dependent on internet
-        content_filter_gpt,
+        content_filter_openai,
     ]
     for filter_ in filters:
         current_cs = filter_(text)
@@ -96,9 +94,7 @@ def content_filter(
     return ContentSafetyPresets.error
 
 
-def content_filter_gpt(
-        text: str,
-) -> ContentSafety:
+def content_filter_openai(text: str) -> ContentSafety:
     r = requests.post(
         url='https://api.openai.com/v1/engines/content-filter-alpha-c4/completions',
         json={

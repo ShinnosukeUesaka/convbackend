@@ -1,8 +1,11 @@
-from django.db import models
+from typing import List
 
+from django.db import models
 
 # Create your models here.
 # https://www.webforefront.com/django/modeldatatypesandvalidation.html
+from demo.types import LogText
+
 
 class Scenario(models.Model):
     title = models.CharField(max_length=50)
@@ -58,28 +61,7 @@ class OptionItem(models.Model):
         return self.name
 
 
-class Conversation(models.Model):
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.scenario.title
-
-
-class Log(models.Model):
-    conversation = models.OneToOneField(Conversation, on_delete=models.CASCADE, primary_key=True)
-
-    def __str__(self):
-        return self.conversation.scenario.title
-
-
 class LogItem(models.Model):
-    log = models.ForeignKey(Log, on_delete=models.CASCADE)
-
-    name_text = models.CharField(max_length=20)
-
-    text = models.CharField(max_length=200)
-    is_visible = models.BooleanField(default=True)
-
     class Type(models.IntegerChoices):
         # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
         INITIAL_PROMPT = 1
@@ -87,7 +69,32 @@ class LogItem(models.Model):
         AI = 3
         HUMAN = 4
 
+    name = models.CharField(max_length=20)
+    text = models.CharField(max_length=200)
+    visible = models.BooleanField(default=True)
+    editable = models.BooleanField(default=True)
     type = models.IntegerField(choices=Type.choices)
 
+    def __str__(self) -> str:
+        if self.type in (LogItem.Type.AI, LogItem.Type.HUMAN):
+            return f'{self.name}: {self.text}'
+        elif self.type in (LogItem.Type.INITIAL_PROMPT, LogItem.Type.NARRATION):
+            return f'{self.text}'
+
+
+class Conversation(models.Model):
+    scenario: Scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+
+    log_items = models.ManyToManyField(LogItem)
+
+    def prepare(self):
+        logtext = ''
+        for log_item in self.log_items.all():
+            logtext += str(log_item) + '\n'
+
+        logtext += f'{self.scenario.ai_name}: '
+
+        return LogText(logtext)
+
     def __str__(self):
-        return self.text
+        return self.scenario.title

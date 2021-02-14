@@ -2,8 +2,7 @@ name: Make JSON
 
 on:
   push:
-    branches:
-    - "*"
+    branches
   schedule:
     - cron: '* * * * *'
 

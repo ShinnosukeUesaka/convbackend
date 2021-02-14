@@ -61,6 +61,23 @@ class OptionItem(models.Model):
         return self.name
 
 
+
+
+class Conversation(models.Model):
+    scenario: Scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+
+    def prepare(self):
+        logtext = ''
+        for log_item in self.log_items.all():
+            logtext += str(log_item) + '\n'
+
+        logtext += f'{self.scenario.ai_name}: '
+
+        return LogText(logtext)
+
+    def __str__(self):
+        return self.scenario.title
+
 class LogItem(models.Model):
     class Type(models.IntegerChoices):
         # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
@@ -68,6 +85,8 @@ class LogItem(models.Model):
         NARRATION = 2
         AI = 3
         HUMAN = 4
+
+    Conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
 
     name = models.CharField(max_length=20)
     text = models.CharField(max_length=200)
@@ -81,21 +100,3 @@ class LogItem(models.Model):
             return f'{self.name}: {self.text}'
         elif self.type in (LogItem.Type.INITIAL_PROMPT, LogItem.Type.NARRATION):
             return f'{self.text}'
-
-
-class Conversation(models.Model):
-    scenario: Scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
-
-    log_items = models.ForeignKey(LogItem, on_delete=models.CASCADE)
-
-    def prepare(self):
-        logtext = ''
-        for log_item in self.log_items.all():
-            logtext += str(log_item) + '\n'
-
-        logtext += f'{self.scenario.ai_name}: '
-
-        return LogText(logtext)
-
-    def __str__(self):
-        return self.scenario.title

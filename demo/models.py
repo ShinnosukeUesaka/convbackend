@@ -86,7 +86,7 @@ class LogItem(models.Model):
         AI = 3
         HUMAN = 4
 
-    Conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
 
     name = models.CharField(max_length=20)
     text = models.CharField(max_length=200)

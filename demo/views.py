@@ -70,24 +70,21 @@ def chat(request: HttpRequest) -> HttpResponse:
 
     conv: Conversation = Conversation()
 
-    current_log_number = conv.log_items.objects.objects.order_by('log_number').first().log_number
-
     if data['conversation_id'] == -1:
         conv = Conversation.objects.create(scenario=Scenario.objects.get(pk=1))  # for testing
     else:
         conv = Conversation.objects.get(pk=data['conversation_id'])
     scenario = conv.scenario
+    current_log_number = conv.logitem_set.all().order_by('log_number').last().log_number
 
-    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN, log_number=current_log_number+1)
-    conv.log_items.add(logitem_human)
+    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN, log_number=current_log_number+1, conversation=conv)
     logitem_human.save()
     conv.save()
 
     log_text = conv.prepare()
     response = gpt(log_text)
-
-    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI, log_number=current_log_number+2)
-    conv.log_items.add(logitem_ai)
+    print(response)
+    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI, log_number=current_log_number+2, conversation=conv)
     logitem_ai.save()
     conv.save()
 
@@ -114,9 +111,10 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
     conversation = Conversation.objects.create(
         scenario=scenario,
     )
-    conversation.log_items.set([LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt, log_number=1)])
+
+    first_log = LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt, log_number=1, conversation=conversation, editable=False)
     conversation.save()
-    conversation.log_items.all()[0].save()
+    first_log.save()
     return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
 
 
@@ -136,8 +134,8 @@ def log_view(request: HttpRequest) -> HttpResponse:
         return HttpResponseForbidden('incorrect password')
 
     conversation_id = data['conversation_id']
-    log_items = Conversation.objects.filter(pk=conversation_id).all()[0].log_items.all().filter(visible=True)
-    return JsonResponse(serialize(log_items))
+    log_items = LogItem.objects.filter(conversation=Conversation.objects.get(pk=conversation_id)).filter(visible=True)
+    return JsonResponse(serialize(log_items), safe=False)
 
 
 @ratelimit(key='ip', rate='60/h')
@@ -167,7 +165,7 @@ def log_edit(request: HttpRequest) -> HttpResponse:
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
         'conversation_id': int,
-        'log_item_id': int,
+        'log_number': int,
         'name': str,
         'text': str,
         'password': str,
@@ -177,7 +175,7 @@ def log_edit(request: HttpRequest) -> HttpResponse:
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
 
-    item: LogItem = LogItem.objects.get(pk=data['log_item_id'])
+    item: LogItem = LogItem.objects.filter(conversation=data['conversation_id']).get(log_number=data['log_number'])
     if item.editable:
         item.name = data['name']
         item.text = data['text']

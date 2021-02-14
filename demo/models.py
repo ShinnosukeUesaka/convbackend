@@ -61,35 +61,14 @@ class OptionItem(models.Model):
         return self.name
 
 
-class LogItem(models.Model):
-    class Type(models.IntegerChoices):
-        # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
-        INITIAL_PROMPT = 1
-        NARRATION = 2
-        AI = 3
-        HUMAN = 4
-
-    name = models.CharField(max_length=20)
-    text = models.CharField(max_length=200)
-    visible = models.BooleanField(default=True)
-    editable = models.BooleanField(default=True)
-    type = models.IntegerField(choices=Type.choices)
-
-    def __str__(self) -> str:
-        if self.type in (LogItem.Type.AI, LogItem.Type.HUMAN):
-            return f'{self.name}: {self.text}'
-        elif self.type in (LogItem.Type.INITIAL_PROMPT, LogItem.Type.NARRATION):
-            return f'{self.text}'
 
 
 class Conversation(models.Model):
-    scenario: Scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
-
-    log_items = models.ManyToManyField(LogItem)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
 
     def prepare(self):
         logtext = ''
-        for log_item in self.log_items.all():
+        for log_item in self.logitem_set.all():
             logtext += str(log_item) + '\n'
 
         logtext += f'{self.scenario.ai_name}: '
@@ -98,3 +77,26 @@ class Conversation(models.Model):
 
     def __str__(self):
         return self.scenario.title
+
+class LogItem(models.Model):
+    class Type(models.IntegerChoices):
+        # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
+        INITIAL_PROMPT = 1
+        NARRATION = 2
+        AI = 3
+        HUMAN = 4
+
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
+
+    name = models.CharField(max_length=20)
+    text = models.CharField(max_length=200)
+    visible = models.BooleanField(default=True)
+    editable = models.BooleanField(default=True)
+    type = models.IntegerField(choices=Type.choices)
+    log_number = models.IntegerField()
+
+    def __str__(self) -> str:
+        if self.type in (LogItem.Type.AI, LogItem.Type.HUMAN):
+            return f'{self.name}: {self.text}'
+        elif self.type in (LogItem.Type.INITIAL_PROMPT, LogItem.Type.NARRATION):
+            return f'{self.text}'

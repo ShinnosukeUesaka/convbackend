@@ -26,6 +26,10 @@ def make_must_post() -> JsonResponse:
     return JsonResponse(make_error('error.http.must_be_post', 'must be POST'))
 
 
+def make_must_get() -> JsonResponse:
+    return JsonResponse(make_error('error.http.must_be_get', 'must be GET'))
+
+
 def check_pass(password: str) -> bool:
     correct = os.environ.get('CONVBACKEND_PASSWORD', None)
     if correct is None or correct == '':
@@ -65,22 +69,22 @@ def chat(request: HttpRequest) -> HttpResponse:
         return HttpResponseForbidden('incorrect password')
 
     conv: Conversation = Conversation()
+
     if data['conversation_id'] == -1:
         conv = Conversation.objects.create(scenario=Scenario.objects.get(pk=1))  # for testing
     else:
         conv = Conversation.objects.get(pk=data['conversation_id'])
     scenario = conv.scenario
+    current_log_number = conv.logitem_set.all().order_by('log_number').last().log_number
 
-    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN)
-    conv.log_items.add(logitem_human)
+    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN, log_number=current_log_number+1, conversation=conv)
     logitem_human.save()
     conv.save()
 
     log_text = conv.prepare()
     response = gpt(log_text)
-
-    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI)
-    conv.log_items.add(logitem_ai)
+    print(response)
+    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI, log_number=current_log_number+2, conversation=conv)
     logitem_ai.save()
     conv.save()
 
@@ -107,9 +111,10 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
     conversation = Conversation.objects.create(
         scenario=scenario,
     )
-    conversation.log_items.set([LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt)])
+
+    first_log = LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt, log_number=1, conversation=conversation, editable=False)
     conversation.save()
-    conversation.log_items.all()[0].save()
+    first_log.save()
     return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
 
 
@@ -129,8 +134,31 @@ def log_view(request: HttpRequest) -> HttpResponse:
         return HttpResponseForbidden('incorrect password')
 
     conversation_id = data['conversation_id']
-    log_items = LogItem.objects.filter(log__conversation__id=conversation_id).filter(visible=True)
-    return serialize(log_items)
+    log_items = LogItem.objects.filter(conversation=Conversation.objects.get(pk=conversation_id)).filter(visible=True)
+    return JsonResponse(serialize(log_items), safe=False)
+
+
+@ratelimit(key='ip', rate='60/h')
+@csrf_exempt  # REST-like API anyway, who cares lol
+def scenario(request: HttpRequest) -> HttpResponse:
+    if not request.method == 'GET':
+        return HttpResponseBadRequest(make_must_get())
+
+    data = json.loads(request.body)
+    err, ok = assert_keys(data, {
+        'scenario_id': int,
+        'password': str,
+    })
+    if not ok:
+        return HttpResponseBadRequest(err)
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
+
+    scenario_id: int = data['scenario_id']
+    if scenario_id == -1:
+        return JsonResponse(serialize(Scenario.objects.all()))
+    else:
+        return JsonResponse(serialize(Scenario.objects.filter(pk=scenario_id).first()))
 
 
 @ratelimit(key='ip', rate='60/h')
@@ -141,7 +169,7 @@ def log_edit(request: HttpRequest) -> HttpResponse:
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
         'conversation_id': int,
-        'log_item_id': int,
+        'log_number': int,
         'name': str,
         'text': str,
         'password': str,
@@ -151,12 +179,12 @@ def log_edit(request: HttpRequest) -> HttpResponse:
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
 
-    item: LogItem = LogItem.objects.get(pk=data['log_item_id'])
+    item: LogItem = LogItem.objects.filter(conversation=data['conversation_id']).get(log_number=data['log_number'])
     if item.editable:
         item.name = data['name']
         item.text = data['text']
         item.save()
-        return serialize(item)
+        return JsonResponse(serialize(item))
     else:
         return HttpResponseBadRequest()
 
@@ -165,7 +193,7 @@ def log_edit(request: HttpRequest) -> HttpResponse:
 
 def gpt(log_texts: LogText, retry: int = 3) -> str:
     re, ok = gpt_check_safety(str(completion(
-        prompt=log_texts,
+        prompt_=log_texts,
     )))
     if not ok and retry <= 0:
         return 'The AI response included content deemed as sensitive or unsafe, so it was hidden.'

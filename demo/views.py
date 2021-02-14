@@ -40,7 +40,7 @@ def assert_keys(data: Dict, keys: Dict[str, type]) -> Tuple[JsonResponse, bool]:
     return JsonResponse({}), True
 
 
-@ratelimit(rate='60/h')
+@ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def chat(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
@@ -76,7 +76,7 @@ def chat(request: HttpRequest) -> HttpResponse:
     return JsonResponse({'response': serialize(logitem_ai)})
 
 
-@ratelimit(rate='60/h')
+@ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def conversations_view(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
@@ -99,7 +99,7 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
     return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
 
 
-@ratelimit(rate='60/h')
+@ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def log_view(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
@@ -115,7 +115,7 @@ def log_view(request: HttpRequest) -> HttpResponse:
     return serialize(log_items)
 
 
-@ratelimit(rate='60/h')
+@ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def log_edit(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':

@@ -132,7 +132,7 @@ def log_view(request: HttpRequest) -> HttpResponse:
         return HttpResponseForbidden('incorrect password')
 
     conversation_id = data['conversation_id']
-    log_items = LogItem.objects.filter(log__conversation__id=conversation_id).filter(visible=True)
+    log_items = Conversation.objects.filter(pk=conversation_id).log_items.all().filter(visible=True)
     return JsonResponse(serialize(log_items))
 
 

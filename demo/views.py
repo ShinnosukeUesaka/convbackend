@@ -26,6 +26,10 @@ def make_must_post() -> JsonResponse:
     return JsonResponse(make_error('error.http.must_be_post', 'must be POST'))
 
 
+def make_must_get() -> JsonResponse:
+    return JsonResponse(make_error('error.http.must_be_get', 'must be GET'))
+
+
 def check_pass(password: str) -> bool:
     correct = os.environ.get('CONVBACKEND_PASSWORD', None)
     if correct is None or correct == '':
@@ -134,6 +138,25 @@ def log_view(request: HttpRequest) -> HttpResponse:
     conversation_id = data['conversation_id']
     log_items = Conversation.objects.filter(pk=conversation_id).all()[0].log_items.all().filter(visible=True)
     return JsonResponse(serialize(log_items))
+
+
+@ratelimit(key='ip', rate='60/h')
+@csrf_exempt  # REST-like API anyway, who cares lol
+def scenario(request: HttpRequest) -> HttpResponse:
+    if not request.method == 'GET':
+        return HttpResponseBadRequest(make_must_get())
+
+    data = json.loads(request.body)
+    err, ok = assert_keys(data, {
+        'scenario_id': int,
+        'password': str,
+    })
+    if not ok:
+        return HttpResponseBadRequest(err)
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
+
+    return JsonResponse(serialize(Scenario.objects.all()))
 
 
 @ratelimit(key='ip', rate='60/h')

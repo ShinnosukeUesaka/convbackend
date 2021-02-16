@@ -1,16 +1,29 @@
-import json
-import os
+# Type Annotations
+from __future__ import annotations
 from typing import Dict, Tuple
 
-from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpResponse, HttpResponseForbidden
-from django.views.decorators.csrf import csrf_exempt
-from restless.models import serialize
+import os
 
+# Responses
+from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpResponse, HttpResponseForbidden
+
+# CSRF Workaround (API, no tUI)
+from django.views.decorators.csrf import csrf_exempt
+
+# Data Serialization
+from restless.models import serialize
+import json
+from django.core import serializers
+
+# GPT-3 Things
 from . import gpt3
-from .models import Conversation, Scenario, LogItem
 from .gpt3 import completion
+
+# DB Models & Types
+from .models import Conversation, Scenario, LogItem
 from .types import LogText
 
+# Rate Limiting
 from ratelimit.decorators import ratelimit
 
 
@@ -156,9 +169,9 @@ def scenario(request: HttpRequest) -> HttpResponse:
 
     scenario_id: int = data['scenario_id']
     if scenario_id == -1:
-        return JsonResponse(serialize(list(Scenario.objects.all())))
+        return JsonResponse(serializers.serialize("json", Scenario.objects.all()))
     else:
-        return JsonResponse(serialize([Scenario.objects.filter(pk=scenario_id).first()]))
+        return JsonResponse(serializers.serialize("json", Scenario.objects.filter(pk=scenario_id).first()))
 
 
 @ratelimit(key='ip', rate='60/h')

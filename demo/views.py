@@ -156,9 +156,9 @@ def scenario(request: HttpRequest) -> HttpResponse:
 
     scenario_id: int = data['scenario_id']
     if scenario_id == -1:
-        return JsonResponse(serialize(Scenario.objects.all()))
+        return JsonResponse(serialize(list(Scenario.objects.all())))
     else:
-        return JsonResponse(serialize(Scenario.objects.filter(pk=scenario_id).first()))
+        return JsonResponse(serialize([Scenario.objects.filter(pk=scenario_id).first()]))
 
 
 @ratelimit(key='ip', rate='60/h')

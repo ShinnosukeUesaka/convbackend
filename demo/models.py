@@ -42,6 +42,24 @@ class Scenario(models.Model):
     def __str__(self):
         return self.title
 
+    def to_dict(self) -> dict:
+        return {
+            'title': self.title,
+            'initial_prompt': self.initial_prompt,
+            'ai_name': self.ai_name,
+            'human_name': self.human_name,
+            'summarize_token': self.summarize_token,
+            'info': self.info,
+            'description': self.description,
+            'response_length': self.response_length,
+            'temperature': self.temperature,
+            'top_p': self.top_p,
+            'frequency_penalty': self.frequency_penalty,
+            'presence_penalty': self.presence_penalty,
+            'duration': self.duration,
+            'level': self.level,
+        }
+
 
 class Option(models.Model):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)

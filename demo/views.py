@@ -1,29 +1,23 @@
 # Type Annotations
-from typing import Dict, Tuple
-
+import json
 import os
+from typing import Dict, Tuple
 
 # Responses
 from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpResponse, HttpResponseForbidden
-
 # CSRF Workaround (API, no tUI)
 from django.views.decorators.csrf import csrf_exempt
-
+# Rate Limiting
+from ratelimit.decorators import ratelimit
 # Data Serialization
 from restless.models import serialize
-import json
-from django.core import serializers
 
 # GPT-3 Things
 from . import gpt3
 from .gpt3 import completion
-
 # DB Models & Types
 from .models import Conversation, Scenario, LogItem
 from .types import LogText
-
-# Rate Limiting
-from ratelimit.decorators import ratelimit
 
 
 def make_error(id_: str, msg: str, **kwargs) -> Dict:
@@ -168,9 +162,9 @@ def scenario(request: HttpRequest) -> HttpResponse:
 
     scenario_id: int = data['scenario_id']
     if scenario_id == -1:
-        return JsonResponse(serializers.serialize("json", Scenario.objects.all()))
+        return JsonResponse(list(s.to_dict() for s in Scenario.objects.all()))
     else:
-        return JsonResponse(serializers.serialize("json", Scenario.objects.filter(pk=scenario_id).first()))
+        return JsonResponse(Scenario.objects.filter(pk=scenario_id).first().to_dict())
 
 
 @ratelimit(key='ip', rate='60/h')

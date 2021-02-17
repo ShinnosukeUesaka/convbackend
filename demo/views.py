@@ -199,8 +199,30 @@ def log_edit(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest()
 
 
-# 以降 tools
+@csrf_exempt  # REST-like API anyway, who cares lol
+def trigger_action(request: HttpRequest) -> HttpResponse:
+    if not request.method == 'POST':
+        return HttpResponseBadRequest(make_must_post())
+    data = json.loads(request.body)
+    err, ok = assert_keys(data, {
+        'conversation_id': int,
+        'conversation_id': int,
+        'log_number': int,
+        'log_item_params': str,
+        'password': str,
+    })
+    if not ok:
+        return HttpResponseBadRequest(err)
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
 
+    conversation=Conversation.objects.get(data['conversation_id'])
+    action = conversation.scenario.action_set.get(action_number=data['action_number'])
+    return action.user_execute(conversation, data['log_item_params'])
+
+
+
+# 以降 tools
 def gpt(log_texts: LogText, retry: int = 3) -> str:
     re, ok = gpt_check_safety(str(completion(
         prompt_=log_texts,

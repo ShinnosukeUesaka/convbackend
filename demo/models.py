@@ -91,8 +91,14 @@ class Conversation(models.Model):
 
         return LogText(logtext)
 
+    def current_log_number(self):
+         return self.logitem_set.all().order_by('log_number').last().log_number
+
     def __str__(self):
         return self.scenario.title
+
+
+
 
 
 class LogItem(models.Model):

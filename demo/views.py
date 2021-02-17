@@ -162,9 +162,13 @@ def scenario(request: HttpRequest) -> HttpResponse:
 
     scenario_id: int = data['scenario_id']
     if scenario_id == -1:
-        return JsonResponse(list(s.to_dict() for s in Scenario.objects.all()))
+        return JsonResponse({'conversations': list(s.to_dict() if s is not None else None for s in Scenario.objects.all())})
     else:
-        return JsonResponse(Scenario.objects.filter(pk=scenario_id).first().to_dict())
+        s = Scenario.objects.filter(pk=scenario_id).first()
+        if s is None:
+            return JsonResponse(make_error('error.db.not_found', 'Conversation with id not found.'))
+        else:
+            return JsonResponse({'conversation': s.to_dict()})
 
 
 @ratelimit(key='ip', rate='60/h')

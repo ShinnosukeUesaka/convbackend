@@ -175,9 +175,9 @@ class Action(models.Model):
     class Condition(models.IntegerChoices): # The action won't happen unless the condition is met.
         # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
         NONE = 1 # always available
-        CONVERSATION_STATE = 1
-        TIME = 2
-        TOKEN = 3
+        CONVERSATION_STATE = 2
+        TIME = 3
+        TOKEN = 4
 
 
     type = models.IntegerField(choices=Type.choices)

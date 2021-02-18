@@ -2,7 +2,6 @@ from typing import List
 
 from django.db import models
 
-# Create your models here.
 # https://www.webforefront.com/django/modeldatatypesandvalidation.html
 from demo.types import LogText
 
@@ -74,7 +73,7 @@ class Scenario(models.Model):
 
     level = models.IntegerField(choices=Level.choices)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.title
 
     def to_dict(self) -> dict:
@@ -105,7 +104,7 @@ class Conversation(models.Model):
     status = models.IntegerField() # concersation.statuses のどれか
 
 
-    def prepare(self):
+    def prepare(self) -> LogText:
         logtext = ''
         for log_item in self.logitem_set.all():
             logtext += str(log_item) + '\n'
@@ -114,10 +113,10 @@ class Conversation(models.Model):
 
         return LogText(logtext)
 
-    def current_log_number(self):
+    def current_log_number(self) -> int:
          return self.logitem_set.all().order_by('log_number').last().log_number
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.scenario.title
 
 
@@ -155,16 +154,16 @@ class Action(models.Model):
     type = models.IntegerField(choices=Type.choices)
     log_item_params = models.CharField(max_length=100) ## use only when type=INSERT_LOG_ITEM. fields of LogItem except conversation ForeignKey.
 
-    def user_execute(self, conversation, **kwargs):
+    def user_execute(self, conversation: Conversation, **kwargs) -> Union[bool, Union[Conversation, LogItem]]:
         if not check_condition(self):
-            return False　# エラー
+            return False # error
         if self.trigger is not Action.Trigger["USER_INPUT"]
-            return False # エラー
+            return False # error
 
-        return execute(self, conversation, **kwargs)
+        return self.execute(self, conversation, **kwargs)
 
 
-    def execute(self, conversation, **kwargs):
+    def execute(self, conversation: Conversation, **kwargs) -> Union[Conversation, LogItem]:
         if self.Type == Action.Type["INSERT_LOG_ITEM"]:
             log_item_params = json.loads(self.log_item_params)
             logitem = LogItem.objects.create(**log_item_params, conversation=conversation)
@@ -178,13 +177,13 @@ class Action(models.Model):
             conversation.active = False
             return conversation
         elif self.type == Action.Type["REGENERATE_RESPONSE"]:
-            # 実装！！
+            # TODO: implement regenerating response
             return
 
-    def　check_condition(self):
+    def　check_condition(self) -> bool:
         if self.condition == Action.Condition['NONE']:
             return True
-        # 実装！
+        # TODO: implement actual checking
         return True
 
 

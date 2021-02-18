@@ -4,15 +4,14 @@ on:
   push:
 
 jobs:
-  u_3000:
-    
+  replace:
     runs-on: ubuntu-latest
     steps: 
       - name: Checkout
         uses: actions/checkout@v2.3.4
-      - name: Format
+      - name: Replace U+3000
         run: |
           find . -path ./demo/fixtures-prune -false -o -depth -name '* *' \
           -execdir bash -c 'cat "$1" | tr "　" " " > "$1"' bash {} \;
       - name: Commit
-        run: sh auto_commit.sh
+        run: sh auto_commit.sh "Replace instances of U+3000."

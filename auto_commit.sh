@@ -30,9 +30,13 @@
 # 
 # ======End license text.
 
+# Git Config
 git config --global user.name "${GITHUB_ACTOR} (CI)"
 git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+# Add files
 git add -A
-git commit -m "$1" --allow-empty
+# Only commit if there are changes.
+git diff --quiet && git diff --staged --quiet || git commit -m "$1" --allow-empty
+# Pull & Push
 git pull
 git push -u origin HEAD

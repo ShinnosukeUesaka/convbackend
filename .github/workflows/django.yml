@@ -19,6 +19,10 @@ jobs:
       - name: Load Data/Fixtures
         run: |
           python3 manage.py loaddata
+        env:
+          SECRET_KEY: not_the_real_secret_key_lol
       - name: Migrate
         run: |
           python3 manage.py migrate
+        env:
+          SECRET_KEY: not_the_real_secret_key_lol

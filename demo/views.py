@@ -1,17 +1,23 @@
+# Type Annotations
 import json
 import os
 from typing import Dict, Tuple
 
+# Responses
 from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpResponse, HttpResponseForbidden
+# CSRF Workaround (API, no tUI)
 from django.views.decorators.csrf import csrf_exempt
+# Rate Limiting
+from ratelimit.decorators import ratelimit
+# Data Serialization
 from restless.models import serialize
 
+# GPT-3 Things
 from . import gpt3
-from .models import Conversation, Scenario, LogItem
 from .gpt3 import completion
+# DB Models & Types
+from .models import Conversation, Scenario, LogItem
 from .types import LogText
-
-from ratelimit.decorators import ratelimit
 
 
 def make_error(id_: str, msg: str, **kwargs) -> Dict:
@@ -75,7 +81,7 @@ def chat(request: HttpRequest) -> HttpResponse:
     else:
         conv = Conversation.objects.get(pk=data['conversation_id'])
     scenario = conv.scenario
-    current_log_number = conv.logitem_set.all().order_by('log_number').last().log_number
+    current_log_number = conv.current_log_number()
 
     logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN, log_number=current_log_number+1, conversation=conv)
     logitem_human.save()
@@ -156,9 +162,13 @@ def scenario(request: HttpRequest) -> HttpResponse:
 
     scenario_id: int = data['scenario_id']
     if scenario_id == -1:
-        return JsonResponse(serialize(Scenario.objects.all()))
+        return JsonResponse({'scenarios': list((s.to_dict() if s is not None else None) for s in Scenario.objects.all())})
     else:
-        return JsonResponse(serialize(Scenario.objects.filter(pk=scenario_id).first()))
+        s = Scenario.objects.filter(pk=scenario_id).first()
+        if s is None:
+            return JsonResponse(make_error('error.db.not_found', 'Conversation with id not found.'))
+        else:
+            return JsonResponse({'scenario': s.to_dict()})
 
 
 @ratelimit(key='ip', rate='60/h')
@@ -189,8 +199,29 @@ def log_edit(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest()
 
 
-# 以降 tools
+@csrf_exempt  # REST-like API anyway, who cares lol
+def trigger_action(request: HttpRequest) -> HttpResponse:
+    if not request.method == 'POST':
+        return HttpResponseBadRequest(make_must_post())
+    data = json.loads(request.body)
+    err, ok = assert_keys(data, {
+        'conversation_id': int,
+        'log_number': int,
+        'log_item_params': str,
+        'password': str,
+    })
+    if not ok:
+        return HttpResponseBadRequest(err)
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
 
+    conversation=Conversation.objects.get(data['conversation_id'])
+    action = conversation.scenario.action_set.get(action_number=data['action_number'])
+    return action.user_execute(conversation, data['log_item_params'])
+
+
+
+# 以降 tools
 def gpt(log_texts: LogText, retry: int = 3) -> str:
     re, ok = gpt_check_safety(str(completion(
         prompt_=log_texts,

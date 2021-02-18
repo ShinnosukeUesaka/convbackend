@@ -1,0 +1,256 @@
+commit 8f3cad8acd872bd63b4c51ca4c5d574f09573f57 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sun Feb 14 16:23:01 2021 -0500 remove non stdlib deps 
+commit f08dbd8fca8881df2f29289229508bb9afd8728e Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sun Feb 14 15:54:38 2021 -0500
+    add migration commit ad3380226ac43ec88bb5476aaff06cce52f0de5b Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sun Feb 14 15:52:52 2021 -0500 add 
+    /demo/scenario scenario_id impl
+commit 8b51f1b2ada9cd2f0ca26c6a8f2257153bb03634 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sun Feb 14 15:36:52 2021 -0500 add /demo/scenario 
+    scenario_id impl
+commit c4f08958e37be1e54be4a538c96bc3743026dd34 Merge: ecc2deb b4dc914 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sun Feb 14 15:35:21 2021 -0500 Merge 
+    remote-tracking branch 'origin/production' into production
+commit ecc2deb00cfe945a4768135dd88c8bb71a18dade Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sun Feb 14 14:38:51 2021 -0500 add /demo/scenario commit 
+b4dc9144d363794d954f329608d34e9349df0577 Author: ShinnosukeUesaka <45286939+ShinnosukeUesaka@users.noreply.github.com> Date: Sun Feb 14 17:52:43 2021 +0900
+    fix parameter names, and filter commit 1fd111032a0155c47131585d85737a48106d4a87 Author: ShinnosukeUesaka <45286939+ShinnosukeUesaka@users.noreply.github.com> Date: Sun Feb 14 
+16:24:22 2021 +0900
+    fix bug. Actually Fixed!!!!!!! commit b027267ec51bb156806ba4534731b35805b0bfb5 Author: ShinnosukeUesaka <45286939+ShinnosukeUesaka@users.noreply.github.com> Date: Sun Feb 14 
+15:53:13 2021 +0900
+    Update views.py commit d230125cac22830069ea093142cbbf4cbfd4a6ea Author: ShinnosukeUesaka <45286939+ShinnosukeUesaka@users.noreply.github.com> Date: Sun Feb 14 15:51:03 2021 
++0900
+    Revert "fix bug"
+    
+    This reverts commit 4d77b6e38c5a4051c56187147518b92e01572608. commit 51294e826224ab4daa0ea9d1ec72db4d1de675f1 Merge: 02b5b32 1a6e7fc Author: shinnosukeuesaka 
+<shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 15:01:57 2021 +0900
+    Merge branch 'production' of https://github.com/ShinnosukeUesaka/convbackend into production commit 02b5b326527dc3fe691f2e60a0acd59cbba40b90 Author: shinnosukeuesaka 
+<shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 15:01:13 2021 +0900
+    fix bug commit 1a6e7fca3f0f56d5d967f5554c68707beacc7c02 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sun Feb 14 00:59:30 2021 -0500 migrate commit 
+4d77b6e38c5a4051c56187147518b92e01572608 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sun Feb 14 00:58:21 2021 -0500
+    fix bug commit 31331e9d8d9521df1b447d31dd5b3d6c8618b6ff Merge: 5f4c847 71cc622 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 14:53:55 2021 +0900 Merge 
+    branch 'production' of https://github.com/ShinnosukeUesaka/convbackend into production
+commit 71cc6226c9e58a4084273d9b65358794050bfca2 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sun Feb 14 00:48:16 2021 -0500 fix bug commit 
+5f4c847976c90d4a8cf73fb85878c39dba4dc7ef Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 14:48:07 2021 +0900
+    fix log_item commit 663f7312af955c9943f2c0a44ad4e38f433e2c68 Merge: 590ecd4 7946b32 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sun Feb 14 00:46:35 
+2021 -0500
+    Merge remote-tracking branch 'origin/production' into production commit 590ecd4c363c8f065a3958c6f425d8a96ea5afb9 Author: Ken Shibata 
+<3264564-colourdelete@users.noreply.gitlab.com> Date: Sun Feb 14 00:46:28 2021 -0500
+    fix bug commit 7946b326f23a387919e108b3fdca155f29fb6c7f Merge: 67e8a37 e3cdcdd Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 14:43:49 2021 +0900 Merge 
+    branch 'production' of https://github.com/ShinnosukeUesaka/convbackend into production
+commit 67e8a378eccb854afbac908e7ec44beee32471b2 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 14:43:35 2021 +0900 reset migration commit 
+e3cdcddb3a95f17bbd07035f6af9df9c28aef335 Merge: 6497a9d adc2d04 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sun Feb 14 00:42:21 2021 -0500
+    Merge remote-tracking branch 'origin/production' into production commit 6497a9d2891ad830139300f90d8596ee6e6d50b4 Author: Ken Shibata 
+<3264564-colourdelete@users.noreply.gitlab.com> Date: Sun Feb 14 00:42:15 2021 -0500
+    fix bug commit adc2d045b0e729b1e77e1b2fe5f7e17b5c7a9236 Merge: 3e448d1 39a9278 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 14:36:19 2021 +0900 Merge 
+    branch 'production' of https://github.com/ShinnosukeUesaka/convbackend into production
+commit 3e448d178b28e864e75e49ce333dcd3cea984cdd Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 14:36:06 2021 +0900 add log_number to LogItems commit 
+39a92782fd3f20f0806463099cd449d38dc46475 Merge: 49a7273 560f486 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sun Feb 14 00:32:16 2021 -0500
+    Merge remote-tracking branch 'origin/production' into production commit 49a7273c56b44e2792e10da5239bf203e180ef39 Author: Ken Shibata 
+<3264564-colourdelete@users.noreply.gitlab.com> Date: Sun Feb 14 00:32:10 2021 -0500
+    add json maker commit c705a49324e1192fd2c9e900ce4b3c35a959d1db Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 14:25:28 2021 +0900 log_items manytomany 
+    -> foreign key
+commit 337c0c7f5cb3a9173fa25e557a8e59609cf41304 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 14:23:48 2021 +0900 bug fix commit 
+560f4862352d6a02556cfe2d4bbc6e39199658ae Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 14:10:15 2021 +0900
+    gpt completion using offical openai library. commit 290a104f205c090293205123d6b2ba40e8cde5e8 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 13:55:24 
+2021 +0900
+    typo fix commit 35a1045038e3b16de043eee45af4db79f67a16e4 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 13:47:29 2021 +0900 gpt3 completion fix. context 
+    is already included in the log_text
+commit 6f5b9f38c313abc1106c5d99e59373d8a8a7c29b Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 23:40:14 2021 -0500 add insecure password check 
+commit 3dab5f72e12651bf7e36514618fc6085187f0369 Merge: 384b425 9090af0 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 23:31:47 2021 -0500
+    Merge remote-tracking branch 'origin/production' into production
+    
+    # Conflicts: demo/views.py
+commit 384b42522faca06399dc83dd97fbce33ca9999a9 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 23:29:55 2021 -0500 implement log_edit commit 
+9090af08738543e45615c82aeb5d71cb5ddab192 Merge: 00dd175 e2bb090 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 13:14:21 2021 +0900
+    Merge branch 'production' of https://github.com/ShinnosukeUesaka/convbackend into production commit e2bb0904795ea65ae6c7ac7f4d832be444446abf Author: Ken Shibata 
+<3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 22:45:27 2021 -0500
+    fix ratelimit config error commit f25be2475953b801b97ab5cc5be693ab86b35c71 Merge: d33352e 6d9cd11 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat 
+Feb 13 22:18:13 2021 -0500
+    Merge remote-tracking branch 'origin/production' into production commit d33352e584f631c691bc1d56abea9c9be2323c67 Author: Ken Shibata 
+<3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 22:17:44 2021 -0500
+    ratelimit to 60/h commit 00dd1758b36f89cdf64578ad143e0774e3e4a2fa Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 12:04:30 2021 +0900 view の 
+    log_edit　実装
+commit 6d9cd118112cb94972aec933eaa5b6598a6ae8e4 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 11:54:25 2021 +0900 bug fix commit 
+af1a1b7f354ea01b9d5247c5b3014de1916f1ece Merge: a23081c 1bc144a Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 21:48:52 2021 -0500
+    Merge remote-tracking branch 'origin/production' into production commit a23081c04162d5ee451b13fc926bcd55c5a13ee0 Author: Ken Shibata 
+<3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 21:48:45 2021 -0500
+    add editable field to LogItem, refactor is_visible to visible for conciseness (with migrations) commit 1bc144a8256fa37946c265a6f3d0c6074e17ff11 Merge: 942de9b 6b129cf Author: 
+shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 11:45:53 2021 +0900
+    Merge branch 'production' of https://github.com/ShinnosukeUesaka/convbackend into production commit 942de9b12c99e9ec41cb5f8849f5cbd2f6f5b67f Author: shinnosukeuesaka 
+<shinnosuke.uesaka@gmail.com> Date: Sun Feb 14 11:45:49 2021 +0900
+    bug fix commit 6b129cf510d447c7b24d836872592ac9195cc45d Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 21:45:14 2021 -0500 clean up code 
+commit a0add7cf01543ddde1f1237096697b503280f9cc Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 21:41:27 2021 -0500
+    clean up code commit f4bd572d904f50a864922e264d9b4f9a616d0dd3 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 21:29:17 2021 -0500 revert 
+    (most) debug changes
+commit 071ec81411e23ef955abad03e6233fea0c27a804 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 21:22:04 2021 -0500 for debug only commit 
+694c1bbba9954c2a956517efc58978d46e4416ac Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 21:18:34 2021 -0500
+    for debug only commit f754d4f05202eac523d793677d35061f515475a4 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 20:57:58 2021 -0500 for debug 
+    only
+commit 7b14bf89e6846cfde098eca174f9d17d32ed2db8 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 20:47:59 2021 -0500 for debug only commit 
+333e855c228393c5d192acf30e13fe02153f13b9 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 20:40:22 2021 -0500
+    add fallback for profane_words.txt commit 68a3444a5368cd24bceac3342a1c123825a7ef9c Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 20:36:06 
+2021 -0500
+    fix typeerror (use .all()) commit adc220e782c3888922eefcdbf30439fef8795742 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 20:30:41 2021 
+-0500
+    fix typeerror commit 59a71d9f3e74c48230594894a64fd3b5967b3a38 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 19:12:58 2021 -0500 add gpt 
+    stuff
+commit 82ca46993cf447c9838782883390cb116739be82 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 16:37:50 2021 -0500 add content filter commit 
+3232d8786fb40bf24d361fe1e31cf80b8af88681 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 16:06:23 2021 -0500
+    update gitignore commit f8fcb5714be02e89d3c3ffc7b50030d82a816d97 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 15:16:30 2021 -0500 fix 
+    integrityerror
+commit cfc1ee23cbf18d568d761d66d6f708cde3cd0a92 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 15:12:22 2021 -0500 fix attributeerror commit 
+6d5a228e759ee90c8fb0f2449058a5537a34faa7 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 15:07:29 2021 -0500
+    fix attributeerror commit 206253a23b57c875a6c360fec3c412c9ae46222e Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 14:40:27 2021 -0500 fix 
+    errors
+commit d9e8739c7bed4cc87d341c38ce701f8632b6bf87 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 14:36:28 2021 -0500 fix attributeerror commit 
+68b2afb5df73b73f71b0c113d51b081d266be778 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 14:33:07 2021 -0500
+    add migration step to Procfile commit a57214f7a1b0ec74d35a45ae47d4d111129a522c Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 14:05:34 2021 
+-0500
+    organize logitems commit fd28b8eaec25cb220801611f448c4f20fe3e60c9 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 13:16:18 2021 -0500 fix 
+    integrityerror
+commit 1c765acfe30c3381318e9ca62f7e98bddbcfddbc Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 11:51:42 2021 -0500 move LogText to types.py 
+commit d6d0436abf8e459a61eea464bb701ab32ec5096a Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 11:39:49 2021 -0500
+    fix deploy error commit 07dff979059e8c4db4e98117df81c38cc01e66c3 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 11:33:35 2021 -0500 change 
+    to method
+commit cc97add1b4cc6dd1f61a33637cc2355ed259a49d Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 11:23:44 2021 -0500 fix attributerror commit 
+c1fee3c66ae0c4e372d5b6559449f6fd8ca6639c Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 11:01:27 2021 -0500
+    add typing commit d660172bf39616edc0b6770245cdf1c222661786 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 10:58:53 2021 -0500 add testing 
+    support for chat/
+commit 5fe8d6c3da33369d2817466f2769aa64497e7394 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 09:57:45 2021 -0500 fix errors commit 
+87de523134011eca660943858aa4a89dff970499 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 09:55:01 2021 -0500
+    fix errors commit 7758bb885c8382c20fa901b399b27a0dda4d189b Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 09:49:37 2021 -0500 fix errors 
+commit 2057a2d91f9016431b5588a3cdcd10bc5bf3e21a Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 09:42:31 2021 -0500
+    fake gpt test commit 3ddf2b4056fb187a23383b317c8bf1cc403a1faa Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 02:07:43 2021 -0500 add openai 
+    as dependency/requirement
+commit 56e791858cac2035286ef5d96020ba314a0ff329 Merge: 6fa18d2 f9045a0 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 02:06:21 2021 -0500 Merge 
+    remote-tracking branch 'origin/production' into production
+commit 6fa18d2b30f4fddd9edea497adb8e5b735ff9869 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 02:06:15 2021 -0500 im done with clickjacking 
+    mdiddleware
+commit f9045a057a0a9babbe7f528d390e772b4fa63c18 Merge: 84cfd1d 3f97b1d Author: Ken S <45807097+colourdelete@users.noreply.github.com> Date: Sat Feb 13 02:01:30 2021 -0500 Merge pull 
+    request #12 from ShinnosukeUesaka/master
+    
+    clickjacking commit 3f97b1dd56904a0959b784b7d6541eb5137cd30b Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 02:00:57 2021 -0500 try to fix 
+    AttributeError
+commit b7da26a1e5f13f00ef0a08ecd633e1b2ba5cd49d Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 01:58:34 2021 -0500 try to fix AttributeError 
+commit df39472ee8b50b309294df0a8445ff0370172b1d Merge: ba8017e 5124f5b Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 01:56:12 2021 -0500
+    Merge remote-tracking branch 'origin/master' commit 84cfd1da76ec461e139c3fb6f8b7f45ac6a9e79f Merge: da525ee 5124f5b Author: Ken S 
+<45807097+colourdelete@users.noreply.github.com> Date: Sat Feb 13 01:55:42 2021 -0500
+    Merge pull request #11 from ShinnosukeUesaka/master
+    
+    disable clickjacking protection. commit ba8017ea174fd2590c665d00ac35d6428a547596 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 01:54:54 
+2021 -0500
+    disable clickjacking protection. commit 5124f5b139e625851ba643b2fe28d3df06c26fb8 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 01:54:54 
+2021 -0500
+    disable clickjacking protection. commit da525ee48b39330924dc2a0888367dea5d24c321 Merge: 8179a2d ffb6d9d Author: Ken S <45807097+colourdelete@users.noreply.github.com> Date: Sat 
+Feb 13 01:52:32 2021 -0500
+    Merge pull request #10 from ShinnosukeUesaka/master
+    
+    maybe fix AttributeError? commit ffb6d9dfbd2e661f57429723c603f37bac2acbb0 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 01:51:01 2021 
+-0500
+    maybe fix AttributeError? commit 8179a2d6e4b77dd84fd2f69dae4ba077ce5915f7 Merge: d600714 40577ab Author: Ken S <45807097+colourdelete@users.noreply.github.com> Date: Sat Feb 13 
+01:34:24 2021 -0500
+    Merge pull request #9 from ShinnosukeUesaka/master
+    
+    Bypass CSRF, Use Only Body for Data, Add *Incomplete* Typing commit 40577abacde60bf2c5943c257f77bafbdc1e11d8 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> 
+Date: Sat Feb 13 01:33:19 2021 -0500
+    Add type checking (incomplete) commit 7aa88e5fc2809637e0331be1b44ad161d50d04a3 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 01:23:57 2021 
+-0500
+    Bypass CSRF & make sure it's JSON body commit d600714a3bbef78d7129ecfe4c885443636fca79 Merge: 9cf109b 6286289 Author: Ken S <45807097+colourdelete@users.noreply.github.com> 
+Date: Sat Feb 13 01:17:44 2021 -0500
+    Merge pull request #8 from ShinnosukeUesaka/master
+    
+    fix NameErrors commit 628628959c4d5f50b3903b26f44f1bf063e9a8c8 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 01:16:07 2021 -0500 fix 
+    NameErrors
+commit 9cf109bd6a2c8ca37a21b36be2275ea967e2038b Merge: 5f1505b 996a685 Author: Ken S <45807097+colourdelete@users.noreply.github.com> Date: Sat Feb 13 01:12:55 2021 -0500 Merge pull 
+    request #7 from ShinnosukeUesaka/master
+    
+    Bypass CSRF commit 996a68523cdbfaf17a1b4b9df0a037039d0d1b1a Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 01:11:57 2021 -0500 fix typo 
+commit de94591684cfa71a6d5ff550d81c6aed6405256c Merge: 4a0d51b c67898e Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 01:11:36 2021 -0500
+    Merge remote-tracking branch 'origin/master'
+    
+    # Conflicts: demo/views.py
+commit 4a0d51b5a3e898fa775d3ba87e1cad4d928523b9 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Sat Feb 13 01:10:00 2021 -0500 add some csrf things for 
+    chat
+commit 5f1505b94c8dd38c8b821680e257f7a4a6e1cdcd Merge: 969fb97 c67898e Author: Ken S <45807097+colourdelete@users.noreply.github.com> Date: Sat Feb 13 00:12:23 2021 -0500 Merge pull 
+    request #6 from ShinnosukeUesaka/master
+    
+    Update main.yml commit c67898e4ba21a7cdbf19a2075739a094bb0ad758 Author: Ken S <45807097+colourdelete@users.noreply.github.com> Date: Sat Feb 13 00:12:11 2021 -0500 Update 
+    main.yml
+commit 969fb975627f8e008f888391880f23f83f940301 Merge: 2b5ed20 ea5b6ab Author: Ken S <45807097+colourdelete@users.noreply.github.com> Date: Sat Feb 13 00:09:56 2021 -0500 Merge pull 
+    request #5 from ShinnosukeUesaka/master
+    
+    Update main.yml commit ea5b6abee8e35d916eb567581aabde1d27e6e2ef Author: Ken S <45807097+colourdelete@users.noreply.github.com> Date: Sat Feb 13 00:08:31 2021 -0500 Update 
+    main.yml
+commit 2b5ed2028a8a8fa99da5b78492167f729ab9c9b0 Merge: 66ef7e8 3c484a0 Author: Ken S <45807097+colourdelete@users.noreply.github.com> Date: Fri Feb 12 23:36:26 2021 -0500 Merge pull 
+    request #4 from ShinnosukeUesaka/master
+    
+    Update main.yml commit 3c484a0c3fcac7eb3b6725866e5337efc5abad77 Author: Ken S <45807097+colourdelete@users.noreply.github.com> Date: Fri Feb 12 23:35:36 2021 -0500 Update 
+    main.yml
+commit 66ef7e80175029d4e29354c7af22c80ea5f60c52 Merge: 4262624 6ea0809 Author: Ken S <45807097+colourdelete@users.noreply.github.com> Date: Fri Feb 12 23:21:52 2021 -0500 Merge pull 
+    request #3 from ShinnosukeUesaka/master
+    
+    add changes commit 6ea08099b24eeff096d55c7702ed1a8181967938 Author: Ken S <45807097+colourdelete@users.noreply.github.com> Date: Fri Feb 12 23:19:26 2021 -0500 Add heroku action 
+commit b07af3819a3ff8997677837c0a91252c4944043f Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sat Feb 13 13:15:00 2021 +0900
+    github action commit 42626248a72821bc867ca166b02b6199ac65f6be Merge: bad25e5 1a16ebf Author: Ken S <45807097+colourdelete@users.noreply.github.com> Date: Fri Feb 12 23:05:25 
+2021 -0500
+    Merge pull request #1 from ShinnosukeUesaka/master
+    
+    frgrhrwrwrtwg commit 1a16ebfdc9c515cb83daf502df29d94b11a389c3 Merge: d6b872c bc81368 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sat Feb 13 13:03:58 2021 +0900 
+    Merge branch 'master' of https://github.com/ShinnosukeUesaka/convbackend
+commit d6b872c7f64323a86407b2e25ead081de04dd7f2 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sat Feb 13 13:03:43 2021 +0900 url changes commit 
+bc81368ee0342b3156fd0e0bc108506766aa39f0 Author: Ken S <45807097+colourdelete@users.noreply.github.com> Date: Fri Feb 12 23:01:33 2021 -0500
+    Update main.yml commit bad25e53169ca17cf9c51201bec03d6d021ea686 Author: Ken S <45807097+colourdelete@users.noreply.github.com> Date: Fri Feb 12 22:57:37 2021 -0500 Make GH 
+    Action
+commit e603c2c6ff040b69fc3835155e77e3e46f1cb382 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Fri Feb 12 22:48:18 2021 -0500 make actual migrations 
+commit 6f5f5dda1d0c7cb4c852758760b09a59c63685fb Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sat Feb 13 12:48:09 2021 +0900
+    make actual migrations commit e1ff8df0171536158464e5dabec25ae3eda1dea1 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Fri Feb 12 22:39:12 2021 -0500 
+    workaround for secret key error
+commit a569f199c7018cec5f0e40330b4c85e610a1338c Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Fri Feb 12 22:31:18 2021 -0500 make migration commit 
+caeae234a02f6f29748a80b50d772b2238502930 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Fri Feb 12 22:27:03 2021 -0500
+    make migration commit c4f6d633681dcd411439e44e1336ff7a9186365f Merge: a98678f 1df7af8 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Fri Feb 12 
+22:18:07 2021 -0500
+    Merge remote-tracking branch 'origin/master'
+    
+    # Conflicts: convbackend/settings.py demo/models.py
+commit a98678f342bbb1f49370ac1989dac284d58db10e Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Fri Feb 12 22:11:41 2021 -0500 add sqlite3 db (local only) 
+commit 1df7af856aa7fe52fd990411c928bb5ce5be220f Merge: d4514f5 5a447b1 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sat Feb 13 12:11:20 2021 +0900
+    Merge branch 'master' of https://github.com/ShinnosukeUesaka/convbackend commit 2a963dd42eedbc1e3c82e58254a5875cd4a87acc Author: Ken Shibata 
+<3264564-colourdelete@users.noreply.gitlab.com> Date: Fri Feb 12 22:11:18 2021 -0500
+    fix typo commit d4514f5d2aa3961eaa5671dbb56466823833cc6d Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sat Feb 13 12:11:06 2021 +0900 bug fix commit 
+9b6cbb25090413fec1071a6eddca43ea3b011814 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Fri Feb 12 22:10:53 2021 -0500
+    fix syntaxerror commit f083ff5a6026e3bdff609d51be37de35fc8f48ae Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Fri Feb 12 22:10:34 2021 -0500 update 
+    gitignore for intellij
+commit 928e2ee6c40872fcf5e5f552981418836b94f414 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Fri Feb 12 22:10:10 2021 -0500 add requirements files 
+commit aff0fec2598e795829de8952b3a380489533feaf Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Fri Feb 12 22:09:57 2021 -0500
+    add run script (local only) commit e85246e95ec7daaa16780d4ec3e32cc9e6c8cb8b Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Fri Feb 12 22:09:39 2021 
+-0500
+    add local suppport commit aa8b59e81599bd726a39ce5b3f34b9745bfe41b4 Author: Ken Shibata <3264564-colourdelete@users.noreply.gitlab.com> Date: Fri Feb 12 22:09:22 2021 -0500 add 
+    some typing tests
+commit c3ff386d55eb852622631aeea0ec4cb4973c5acd Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sat Feb 13 12:07:43 2021 +0900 bug fix + debug = true commit 
+5a447b125add33f5d4810d7f7b2236253a4bedec Author: ShinnosukeUesaka <45286939+ShinnosukeUesaka@users.noreply.github.com> Date: Thu Feb 11 20:29:39 2021 +0900
+    Update README.md commit 7bbfbd808d711137e113b3d323de2395e1ba3338 Merge: c55e35e ebb177e Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Thu Feb 11 14:40:59 2021 
++0900
+    Merge branch 'master' of https://github.com/ShinnosukeUesaka/convbackend commit ebb177ee5f38b8a3ec930518348ba434396bda6a Author: ShinnosukeUesaka 
+<45286939+ShinnosukeUesaka@users.noreply.github.com> Date: Thu Feb 11 14:39:52 2021 +0900
+    Update README.md commit c55e35e56eb775a978beec168dbdbf01686260a4 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Thu Feb 11 14:38:46 2021 +0900 initial data commit 
+9b18aa074e24c7d1fe8cd54b70253bd8e449dc31 Author: ShinnosukeUesaka <45286939+ShinnosukeUesaka@users.noreply.github.com> Date: Thu Feb 11 14:20:58 2021 +0900
+    Create README.md commit 38301c0ec3e28e93f1fa240859ba854fb8398d3a Author: Ken Shibata <colourdelete@gmail.com> Date: Wed Feb 10 23:23:41 2021 -0500 fix typo commit 
+e685e60596cfce2a2bd1ef485b63f5f2e701ecb7 Author: Ken Shibata <colourdelete@gmail.com> Date: Wed Feb 10 23:14:55 2021 -0500
+    add comments and intellij config files commit 864a87553bbcd6ec41103f0262ac5c03e64cac63 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Wed Feb 10 17:39:57 2021 
++0900
+    add technical fields for scenario model. commit e4ab83a746f9e53de359fbb6e4aa683db9b7d85e Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Mon Feb 8 13:09:50 2021 
++0900
+    bug fix commit a1ff82f314aa4225f095ff1fcf974feb1ea660ae Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Mon Feb 8 08:31:38 2021 +0900 delete tutorial commit 
+2245bd86d1294e02816376f6c887d7727f48bd56 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 7 22:59:15 2021 +0900
+    small fix commit 1d9ea19d1518739eab6cf3be3725de4ce3c6eed1 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 7 22:18:18 2021 +0900 bug fix commit 
+5356b1b7f31f2bc285acec4e9e70d738145fa7f1 Merge: 780ea12 9fca3ab Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 7 22:16:31 2021 +0900
+    Merge branch 'master' of https://github.com/ShinnosukeUesaka/convbackend commit 780ea128f3568544e70fc170f2fa967c7f515fa6 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> 
+Date: Sun Feb 7 22:15:27 2021 +0900
+    heroku commit 9fca3ab511e79cd3d0ed988c2edc1c7c0abc3321 Author: ShinnosukeUesaka <45286939+ShinnosukeUesaka@users.noreply.github.com> Date: Sun Feb 7 22:12:46 2021 +0900 Delete 
+    convbackend/__pycache__ directory
+commit d5b00318ffd2be399c23a99fb84d1f834a7d4db6 Author: ShinnosukeUesaka <45286939+ShinnosukeUesaka@users.noreply.github.com> Date: Sun Feb 7 22:12:31 2021 +0900 Delete 
+    demo/migrations/__pycache__ directory
+commit 2e08f0d288b8120767a56cf252bb2a15c7b423de Author: ShinnosukeUesaka <45286939+ShinnosukeUesaka@users.noreply.github.com> Date: Sun Feb 7 22:12:16 2021 +0900 Delete 
+    demo/__pycache__ directory
+commit 2943dc63fb0ccee88388d0571efd27f908c9e944 Author: ShinnosukeUesaka <45286939+ShinnosukeUesaka@users.noreply.github.com> Date: Sun Feb 7 22:11:58 2021 +0900 Delete 
+    polls/migrations/__pycache__ directory
+commit a222fff5892b8f62a96f1a432e6cbc330980daa3 Author: ShinnosukeUesaka <45286939+ShinnosukeUesaka@users.noreply.github.com> Date: Sun Feb 7 22:11:37 2021 +0900 Delete 
+    polls/__pycache__ directory
+commit 79d8800bb0065fb715c3b1e51a89eb93f6882b6c Author: ShinnosukeUesaka <45286939+ShinnosukeUesaka@users.noreply.github.com> Date: Sun Feb 7 22:11:19 2021 +0900 Delete .DS_Store 
+commit 9d87fff1bf8dc9dabac68db19259a3f63155d20c Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 7 22:09:54 2021 +0900
+    for heroku commit db425823b6a6459af91c21a9cda1562b4dcb97b9 Author: shinnosukeuesaka <shinnosuke.uesaka@gmail.com> Date: Sun Feb 7 19:31:09 2021 +0900 init

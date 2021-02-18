@@ -130,7 +130,7 @@ class Action(models.Model):
     action_name = models.CharField(max_length=20)
     action_id = models.IntegerField()
 
-    scenario = models.ForeignKey(Scenario)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
 
     class Type(models.IntegerChoices):
         # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types

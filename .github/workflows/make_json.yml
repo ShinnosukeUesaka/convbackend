@@ -1,7 +1,10 @@
 name: Make JSON
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Format"]
+    types: 
+      - completed
   schedule:
     - cron: '0 * * * *'
 

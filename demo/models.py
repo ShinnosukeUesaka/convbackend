@@ -157,7 +157,7 @@ class Action(models.Model):
     def user_execute(self, conversation: Conversation, **kwargs) -> Union[bool, Union[Conversation, LogItem]]:
         if not check_condition(self):
             return False # error
-        if self.trigger is not Action.Trigger["USER_INPUT"]
+        if self.trigger is not Action.Trigger["USER_INPUT"]:
             return False # error
 
         return self.execute(self, conversation, **kwargs)

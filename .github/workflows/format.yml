@@ -1,0 +1,18 @@
+name: Format
+
+on:
+  push:
+
+jobs:
+  u_3000:
+    
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+      - name: Format
+        run: |
+          find . -path ./demo/fixtures-prune -false -o -depth -name '* *' \
+          -execdir bash -c 'cat "$1" | tr "　" " " > "$1"' bash {} \;
+      - name: Commit
+        run: sh auto_commit.sh

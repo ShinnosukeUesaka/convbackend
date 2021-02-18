@@ -9,12 +9,13 @@ from demo.types import LogText
 
 class Scenario(models.Model):
     title = models.CharField(max_length=50)
-    initial_prompt = models.CharField(max_length=200)
+    initial_prompt = models.CharField(max_length=200) # The following is a conversation of two {poeple}  talking about {Proper noun}, {category}. They {feeling} {Proper noun}.
     ai_name = models.CharField(max_length=20)
     human_name = models.CharField(max_length=20)
     summarize_token = models.IntegerField()
     info = models.CharField(max_length=100)  # eg place: cafe, mission: buy coffee
     description = models.CharField(max_length=100)  # scenario description
+    options = model.CharField(max_length=200) #dictionaryをstring(json) にconvertして保存。 Ex) {people: ['highschool studnets', 'university students', 'adults'], feeling: ['like', 'hate'] ......}
 
     # GPT-3 Settings
     response_length = models.IntegerField(default=150)  # ai response length
@@ -90,26 +91,10 @@ class Scenario(models.Model):
         }
 
 
-class Option(models.Model):
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
-
-    name = models.CharField(max_length=20)
-
-    def __str__(self):
-        return self.name
-
-
-class OptionItem(models.Model):
-    option = models.ForeignKey(Option, on_delete=models.CASCADE)
-
-    name = models.CharField(max_length=20)
-
-    def __str__(self):
-        return self.name
-
 
 class Conversation(models.Model):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+    scenario_options = model.CharField(max_length=100)
 
     def prepare(self):
         logtext = ''

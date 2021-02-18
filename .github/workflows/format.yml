@@ -1,7 +1,10 @@
 name: Format
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Make JSON"]
+    types: 
+      - completed
 
 jobs:
   replace:

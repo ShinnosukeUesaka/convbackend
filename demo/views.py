@@ -81,7 +81,7 @@ def chat(request: HttpRequest) -> HttpResponse:
     else:
         conv = Conversation.objects.get(pk=data['conversation_id'])
     scenario = conv.scenario
-    current_log_number = conv.logitem_set.all().order_by('log_number').last().log_number
+    current_log_number = conv.current_log_number()
 
     logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN, log_number=current_log_number+1, conversation=conv)
     logitem_human.save()

@@ -9,13 +9,18 @@ from demo.types import LogText
 
 class Scenario(models.Model):
     title = models.CharField(max_length=50)
-    initial_prompt = models.CharField(max_length=200)
+    initial_prompt = models.CharField(max_length=200) # The following is a conversation of two {poeple}  talking about {Proper noun}, {category}. They {feeling} {Proper noun}.
     ai_name = models.CharField(max_length=20)
     human_name = models.CharField(max_length=20)
     summarize_token = models.IntegerField()
     info = models.CharField(max_length=100)  # eg place: cafe, mission: buy coffee
     description = models.CharField(max_length=100)  # scenario description
-    statuses = models.CharField(max_length=100) # json that contains all possible statuses. いつかステータス移行実装
+    statuses = models.CharField(max_length=100)
+    # JSON that contains all possible statuses:
+    # ["happy", "etc"]
+    options = models.CharField(max_length=200)
+    # JSON (not dict converted to str) of options:
+    # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
 
     # GPT-3 Settings
     response_length = models.IntegerField(default=150)  # ai response length
@@ -23,6 +28,35 @@ class Scenario(models.Model):
     top_p = models.DecimalField(max_digits=4, decimal_places=3, default=1)
     frequency_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0)
     presence_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0.6)
+
+    """
+    class Voice(models.TextChoices):
+        # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
+        JAMESV3 = "en-GB_JamesV3Voice"
+        AllisonV2 = "en-US_AllisonV2Voice"
+        HenryV3 = "en-US_HenryV3Voice"
+        EmilyV3 = "en-US_EmilyV3Voice"
+        AllisonV3 = "en-US_AllisonV3Voice"
+        LisaV3 = "en-US_LisaV3Voice"
+        MichaelV3 = "en-US_MichaelV3Voice"
+        KateV3 = "en-GB_KateV3Voice"
+        CharlotteV3 = "en-GB_CharlotteV3Voice"
+        KevinV3 = "en-US_KevinV3Voice"
+        MichaelV2= "en-US_MichaelV2Voice"
+        LisaV2 = "en-US_LisaV2Voice"
+        OliviaV3 = "en-US_OliviaV3Voice"
+        Michael = "en-US_MichaelVoice"
+        Kate = "en-GB_KateVoice"
+        Lisa = "en-US_LisaVoice"
+        Allison = "en-US_AllisonVoice"
+        Craig = "en-AU_CraigVoice"
+        Madison = "en-AU_MadisonVoice"
+
+    voice = models.CharField(
+        choices=Voice.choices,
+        default=Voice.JAMESV3,
+    )
+    """
 
     class Duration(models.IntegerChoices):
         # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
@@ -62,26 +96,10 @@ class Scenario(models.Model):
         }
 
 
-class Option(models.Model):
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
-
-    name = models.CharField(max_length=20)
-
-    def __str__(self):
-        return self.name
-
-
-class OptionItem(models.Model):
-    option = models.ForeignKey(Option, on_delete=models.CASCADE)
-
-    name = models.CharField(max_length=20)
-
-    def __str__(self):
-        return self.name
-
 
 class Conversation(models.Model):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+    scenario_options = models.CharField(max_length=100)
 
     active = models.BooleanField()
     status = models.IntegerField() # concersation.statuses のどれか
@@ -168,6 +186,7 @@ class Action(models.Model):
             return True
         # 実装！
         return True
+
 
 
 class LogItem(models.Model):

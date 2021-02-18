@@ -15,7 +15,12 @@ class Scenario(models.Model):
     summarize_token = models.IntegerField()
     info = models.CharField(max_length=100)  # eg place: cafe, mission: buy coffee
     description = models.CharField(max_length=100)  # scenario description
-    options = models.CharField(max_length=200) #dictionaryをstring(json) にconvertして保存。 Ex) {people: ['highschool studnets', 'university students', 'adults'], feeling: ['like', 'hate'] ......}
+    statuses = models.CharField(max_length=100)
+    # JSON that contains all possible statuses:
+    # ["happy", "etc"]
+    options = models.CharField(max_length=200)
+    # JSON (not dict converted to str) of options:
+    # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
 
     # GPT-3 Settings
     response_length = models.IntegerField(default=150)  # ai response length
@@ -96,6 +101,10 @@ class Conversation(models.Model):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
     scenario_options = models.CharField(max_length=100)
 
+    active = models.BooleanField()
+    status = models.IntegerField() # concersation.statuses のどれか
+
+
     def prepare(self):
         logtext = ''
         for log_item in self.logitem_set.all():
@@ -112,6 +121,71 @@ class Conversation(models.Model):
         return self.scenario.title
 
 
+class Action(models.Model):
+    # actions that users can take during a conversation. (specific to scenarios)
+    # action happens when the condition is met and the trigger happens.
+
+    action_name = models.CharField(max_length=20)
+    action_id = models.IntegerField()
+
+    scenario = models.ForeignKey(Scenario)
+
+    class Type(models.IntegerChoices):
+        # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
+        END_CONVERSATION = 1
+        INSERT_LOG_ITEM = 2
+        INSERT_USER_LOG_ITEM =3
+        REGENERATE_RESPONSE = 4
+
+    class Trigger(models.IntegerChoices): # The trigger will immediately trigger the action if the condition is met.
+        # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
+        CONVERSATION_STATE = 1
+        USER_INPUT = 2
+        TIME = 3
+        TOKEN = 4
+
+    class Condition(models.IntegerChoices): # The action won't happen unless the condition is met.
+        # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
+        NONE = 1 # always available
+        CONVERSATION_STATE = 1
+        TIME = 2
+        TOKEN = 3
+
+
+    type = models.IntegerField(choices=Type.choices)
+    log_item_params = models.CharField(max_length=100) ## use only when type=INSERT_LOG_ITEM. fields of LogItem except conversation ForeignKey.
+
+    def user_execute(self, conversation, **kwargs):
+        if not check_condition(self):
+            return False　# エラー
+        if self.trigger is not Action.Trigger["USER_INPUT"]
+            return False # エラー
+
+        return execute(self, conversation, **kwargs)
+
+
+    def execute(self, conversation, **kwargs):
+        if self.Type == Action.Type["INSERT_LOG_ITEM"]:
+            log_item_params = json.loads(self.log_item_params)
+            logitem = LogItem.objects.create(**log_item_params, conversation=conversation)
+            logitem.save()
+            return logitem
+        elif self.type == Action.Type["INSERT_USER_LOG_ITEM"]:
+            logitem = LogItem.objects.create(**kwargs, conversation=conversation)
+            logitem.save()
+            return logitem
+        elif self.type == Action.Type["END_CONVERSATION"]:
+            conversation.active = False
+            return conversation
+        elif self.type == Action.Type["REGENERATE_RESPONSE"]:
+            # 実装！！
+            return
+
+    def　check_condition(self):
+        if self.condition == Action.Condition['NONE']:
+            return True
+        # 実装！
+        return True
 
 
 

@@ -1,4 +1,5 @@
-from typing import List
+from typing import List, Union
+import json
 from django.db import models
 # https://www.webforefront.com/django/modeldatatypesandvalidation.html
 from demo.types import LogText
@@ -123,6 +124,31 @@ class Conversation(models.Model):
         return self.scenario.title
 
 
+
+class LogItem(models.Model):
+    class Type(models.IntegerChoices):
+        # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
+        INITIAL_PROMPT = 1
+        NARRATION = 2
+        AI = 3
+        HUMAN = 4
+
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
+
+    name = models.CharField(max_length=20)
+    text = models.CharField(max_length=200)
+    visible = models.BooleanField(default=True)
+    editable = models.BooleanField(default=True)
+    type = models.IntegerField(choices=Type.choices)
+    log_number = models.IntegerField()
+
+    def __str__(self) -> str:
+        if self.type in (LogItem.Type.AI, LogItem.Type.HUMAN):
+            return f'{self.name}: {self.text}'
+        elif self.type in (LogItem.Type.INITIAL_PROMPT, LogItem.Type.NARRATION):
+            return f'{self.text}'
+
+
 class Action(models.Model):
     # actions that users can take during a conversation. (specific to scenarios)
     # action happens when the condition is met and the trigger happens.
@@ -158,7 +184,7 @@ class Action(models.Model):
     log_item_params = models.CharField(max_length=100) ## use only when type=INSERT_LOG_ITEM. fields of LogItem except conversation ForeignKey.
 
     def user_execute(self, conversation: Conversation, **kwargs) -> Union[bool, Union[Conversation, LogItem]]:
-        if not check_condition(self):
+        if not self.check_condition(self):
             return False # error
         if self.trigger is not Action.Trigger["USER_INPUT"]:
             return False # error
@@ -188,28 +214,3 @@ class Action(models.Model):
             return True
         # TODO: implement actual checking
         return True
-
-
-
-class LogItem(models.Model):
-    class Type(models.IntegerChoices):
-        # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
-        INITIAL_PROMPT = 1
-        NARRATION = 2
-        AI = 3
-        HUMAN = 4
-
-    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
-
-    name = models.CharField(max_length=20)
-    text = models.CharField(max_length=200)
-    visible = models.BooleanField(default=True)
-    editable = models.BooleanField(default=True)
-    type = models.IntegerField(choices=Type.choices)
-    log_number = models.IntegerField()
-
-    def __str__(self) -> str:
-        if self.type in (LogItem.Type.AI, LogItem.Type.HUMAN):
-            return f'{self.name}: {self.text}'
-        elif self.type in (LogItem.Type.INITIAL_PROMPT, LogItem.Type.NARRATION):
-            return f'{self.text}'

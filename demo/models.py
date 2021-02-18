@@ -183,7 +183,7 @@ class Action(models.Model):
             # TODO: implement regenerating response
             return
 
-    def　check_condition(self) -> bool:
+    def check_condition(self) -> bool:
         if self.condition == Action.Condition['NONE']:
             return True
         # TODO: implement actual checking

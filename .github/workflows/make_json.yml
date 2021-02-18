@@ -3,7 +3,7 @@ name: Make JSON
 on:
   push:
   schedule:
-    - cron: '* * * * *'
+    - cron: '0 * * * *'
 
 jobs:
   greeting:
@@ -20,4 +20,4 @@ jobs:
       - name: Make JSON from CSV
         run: go run gsheet_to_json.go -o=./demo/fixtures/scenarios.json
       - name: Commit
-        run: sh auto_commit.sh
+        run: sh auto_commit.sh "Make JSON fixtures from Google Sheet."

@@ -15,7 +15,7 @@ class Scenario(models.Model):
     summarize_token = models.IntegerField()
     info = models.CharField(max_length=100)  # eg place: cafe, mission: buy coffee
     description = models.CharField(max_length=100)  # scenario description
-    options = model.CharField(max_length=200) #dictionaryをstring(json) にconvertして保存。 Ex) {people: ['highschool studnets', 'university students', 'adults'], feeling: ['like', 'hate'] ......}
+    options = models.CharField(max_length=200) #dictionaryをstring(json) にconvertして保存。 Ex) {people: ['highschool studnets', 'university students', 'adults'], feeling: ['like', 'hate'] ......}
 
     # GPT-3 Settings
     response_length = models.IntegerField(default=150)  # ai response length
@@ -94,7 +94,7 @@ class Scenario(models.Model):
 
 class Conversation(models.Model):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
-    scenario_options = model.CharField(max_length=100)
+    scenario_options = models.CharField(max_length=100)
 
     def prepare(self):
         logtext = ''

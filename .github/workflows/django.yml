@@ -1,0 +1,24 @@
+name: Django
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Setup packages
+        run: if [ -f requirements.txt ]; then python -m pip install --upgrade -r requirements.txt; fi
+      - name: Load Data/Fixtures
+        run: |
+          python3 manage.py loaddata
+      - name: Migrate
+        run: |
+          python3 manage.py migrate

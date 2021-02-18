@@ -206,7 +206,6 @@ def trigger_action(request: HttpRequest) -> HttpResponse:
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
         'conversation_id': int,
-        'conversation_id': int,
         'log_number': int,
         'log_item_params': str,
         'password': str,

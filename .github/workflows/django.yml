@@ -1,8 +1,10 @@
 name: Django
 
 on:
-  push:
-  pull_request:
+  workflow_run:
+    workflows: ["Format"]
+    types: 
+      - completed
   workflow_dispatch:
 
 jobs:

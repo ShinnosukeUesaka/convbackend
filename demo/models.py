@@ -1,19 +1,22 @@
 from typing import List
-
 from django.db import models
-
 # https://www.webforefront.com/django/modeldatatypesandvalidation.html
 from demo.types import LogText
 
 
 class Scenario(models.Model):
     title = models.CharField(max_length=50)
-    initial_prompt = models.CharField(max_length=200) # The following is a conversation of two {poeple}  talking about {Proper noun}, {category}. They {feeling} {Proper noun}.
+    initial_prompt = models.CharField(max_length=200)
+    # Initial prompt, similar to narratio:
+    # The following is a conversation of two {poeple}  talking about {Proper noun}, {category}. They {feeling} {Proper noun}.
     ai_name = models.CharField(max_length=20)
     human_name = models.CharField(max_length=20)
     summarize_token = models.IntegerField()
-    info = models.CharField(max_length=100)  # eg place: cafe, mission: buy coffee
-    description = models.CharField(max_length=100)  # scenario description
+    info = models.CharField(max_length=100)
+    # info about scenario:
+    # place: cafe, mission: buy coffee
+    description = models.CharField(max_length=100)
+    # scenario description
     statuses = models.CharField(max_length=100)
     # JSON that contains all possible statuses:
     # ["happy", "etc"]

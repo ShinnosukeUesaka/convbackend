@@ -4,7 +4,9 @@ import os
 from typing import Dict, Tuple
 
 # Responses
-from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpResponse, HttpResponseForbidden
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpResponse, HttpResponseForbidden, \
+    HttpResponseNotFound
 # CSRF Workaround (API, no tUI)
 from django.views.decorators.csrf import csrf_exempt
 # Rate Limiting
@@ -113,15 +115,19 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
 
-    scenario = Scenario.objects.get(pk=data['scenario_id'])
-    conversation = Conversation.objects.create(
-        scenario=scenario,
-    )
+    try:
+        scenario = Scenario.objects.get(pk=data['scenario_id'])
+    except ObjectDoesNotExist:
+        return JsonResponse(make_error('error.scenario.nonexistent', 'scenario with given scenario ID is nonexistent.'))
+    else:
+        conversation = Conversation.objects.create(
+            scenario=scenario,
+        )
 
-    first_log = LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt, log_number=1, conversation=conversation, editable=False)
-    conversation.save()
-    first_log.save()
-    return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
+        first_log = LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt, log_number=1, conversation=conversation, editable=False)
+        conversation.save()
+        first_log.save()
+        return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
 
 
 @ratelimit(key='ip', rate='60/h')

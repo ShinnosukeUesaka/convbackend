@@ -78,7 +78,7 @@ func main() {
 		}
 		jsonData[i-1] = JSONData{
 			Model: "demo.scenario",
-			Pk:    i - 1,
+			Pk:    i,
 			Fields: JSONDataFields{
 				Title:            row[0],
 				InitialPrompt:    row[1],

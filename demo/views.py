@@ -81,7 +81,7 @@ def chat(request: HttpRequest) -> HttpResponse:
     else:
         conv = Conversation.objects.get(pk=data['conversation_id'])
     scenario = conv.scenario
-    current_log_number = conv.logitem_set.all().order_by('log_number').last().log_number
+    current_log_number = conv.current_log_number()
 
     logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN, log_number=current_log_number+1, conversation=conv)
     logitem_human.save()
@@ -199,8 +199,29 @@ def log_edit(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest()
 
 
-# 以降 tools
+@csrf_exempt  # REST-like API anyway, who cares lol
+def trigger_action(request: HttpRequest) -> HttpResponse:
+    if not request.method == 'POST':
+        return HttpResponseBadRequest(make_must_post())
+    data = json.loads(request.body)
+    err, ok = assert_keys(data, {
+        'conversation_id': int,
+        'log_number': int,
+        'log_item_params': str,
+        'password': str,
+    })
+    if not ok:
+        return HttpResponseBadRequest(err)
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
 
+    conversation=Conversation.objects.get(data['conversation_id'])
+    action = conversation.scenario.action_set.get(action_number=data['action_number'])
+    return action.user_execute(conversation, data['log_item_params'])
+
+
+
+# 以降 tools
 def gpt(log_texts: LogText, retry: int = 3) -> str:
     re, ok = gpt_check_safety(str(completion(
         prompt_=log_texts,

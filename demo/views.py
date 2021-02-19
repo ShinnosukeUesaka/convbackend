@@ -91,7 +91,6 @@ def chat(request: HttpRequest) -> HttpResponse:
 
     log_text = conv.prepare()
     response = gpt(log_text)
-    print(response)
     logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI, log_number=current_log_number+2, conversation=conv)
     logitem_ai.save()
     conv.save()

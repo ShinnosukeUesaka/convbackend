@@ -6,22 +6,22 @@ from demo.types import LogText
 
 
 class Scenario(models.Model):
-    title = models.CharField(max_length=50)
-    initial_prompt = models.CharField(max_length=200)
-    # Initial prompt, similar to narratio:
+    title = models.CharField(max_length=50, default='Title')
+    initial_prompt = models.CharField(max_length=200, default='Initial Prompt')
+    # Initial prompt, similar to narration:
     # The following is a conversation of two {poeple}  talking about {Proper noun}, {category}. They {feeling} {Proper noun}.
-    ai_name = models.CharField(max_length=20)
-    human_name = models.CharField(max_length=20)
+    ai_name = models.CharField(max_length=20, default='AI')
+    human_name = models.CharField(max_length=20, default='Human')
     summarize_token = models.IntegerField()
-    info = models.CharField(max_length=100)
+    info = models.CharField(max_length=100, default='')
     # info about scenario:
     # place: cafe, mission: buy coffee
-    description = models.CharField(max_length=100)
+    description = models.CharField(max_length=100, default='')
     # scenario description
-    statuses = models.CharField(max_length=100)
+    statuses = models.CharField(max_length=100, default='[]')
     # JSON that contains all possible statuses:
     # ["happy", "etc"]
-    options = models.CharField(max_length=200)
+    options = models.CharField(max_length=200, default='{}')
     # JSON (not dict converted to str) of options:
     # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
 
@@ -104,8 +104,8 @@ class Conversation(models.Model):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
     scenario_options = models.CharField(max_length=100)
 
-    active = models.BooleanField()
-    status = models.IntegerField() # concersation.statuses のどれか
+    active = models.BooleanField(default=True)
+    status = models.IntegerField(default=-1) # Conversation.statuses のどれか
 
 
     def prepare(self) -> LogText:

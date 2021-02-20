@@ -86,12 +86,14 @@ def chat(request: HttpRequest) -> HttpResponse:
     scenario = conv.scenario
     current_log_number = conv.current_log_number()
 
+    print(f'user: {data["user_input"]}')
     logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN, log_number=current_log_number+1, conversation=conv)
     logitem_human.save()
     conv.save()
 
     log_text = conv.prepare()
     response = gpt(log_text)
+    print(f'response: {response}')
     logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI, log_number=current_log_number+2, conversation=conv)
     logitem_ai.save()
     conv.save()

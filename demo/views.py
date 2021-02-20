@@ -213,6 +213,8 @@ def log_edit(request: HttpRequest) -> HttpResponse:
 def tts_req(request: HttpRequest) -> HttpResponse:
     if request.method != 'GET':
         return HttpResponseBadRequest(make_must_post())
+    if request.body == '':
+        return HttpResponseBadRequest(make_error('error.http.body.blank', 'body is blank'))
     data = json.loads(request.body)
 
     err, ok = assert_keys(data, {

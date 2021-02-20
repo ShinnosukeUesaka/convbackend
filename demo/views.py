@@ -235,7 +235,7 @@ def gpt(log_texts: LogText, retry: int = 3) -> str:
     )))
     if not ok and retry <= 0:
         # return f'The AI response included content deemed as sensitive or unsafe, so it was hidden.\n{re}'
-        return f'unsafe\n{re}'
+        return f'unsafe_or_sensitive\n{re}'
     if not ok:
         return gpt(log_texts, retry - 1)
     return f'maybesafe\n{re}'

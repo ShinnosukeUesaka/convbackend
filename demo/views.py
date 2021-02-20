@@ -86,7 +86,7 @@ def chat(request: HttpRequest) -> HttpResponse:
     scenario = conv.scenario
     current_log_number = conv.current_log_number()
 
-    print(f'user: {data["user_input"]}')
+    print(f'user: {data}')
     logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN, log_number=current_log_number+1, conversation=conv)
     logitem_human.save()
     conv.save()
@@ -232,9 +232,9 @@ def trigger_action(request: HttpRequest) -> HttpResponse:
 
 # 以降 tools
 def gpt(log_texts: LogText, retry: int = 3) -> str:
-    re, ok = gpt_check_safety(str(completion(
-        prompt_=log_texts,
-    )))
+    re = str(completion(prompt_=log_texts))
+    print(f'gpt: {re}')
+    ok = gpt_check_safety(re)
     if not ok and retry <= 0:
         # return f'The AI response included content deemed as sensitive or unsafe, so it was hidden.\n{re}'
         return f'unsafe_or_sensitive\n{re}'
@@ -243,9 +243,6 @@ def gpt(log_texts: LogText, retry: int = 3) -> str:
     return f'maybesafe\n{re}'
 
 
-def gpt_check_safety(text: str, allow_max: int = 0) -> Tuple[str, bool]:
+def gpt_check_safety(text: str, allow_max: int = 0) -> bool:
     safety = int(gpt3.content_filter(text))
-    if safety > allow_max:
-        return text, False
-    else:
-        return text, True
+    return safety > allow_max

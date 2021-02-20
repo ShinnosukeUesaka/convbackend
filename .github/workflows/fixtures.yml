@@ -1,4 +1,4 @@
-name: Make JSON
+name: Fixtures
 
 on:
   pull_request:

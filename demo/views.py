@@ -212,7 +212,7 @@ def log_edit(request: HttpRequest) -> HttpResponse:
 @csrf_exempt  # REST-like API anyway, who cares lol
 def tts_req(request: HttpRequest) -> HttpResponse:
     if request.method != 'GET':
-        return HttpResponseBadRequest(make_must_post())
+        return HttpResponseBadRequest(make_must_get())
     if request.body == '':
         return HttpResponseBadRequest(make_error('error.http.body.blank', 'body is blank'))
     data = json.loads(request.body)

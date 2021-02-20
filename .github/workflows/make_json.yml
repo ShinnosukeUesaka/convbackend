@@ -19,6 +19,6 @@ jobs:
           go-version: 1
           stable: true
       - name: Make JSON from CSV
-        run: go run gsheet_to_json.go -o=./demo/fixtures/scenarios.json
+        run: go run csv_to_json.go -o=./demo/fixtures/scenarios.json
       - name: Commit
         run: sh auto_commit.sh "Make JSON fixtures from Google Sheet."

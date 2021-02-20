@@ -81,6 +81,7 @@ def chat(request: HttpRequest) -> HttpResponse:
     if data['conversation_id'] == -1:
         conv = Conversation.objects.create(scenario=Scenario.objects.get(pk=1))  # for testing
     else:
+
         conv = Conversation.objects.get(pk=data['conversation_id'])
     scenario = conv.scenario
     current_log_number = conv.current_log_number()
@@ -169,8 +170,9 @@ def scenario(request: HttpRequest) -> HttpResponse:
     if scenario_id == -1:
         return JsonResponse({'scenarios': list((s.to_dict() if s is not None else None) for s in Scenario.objects.all())})
     else:
-        s = Scenario.objects.filter(pk=scenario_id).first()
-        if s is None:
+        try:
+            s = Scenario.objects.filter(pk=scenario_id).first()
+        except ObjectDoesNotExist:
             return JsonResponse(make_error('error.db.not_found', 'Conversation with id not found.'))
         else:
             return JsonResponse({'scenario': s.to_dict()})

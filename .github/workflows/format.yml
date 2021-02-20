@@ -17,4 +17,4 @@ jobs:
           find . -path ./demo/fixtures-prune -false -o -depth -name '* *' \
           -execdir bash -c 'cat "$1" | tr "　" " " > "$1"' bash {} \;
       - name: Commit
-        run: sh auto_commit.sh "Replace instances of U+3000."
+        run: sh ci/auto_commit.sh "Replace instances of U+3000."

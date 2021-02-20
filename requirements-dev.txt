@@ -9,3 +9,5 @@ pytz==2021.1
 requests~=2.22.0
 better_profanity
 django-ratelimit
+ibm_cloud_sdk_core
+ibm_watson

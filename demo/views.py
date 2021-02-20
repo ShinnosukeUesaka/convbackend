@@ -15,7 +15,7 @@ from ratelimit.decorators import ratelimit
 from restless.models import serialize
 
 # GPT-3 Things
-from . import gpt3
+from . import gpt3, tts
 from .gpt3 import completion
 # DB Models & Types
 from .models import Conversation, Scenario, LogItem
@@ -206,6 +206,27 @@ def log_edit(request: HttpRequest) -> HttpResponse:
         return JsonResponse(serialize(item))
     else:
         return HttpResponseBadRequest()
+
+
+@ratelimit(key='ip', rate='60/h')
+@csrf_exempt  # REST-like API anyway, who cares lol
+def tts_req(request: HttpRequest) -> HttpResponse:
+    if request.method != 'GET':
+        return HttpResponseBadRequest(make_must_post())
+    data = json.loads(request.body)
+
+    err, ok = assert_keys(data, {
+        'text': str,
+        'password': str,
+    })
+    if not ok:
+        return HttpResponseBadRequest(err)
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
+
+    data, content_type = tts.tts(data['text'], data.get('voice', None), data.get('format', None))
+
+    return HttpResponse(data, content_type=content_type)
 
 
 @csrf_exempt  # REST-like API anyway, who cares lol

@@ -177,7 +177,7 @@ def scenario(request: HttpRequest) -> HttpResponse:
     scenario_id: int = data['scenario_id']
     if scenario_id == -1:
         return JsonResponse(
-            {'scenarios': list((s.to_dict() if s is not None else None) for s in Scenario.objects.all())})
+            {'scenarios': list((s.to_dict() if s is not None else None) for s in Scenario.objects.all()), 'db_queries': len(connection.queries)})
     else:
         try:
             s = Scenario.objects.filter(pk=scenario_id).first()

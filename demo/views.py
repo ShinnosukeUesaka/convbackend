@@ -5,8 +5,7 @@ from typing import Dict, Tuple
 
 # Responses
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpResponse, HttpResponseForbidden, \
-    HttpResponseNotFound
+from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpResponse, HttpResponseForbidden
 # CSRF Workaround (API, no tUI)
 from django.views.decorators.csrf import csrf_exempt
 # Rate Limiting
@@ -63,6 +62,7 @@ def assert_keys(data: Dict, keys: Dict[str, type]) -> Tuple[JsonResponse, bool]:
 @ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def chat(request: HttpRequest) -> HttpResponse:
+    # TODO:
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_post())
     data = json.loads(request.body)
@@ -87,14 +87,16 @@ def chat(request: HttpRequest) -> HttpResponse:
     current_log_number = conv.current_log_number()
 
     print(f'user: {data}')
-    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN, log_number=current_log_number+1, conversation=conv)
+    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN,
+                                           log_number=current_log_number + 1, conversation=conv)
     logitem_human.save()
     conv.save()
 
     log_text = conv.prepare()
     response = gpt(log_text)
     print(f'response: {response}')
-    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI, log_number=current_log_number+2, conversation=conv)
+    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI,
+                                        log_number=current_log_number + 2, conversation=conv)
     logitem_ai.save()
     conv.save()
 
@@ -126,7 +128,8 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
             scenario=scenario,
         )
 
-        first_log = LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt, log_number=1, conversation=conversation, editable=False)
+        first_log = LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt, log_number=1,
+                                           conversation=conversation, editable=False)
         conversation.save()
         first_log.save()
         return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
@@ -152,6 +155,9 @@ def log_view(request: HttpRequest) -> HttpResponse:
     return JsonResponse(serialize(log_items), safe=False)
 
 
+from django.db import connection
+
+
 @ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def scenario(request: HttpRequest) -> HttpResponse:
@@ -170,14 +176,15 @@ def scenario(request: HttpRequest) -> HttpResponse:
 
     scenario_id: int = data['scenario_id']
     if scenario_id == -1:
-        return JsonResponse({'scenarios': list((s.to_dict() if s is not None else None) for s in Scenario.objects.all())})
+        return JsonResponse(
+            {'scenarios': list((s.to_dict() if s is not None else None) for s in Scenario.objects.all())})
     else:
         try:
             s = Scenario.objects.filter(pk=scenario_id).first()
         except ObjectDoesNotExist:
             return JsonResponse(make_error('error.db.not_found', 'Conversation with id not found.'))
         else:
-            return JsonResponse({'scenario': s.to_dict()})
+            return JsonResponse({'scenario': s.to_dict(), 'db_queries': len(connection.queries)})
 
 
 @ratelimit(key='ip', rate='60/h')
@@ -247,10 +254,9 @@ def trigger_action(request: HttpRequest) -> HttpResponse:
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
 
-    conversation=Conversation.objects.get(data['conversation_id'])
+    conversation = Conversation.objects.get(data['conversation_id'])
     action = conversation.scenario.action_set.get(action_number=data['action_number'])
     return action.user_execute(conversation, data['log_item_params'])
-
 
 
 # 以降 tools

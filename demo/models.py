@@ -99,14 +99,12 @@ class Scenario(models.Model):
         }
 
 
-
 class Conversation(models.Model):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
     scenario_options = models.CharField(max_length=100)
 
     active = models.BooleanField(default=True)
-    status = models.IntegerField(default=-1) # Conversation.statuses のどれか
-
+    status = models.IntegerField(default=-1)  # Conversation.statuses のどれか
 
     def prepare(self) -> LogText:
         logtext = ''
@@ -118,11 +116,10 @@ class Conversation(models.Model):
         return LogText(logtext)
 
     def current_log_number(self) -> int:
-         return self.logitem_set.all().order_by('log_number').last().log_number
+        return self.logitem_set.all().order_by('log_number').last().log_number
 
     def __str__(self) -> str:
         return self.scenario.title
-
 
 
 class LogItem(models.Model):
@@ -162,38 +159,40 @@ class Action(models.Model):
         # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
         END_CONVERSATION = 1
         INSERT_LOG_ITEM = 2
-        INSERT_USER_LOG_ITEM =3
-        REGENERATE_RESPONSE = 4
+        INSERT_USER_LOG_ITEM = 3
 
-    class Trigger(models.IntegerChoices): # The trigger will immediately trigger the action if the condition is met.
+    class Trigger(models.IntegerChoices):  # The trigger will immediately trigger the action if the condition is met.
         # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
         CONVERSATION_STATE = 1
         USER_INPUT = 2
         TIME = 3
         TOKEN = 4
 
-    class Condition(models.IntegerChoices): # The action won't happen unless the condition is met.
+    class Condition(models.IntegerChoices):  # The action won't happen unless the condition is met.
         # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
-        NONE = 1 # always available
+        NONE = 1  # always available
         CONVERSATION_STATE = 2
         TIME = 3
         TOKEN = 4
 
-
     type = models.IntegerField(choices=Type.choices)
-    log_item_params = models.CharField(max_length=100) ## use only when type=INSERT_LOG_ITEM. fields of LogItem except conversation ForeignKey.
+    trigger = models.IntegerField(choices=Trigger.choices)
+    condition = models.IntegerField(choices=Condition.choices)
+    log_item_params = models.CharField(
+        max_length=100)  # use only when type=INSERT_LOG_ITEM. fields of LogItem except conversation ForeignKey.
 
-    def user_execute(self, conversation: Conversation, **kwargs) -> Union[bool, Union[Conversation, LogItem]]:
-        if not self.check_condition(self):
-            return False # error
-        if self.trigger is not Action.Trigger["USER_INPUT"]:
-            return False # error
+    # def user_execute(self, conversation: Conversation, **kwargs) -> Union[bool, Union[None, LogItem]]:
+    #     if not self.trigger_ok:
+    #         return False  # error
+    #     if self.trigger is not Action.Trigger["USER_INPUT"]:
+    #         return False  # error
+    #
+    #     return self.execute(self, conversation, **kwargs)
 
-        return self.execute(self, conversation, **kwargs)
-
-
-    def execute(self, conversation: Conversation, **kwargs) -> Union[Conversation, LogItem]:
-        if self.Type == Action.Type["INSERT_LOG_ITEM"]:
+    def execute(self, conversation: Conversation, trigger: int, **kwargs) -> Union[None, LogItem]:
+        if not self.trigger_ok(trigger):
+            return None
+        if self.type == Action.Type["INSERT_LOG_ITEM"]:
             log_item_params = json.loads(self.log_item_params)
             logitem = LogItem.objects.create(**log_item_params, conversation=conversation)
             logitem.save()
@@ -203,14 +202,24 @@ class Action(models.Model):
             logitem.save()
             return logitem
         elif self.type == Action.Type["END_CONVERSATION"]:
-            conversation.active = False
-            return conversation
-        elif self.type == Action.Type["REGENERATE_RESPONSE"]:
-            # TODO: implement regenerating response
-            return
+            if self.condition == Action.Condition.CONVERSATION_STATE:
+                print('not implemented')
+                conversation.active = False
+                conversation.save()
+            elif self.condition == Action.Condition.TIME:
+                print('not implemented')
+                conversation.active = False
+                conversation.save()
+            elif self.condition == Action.Condition.TOKEN:
+                print('not implemented')
+                if conversation
+                conversation.active = False
+                conversation.save()
+            return None
 
-    def check_condition(self) -> bool:
+    def trigger_ok(self, trigger: int) -> bool:
+        if self.trigger is not trigger:
+            return False
         if self.condition == Action.Condition['NONE']:
             return True
-        # TODO: implement actual checking
-        return True
+        return False

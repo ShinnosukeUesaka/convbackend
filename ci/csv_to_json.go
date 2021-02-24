@@ -63,6 +63,7 @@ func mustInt(s string, row, col int) int {
 func main() {
 	CSVURL := flag.String("csv-url", "https://docs.google.com/spreadsheets/d/e/2PACX-1vR9-l5WWtnAmGE9sKnr0hfn5RX-y1iaFdDxwJNRPrLSWc8pq0362vyFxic1uyhIOdwVyqiK-zBSpQf7/pub?gid=0&single=true&output=csv", "URI of CSV file to read data from.")
 	outPath := flag.String("o", "./output.json", "Output JSON path.")
+	indent := flag.String("indent", "  ", "JSON indent")
 	flag.Parse()
 	data, err := readCSV(*CSVURL)
 	if err != nil {
@@ -78,7 +79,7 @@ func main() {
 		}
 		jsonData[i-1] = JSONData{
 			Model: "demo.scenario",
-			Pk:    i,
+			Pk:    i, // start from 1
 			Fields: JSONDataFields{
 				Title:            row[0],
 				InitialPrompt:    row[1],
@@ -102,7 +103,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("while opening output file: %s", err)
 	}
-	b, err := json.Marshal(jsonData)
+	var b []byte
+	if *indent == "" {
+		b, err = json.Marshal(jsonData)
+	} else {
+		b, err = json.MarshalIndent(jsonData, "", *indent)
+	}
 	if err != nil {
 		log.Fatalf("while marshalling data: %s", err)
 	}

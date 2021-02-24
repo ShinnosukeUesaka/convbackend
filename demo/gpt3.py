@@ -158,10 +158,11 @@ def content_filter_profanity(text: str) -> ContentSafety:
 
 
 if __name__ == '__main__':
-    prompts = [
-        'OpenAI is a company.',  # should be safe, since it's a fact
-        'Donald Trump should be impeached.',  # should be sensitive or unsafe, since it's an opinion, not a fact
-    ]
-    for prompt in prompts:
-        print(f'{prompt}: {content_filter(prompt)}')
-    print(completion('What do you like?\nAI: '))
+    print('to test, uncomment')
+    # prompts = [
+    #     'OpenAI is a company.',  # should be safe, since it's a fact
+    #     'Donald Trump should be impeached.',  # should be sensitive or unsafe, since it's an opinion, not a fact
+    # ]
+    # for prompt in prompts:
+    #     print(f'{prompt}: {content_filter(prompt)}')
+    # print(completion('What do you like?\nAI: '))

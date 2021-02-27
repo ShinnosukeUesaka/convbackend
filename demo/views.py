@@ -246,17 +246,25 @@ def trigger_action(request: HttpRequest) -> HttpResponse:
     err, ok = assert_keys(data, {
         'conversation_id': int,
         'log_number': int,
-        'log_item_params': str,
+        'log_item_params': str, # not neccesary (あったとしてもjson)
         'password': str,
     })
+    # not cheking because log_item_params is not always neccesary.
+    """
     if not ok:
         return HttpResponseBadRequest(err)
+    """
+
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
 
     conversation = Conversation.objects.get(data['conversation_id'])
     action = conversation.scenario.action_set.get(action_number=data['action_number'])
-    return action.user_execute(conversation, data['log_item_params'])
+
+    if action.type == Action.Type['INSERT_USER_LOG_ITEM']:
+        return action.user_execute(conversation, trigger=Action.Trigger['INSERT_LOG_ITEM'] log_item_params=data['log_item_params'])
+    elif action.type == Action.Type['INSERT_USER_LOG_ITEM'] or Action.Type['END_CONVERSATION']:
+        return action.user_execute(conversation, trigger=Action.Trigger['INSERT_LOG_ITEM'])
 
 
 # 以降 tools

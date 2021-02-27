@@ -262,7 +262,7 @@ def trigger_action(request: HttpRequest) -> HttpResponse:
     action = conversation.scenario.action_set.get(action_number=data['action_number'])
 
     if action.type == Action.Type['INSERT_USER_LOG_ITEM']:
-        return action.user_execute(conversation, trigger=Action.Trigger['INSERT_LOG_ITEM'] log_item_params=data['log_item_params'])
+        return action.user_execute(conversation, trigger=Action.Trigger['INSERT_LOG_ITEM'], log_item_params=data['log_item_params'])
     elif action.type == Action.Type['INSERT_USER_LOG_ITEM'] or Action.Type['END_CONVERSATION']:
         return action.user_execute(conversation, trigger=Action.Trigger['INSERT_LOG_ITEM'])
 

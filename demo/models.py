@@ -24,7 +24,7 @@ class Scenario(models.Model):
     options = models.CharField(max_length=200, default='{}')
     # JSON (not dict converted to str) of options:
     # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
-    buttons = model.CharField(max_length=200)
+    buttons = models.CharField(max_length=200)
     # set of buttons to be displayed on the frontend side, and action number that needs to be trigger when that button is pressed
     """
      [{"button": "End onversation", "action": 1},
@@ -65,6 +65,7 @@ class Scenario(models.Model):
     voice = models.CharField(
         choices=Voice.choices,
         default=Voice.JAMESV3,
+        max_length=50
     )
 
     class Duration(models.IntegerChoices):
@@ -208,24 +209,24 @@ class Action(models.Model):
             logitem.save()
             return logitem
         elif self.type == Action.Type["END_CONVERSATION"]:
-            if self.condition == Action.Condition.CONVERSATION_STATE:
-                print('not implemented')
-                conversation.active = False
-                conversation.save()
-            elif self.condition == Action.Condition.TIME:
-                print('not implemented')
-                conversation.active = False
-                conversation.save()
-            elif self.condition == Action.Condition.TOKEN:
-                print('not implemented')
-                if conversation
-                conversation.active = False
-                conversation.save()
-            return None
+            conversation.active = False
+            conversation.save()
 
-    def trigger_ok(self, trigger: int) -> bool:
+    def trigger_condition_ok(self, trigger: int) -> bool:
         if self.trigger is not trigger:
             return False
+
         if self.condition == Action.Condition['NONE']:
             return True
+        elif self.condition == Action.Condition.CONVERSATION_STATE:
+            print('not implemented')
+            return True
+        elif self.condition == Action.Condition.TIME:
+            print('not implemented')
+            return True
+        elif self.condition == Action.Condition.TOKEN:
+            print('not implemented')
+            return True
+
+        # no matching condition
         return False

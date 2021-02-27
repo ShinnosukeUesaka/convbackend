@@ -196,7 +196,7 @@ def log_edit(request: HttpRequest) -> HttpResponse:
     err, ok = assert_keys(data, {
         'conversation_id': int,
         'log_number': int,
-        'name': str,
+        #'name': str,
         'text': str,
         'password': str,
     })
@@ -207,7 +207,7 @@ def log_edit(request: HttpRequest) -> HttpResponse:
 
     item: LogItem = LogItem.objects.filter(conversation=data['conversation_id']).get(log_number=data['log_number'])
     if item.editable:
-        item.name = data['name']
+        #item.name = data['name']
         item.text = data['text']
         item.save()
         return JsonResponse(serialize(item))

@@ -32,23 +32,22 @@ class Scenario(models.Model):
     frequency_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0)
     presence_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0.6)
 
-    """
     class Voice(models.TextChoices):
         # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
         JAMESV3 = "en-GB_JamesV3Voice"
-        AllisonV2 = "en-US_AllisonV2Voice"
-        HenryV3 = "en-US_HenryV3Voice"
-        EmilyV3 = "en-US_EmilyV3Voice"
-        AllisonV3 = "en-US_AllisonV3Voice"
-        LisaV3 = "en-US_LisaV3Voice"
-        MichaelV3 = "en-US_MichaelV3Voice"
-        KateV3 = "en-GB_KateV3Voice"
-        CharlotteV3 = "en-GB_CharlotteV3Voice"
-        KevinV3 = "en-US_KevinV3Voice"
-        MichaelV2= "en-US_MichaelV2Voice"
-        LisaV2 = "en-US_LisaV2Voice"
-        OliviaV3 = "en-US_OliviaV3Voice"
-        Michael = "en-US_MichaelVoice"
+        ALLISONV2 = "en-US_AllisonV2Voice"
+        HENRYV3 = "en-US_HenryV3Voice"
+        EMILYV3 = "en-US_EmilyV3Voice"
+        ALLISONV3 = "en-US_AllisonV3Voice"
+        LISAV3 = "en-US_LisaV3Voice"
+        MICHAELV3 = "en-US_MichaelV3Voice"
+        KATEV3 = "en-GB_KateV3Voice"
+        CHARLOTTEV3 = "en-GB_CharlotteV3Voice"
+        KEVINV3 = "en-US_KevinV3Voice"
+        MICHAELV2= "en-US_MichaelV2Voice"
+        LISAV2 = "en-US_LisaV2Voice"
+        OLIVIAV3 = "en-US_OliviaV3Voice"
+        MICHAEL = "en-US_MichaelVoice"
         Kate = "en-GB_KateVoice"
         Lisa = "en-US_LisaVoice"
         Allison = "en-US_AllisonVoice"
@@ -59,7 +58,6 @@ class Scenario(models.Model):
         choices=Voice.choices,
         default=Voice.JAMESV3,
     )
-    """
 
     class Duration(models.IntegerChoices):
         # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types

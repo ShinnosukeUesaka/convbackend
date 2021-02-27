@@ -24,6 +24,14 @@ class Scenario(models.Model):
     options = models.CharField(max_length=200, default='{}')
     # JSON (not dict converted to str) of options:
     # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
+    buttons = model.CharField(max_length=200)
+    # set of buttons to be displayed on the frontend side, and action number that needs to be trigger when that button is pressed
+    '''
+     [{"button": "End onversation", "action": 1},
+      {"button": "Change conversation topic", "action": 2},
+      {"button": "Wave hand", "action": 3}
+      ]
+    '''
 
     # GPT-3 Settings
     response_length = models.IntegerField(default=150)  # ai response length
@@ -48,11 +56,11 @@ class Scenario(models.Model):
         LISAV2 = "en-US_LisaV2Voice"
         OLIVIAV3 = "en-US_OliviaV3Voice"
         MICHAEL = "en-US_MichaelVoice"
-        Kate = "en-GB_KateVoice"
-        Lisa = "en-US_LisaVoice"
-        Allison = "en-US_AllisonVoice"
-        Craig = "en-AU_CraigVoice"
-        Madison = "en-AU_MadisonVoice"
+        KATE = "en-GB_KateVoice"
+        LISA = "en-US_LisaVoice"
+        ALLISON = "en-US_AllisonVoice"
+        CRAIG = "en-AU_CraigVoice"
+        MADISON = "en-AU_MadisonVoice"
 
     voice = models.CharField(
         choices=Voice.choices,

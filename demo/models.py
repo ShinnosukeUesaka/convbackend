@@ -26,12 +26,12 @@ class Scenario(models.Model):
     # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
     buttons = model.CharField(max_length=200)
     # set of buttons to be displayed on the frontend side, and action number that needs to be trigger when that button is pressed
-    '''
+    """
      [{"button": "End onversation", "action": 1},
       {"button": "Change conversation topic", "action": 2},
       {"button": "Wave hand", "action": 3}
       ]
-    '''
+    """
 
     # GPT-3 Settings
     response_length = models.IntegerField(default=150)  # ai response length

@@ -269,9 +269,9 @@ def gpt(log_texts: LogText, retry: int = 3) -> str:
         return f'unsafe_or_sensitive\n{re}'
     if not ok:
         return gpt(log_texts, retry - 1)
-    return f'maybesafe\n{re}'
+    return re
 
 
 def gpt_check_safety(text: str, allow_max: int = 0) -> bool:
     safety = int(gpt3.content_filter(text))
-    return safety > allow_max
+    return safety <= allow_max

@@ -249,11 +249,9 @@ def trigger_action(request: HttpRequest) -> HttpResponse:
         'log_item_params': str, # not neccesary (あったとしてもjson)
         'password': str,
     })
-    # not cheking because log_item_params is not always neccesary.
-    """
+
     if not ok:
         return HttpResponseBadRequest(err)
-    """
 
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
@@ -261,11 +259,12 @@ def trigger_action(request: HttpRequest) -> HttpResponse:
     conversation = Conversation.objects.get(data['conversation_id'])
     action = conversation.scenario.action_set.get(action_number=data['action_number'])
 
+    result = ""
     if action.type == Action.Type['INSERT_USER_LOG_ITEM']:
-        return action.user_execute(conversation, trigger=Action.Trigger['INSERT_LOG_ITEM'], log_item_params=data['log_item_params'])
+        result =  action.user_execute(conversation, trigger=Action.Trigger['INSERT_LOG_ITEM'], log_item_params=data['log_item_params'])
     elif action.type == Action.Type['INSERT_USER_LOG_ITEM'] or Action.Type['END_CONVERSATION']:
-        return action.user_execute(conversation, trigger=Action.Trigger['INSERT_LOG_ITEM'])
-
+        result = action.user_execute(conversation, trigger=Action.Trigger['INSERT_LOG_ITEM'])
+    JsonResponse(result)
 
 # 以降 tools
 def gpt(log_texts: LogText, retry: int = 3) -> str:

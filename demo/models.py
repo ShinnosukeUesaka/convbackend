@@ -203,14 +203,15 @@ class Action(models.Model):
             log_item_params = json.loads(self.log_item_params)
             logitem = LogItem.objects.create(**log_item_params, conversation=conversation)
             logitem.save()
-            return logitem
+            return self.type
         elif self.type == Action.Type["INSERT_USER_LOG_ITEM"]:
             logitem = LogItem.objects.create(**kwargs, conversation=conversation)
             logitem.save()
-            return logitem
+            return self.type
         elif self.type == Action.Type["END_CONVERSATION"]:
             conversation.active = False
             conversation.save()
+            return self.type
 
     def trigger_condition_ok(self, trigger: int) -> bool:
         if self.trigger is not trigger:

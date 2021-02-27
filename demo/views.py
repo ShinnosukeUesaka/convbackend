@@ -246,7 +246,7 @@ def trigger_action(request: HttpRequest) -> HttpResponse:
     err, ok = assert_keys(data, {
         'conversation_id': int,
         'log_number': int,
-        'log_item_params': str, # not neccesary (あったとしてもjson)
+        'log_item_params': str,
         'password': str,
     })
 

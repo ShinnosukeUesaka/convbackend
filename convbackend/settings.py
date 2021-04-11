@@ -33,8 +33,10 @@ ALLOWED_HOSTS = ['*']
 # Application definitdion
 
 INSTALLED_APPS = [
+
     'demo.apps.DemoConfig',
 
+    'corsheaders',
     'restless',
 
     'django.contrib.admin',
@@ -46,6 +48,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', # Cors対応
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -54,6 +57,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # 追加
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    "https://aibou-e4e85.web.app"
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'convbackend.urls'
 

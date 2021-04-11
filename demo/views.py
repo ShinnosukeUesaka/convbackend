@@ -3,6 +3,9 @@ import json
 import os
 from typing import Dict, Tuple
 
+# conversation controllers
+#from convcontrollers import ConvController
+
 # Responses
 from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpResponse, HttpResponseForbidden
 # CSRF Workaround (API, no tUI)
@@ -15,6 +18,7 @@ from restless.models import serialize
 # GPT-3 Things
 from . import gpt3
 from .gpt3 import completion
+
 # DB Models & Types
 from .models import Conversation, Scenario, LogItem
 from .types import LogText
@@ -76,10 +80,13 @@ def chat(request: HttpRequest) -> HttpResponse:
 
     conv: Conversation = Conversation()
 
+    #ConvController()
+
     if data['conversation_id'] == -1:
         conv = Conversation.objects.create(scenario=Scenario.objects.get(pk=1))  # for testing
     else:
         conv = Conversation.objects.get(pk=data['conversation_id'])
+
     scenario = conv.scenario
     current_log_number = conv.current_log_number()
 
@@ -88,9 +95,13 @@ def chat(request: HttpRequest) -> HttpResponse:
     conv.save()
 
     log_text = conv.prepare()
-    response = gpt(log_text)
-    print(response)
-    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI, log_number=current_log_number+2, conversation=conv)
+    response, safety = gpt(log_text=log_text)
+
+
+    print(f'response: {response}')
+    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI,
+                                        log_number=current_log_number + 2, conversation=conv, safety=safety)
+
     logitem_ai.save()
     conv.save()
 
@@ -113,15 +124,28 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
 
-    scenario = Scenario.objects.get(pk=data['scenario_id'])
-    conversation = Conversation.objects.create(
-        scenario=scenario,
-    )
+    try:
+        scenario = Scenario.objects.get(pk=data['scenario_id'])
+    except ObjectDoesNotExist:
+        return JsonResponse(make_error('error.scenario.nonexistent', 'scenario with given scenario ID is nonexistent.'))
+    else:
+        conversation = Conversation.objects.create(
+            scenario=scenario,
+            active=True
+        )
+        conversation.save()
 
-    first_log = LogItem.objects.create(type=LogItem.Type.INITIAL_PROMPT, text=scenario.initial_prompt, log_number=1, conversation=conversation, editable=False)
-    conversation.save()
-    first_log.save()
-    return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
+        initial_prompts = scenario.logitem_set.all()
+
+        for initial_prompt in initial_prompts:
+            log_number = conversation.current_log_number
+            initial_prompt.pk = None
+            initial_prompt.scenario = None
+            initial_prompt.conversation = conversation
+            initial_prompt.save()
+
+        return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
+
 
 
 @ratelimit(key='ip', rate='60/h')
@@ -180,7 +204,7 @@ def log_edit(request: HttpRequest) -> HttpResponse:
     err, ok = assert_keys(data, {
         'conversation_id': int,
         'log_number': int,
-        'name': str,
+        #'name': str,
         'text': str,
         'password': str,
     })
@@ -191,7 +215,7 @@ def log_edit(request: HttpRequest) -> HttpResponse:
 
     item: LogItem = LogItem.objects.filter(conversation=data['conversation_id']).get(log_number=data['log_number'])
     if item.editable:
-        item.name = data['name']
+        #item.name = data['name']
         item.text = data['text']
         item.save()
         return JsonResponse(serialize(item))
@@ -222,20 +246,20 @@ def trigger_action(request: HttpRequest) -> HttpResponse:
 
 
 # 以降 tools
-def gpt(log_texts: LogText, retry: int = 3) -> str:
-    re, ok = gpt_check_safety(str(completion(
-        prompt_=log_texts,
-    )))
+def gpt(log_text, retry: int = 3, allow_max: int = 0) -> str:
+    print(f"gpt3 request: {log_text}")
+    re = completion(prompt_=log_text)
+    safety = int(gpt3.content_filter(re))
+    ok = safety <= allow_max
     if not ok and retry <= 0:
-        return 'The AI response included content deemed as sensitive or unsafe, so it was hidden.'
+        # return f'The AI response included content deemed as sensitive or unsafe, so it was hidden.\n{re}'
+        return re, safety
     if not ok:
-        return gpt(log_texts, retry - 1)
-    return re
+        return gpt(log_text, retry - 1)
+    return re, safety
 
 
 def gpt_check_safety(text: str, allow_max: int = 0) -> Tuple[str, bool]:
     safety = int(gpt3.content_filter(text))
-    if safety > allow_max:
-        return '', False
-    else:
-        return text, True
+    return safety <= allow_max
+

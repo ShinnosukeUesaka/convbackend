@@ -15,17 +15,17 @@ Human: Hello, who are you?
 AI: I am an AI created by OpenAI. How can I help you today?
 Human: '''
 
-try:
-    from local_gpt3 import api_key as api_key_
-    from local_gpt3 import organization as organization_
-
-    print('local')
-    organization = organization_
-    api_key = api_key_
-except ImportError as err:
-    api_key_, organization_ = '', ''  # workaround for lint
-    print(err)
-    print('non local')
+# try:
+#     from local_gpt3 import api_key as api_key_
+#     from local_gpt3 import organization as organization_
+#
+#     print('local')
+#     organization = organization_
+#     api_key = api_key_
+# except ImportError as err:
+#     api_key_, organization_ = '', ''  # workaround for lint
+#     print(err)
+#     print('non local')
 
 openai.organization = organization
 openai.api_key = api_key
@@ -41,11 +41,11 @@ def make_header() -> dict:
 def completion(
         prompt_: str,
         engine: str = 'davinci',
-        temperature: str = 0.9,
+        temperature: str = 0.4,
         max_tokens: str = 172,
         top_p: str = 1,
         frequency_penalty: str = 0,
-        presence_penalty: str = 0.6,
+        presence_penalty: str = 0,
         stop: List[str] = None
 ) -> str:
     # hardcode options

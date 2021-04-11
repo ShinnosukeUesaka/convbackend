@@ -6,6 +6,7 @@ from demo.types import LogText
 
 
 class Scenario(models.Model):
+
     title = models.CharField(max_length=50)
     initial_prompt = models.CharField(max_length=200)
     # Initial prompt, similar to narratio:
@@ -22,6 +23,7 @@ class Scenario(models.Model):
     # JSON that contains all possible statuses:
     # ["happy", "etc"]
     options = models.CharField(max_length=200)
+
     # JSON (not dict converted to str) of options:
     # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
 
@@ -31,6 +33,8 @@ class Scenario(models.Model):
     top_p = models.DecimalField(max_digits=4, decimal_places=3, default=1)
     frequency_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0)
     presence_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0.6)
+
+    voice = models.CharField(max_length=200, default="en-US_AllisonV2Voice")
 
     """
     class Voice(models.TextChoices):
@@ -61,21 +65,9 @@ class Scenario(models.Model):
     )
     """
 
-    class Duration(models.IntegerChoices):
-        # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
-        FIVE = 5, '5分'
-        TEN = 0, '10分'
-        TWENTY = 20, '20分'
 
-    duration = models.IntegerField(choices=Duration.choices)
 
-    class Level(models.IntegerChoices):
-        # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
-        BEGINNER = 1, '初心者'
-        INTERMEDIATE = 2, '中級者'
-        ADVANCED = 3, '上級者'
 
-    level = models.IntegerField(choices=Level.choices)
 
     def __str__(self) -> str:
         return self.title
@@ -103,25 +95,31 @@ class Scenario(models.Model):
 class Conversation(models.Model):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
     scenario_options = models.CharField(max_length=100)
-
-    active = models.BooleanField()
-    status = models.IntegerField() # concersation.statuses のどれか
+    active = models.BooleanField(default=True)
 
 
     def prepare(self) -> LogText:
         logtext = ''
         for log_item in self.logitem_set.all():
-            logtext += str(log_item) + '\n'
+            if log_item.send == True:
+                logtext += str(log_item) + '\n'
 
-        logtext += f'{self.scenario.ai_name}: '
+        logtext += f'{self.scenario.ai_name}:'
 
         return LogText(logtext)
 
     def current_log_number(self) -> int:
-         return self.logitem_set.all().order_by('log_number').last().log_number
+        if self.logitem_set.count == 0:
+            return 1
+        else:
+            return self.logitem_set.all().order_by('log_number').last().log_number
 
     def __str__(self) -> str:
         return self.scenario.title
+
+    def create_json(self):
+        # implement
+        return
 
 
 
@@ -133,84 +131,24 @@ class LogItem(models.Model):
         AI = 3
         HUMAN = 4
 
-    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, blank=True, null=True)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, blank=True, null=True)
 
-    name = models.CharField(max_length=20)
-    text = models.CharField(max_length=200)
+    type = models.IntegerField(choices=Type.choices)
+    name = models.CharField(max_length=20, blank=True)
+    text = models.CharField(max_length=1000)
     visible = models.BooleanField(default=True)
     editable = models.BooleanField(default=True)
-    type = models.IntegerField(choices=Type.choices)
+    send = models.BooleanField(default=True)
+    include_name = models.BooleanField(default=True)
+
     log_number = models.IntegerField()
+    safety = models.IntegerField(default=0)
+    # 0 safe 1 sensitive 2 unsafe
 
     def __str__(self) -> str:
-        if self.type in (LogItem.Type.AI, LogItem.Type.HUMAN):
+        if self.include_name == True:
             return f'{self.name}: {self.text}'
-        elif self.type in (LogItem.Type.INITIAL_PROMPT, LogItem.Type.NARRATION):
+        else:
             return f'{self.text}'
 
-
-class Action(models.Model):
-    # actions that users can take during a conversation. (specific to scenarios)
-    # action happens when the condition is met and the trigger happens.
-
-    action_name = models.CharField(max_length=20)
-    action_id = models.IntegerField()
-
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
-
-    class Type(models.IntegerChoices):
-        # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
-        END_CONVERSATION = 1
-        INSERT_LOG_ITEM = 2
-        INSERT_USER_LOG_ITEM =3
-        REGENERATE_RESPONSE = 4
-
-    class Trigger(models.IntegerChoices): # The trigger will immediately trigger the action if the condition is met.
-        # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
-        CONVERSATION_STATE = 1
-        USER_INPUT = 2
-        TIME = 3
-        TOKEN = 4
-
-    class Condition(models.IntegerChoices): # The action won't happen unless the condition is met.
-        # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
-        NONE = 1 # always available
-        CONVERSATION_STATE = 2
-        TIME = 3
-        TOKEN = 4
-
-
-    type = models.IntegerField(choices=Type.choices)
-    log_item_params = models.CharField(max_length=100) ## use only when type=INSERT_LOG_ITEM. fields of LogItem except conversation ForeignKey.
-
-    def user_execute(self, conversation: Conversation, **kwargs) -> Union[bool, Union[Conversation, LogItem]]:
-        if not self.check_condition(self):
-            return False # error
-        if self.trigger is not Action.Trigger["USER_INPUT"]:
-            return False # error
-
-        return self.execute(self, conversation, **kwargs)
-
-
-    def execute(self, conversation: Conversation, **kwargs) -> Union[Conversation, LogItem]:
-        if self.Type == Action.Type["INSERT_LOG_ITEM"]:
-            log_item_params = json.loads(self.log_item_params)
-            logitem = LogItem.objects.create(**log_item_params, conversation=conversation)
-            logitem.save()
-            return logitem
-        elif self.type == Action.Type["INSERT_USER_LOG_ITEM"]:
-            logitem = LogItem.objects.create(**kwargs, conversation=conversation)
-            logitem.save()
-            return logitem
-        elif self.type == Action.Type["END_CONVERSATION"]:
-            conversation.active = False
-            return conversation
-        elif self.type == Action.Type["REGENERATE_RESPONSE"]:
-            # TODO: implement regenerating response
-            return
-
-    def check_condition(self) -> bool:
-        if self.condition == Action.Condition['NONE']:
-            return True
-        # TODO: implement actual checking
-        return True

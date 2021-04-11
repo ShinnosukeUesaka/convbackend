@@ -138,17 +138,22 @@ class Conversation(models.Model):
 
 
 class LogItem(models.Model):
-    class Type(models.IntegerChoices):
-        # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
-        INITIAL_PROMPT = 1
-        NARRATION = 2
-        AI = 3
-        HUMAN = 4
+    # class Type(models.IntegerChoices):
+    #     # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
+    #     INITIAL_PROMPT = 1
+    #     NARRATION = 2
+    #     AI = 3
+    #     HUMAN = 4
+
 
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, blank=True, null=True)
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, blank=True, null=True)
 
-    type = models.IntegerField(choices=Type.choices)
+    type = models.CharField(max_length=40)
+    #Initial prompt
+    #Narration
+    #AI
+    #User
     name = models.CharField(max_length=20, blank=True)
     text = models.CharField(max_length=1000)
     visible = models.BooleanField(default=True)

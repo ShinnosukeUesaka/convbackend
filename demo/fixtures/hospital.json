@@ -29,7 +29,7 @@
     "model": "demo.logitem",
     "fields": {
       "scenario": ["病院の予約"],
-      "type": 1,
+      "type": "Initial prompt",
       "name": "",
       "text": "The following is a conversation over a phone. The man is calling the nurse to get his appointment with a doctor. The nurse is very helpful, kind, and polite. The nurse will ask the the man his symptoms, his name, and when he would like to come.",
       "visible": false,
@@ -44,7 +44,7 @@
     "model": "demo.logitem",
     "fields": {
       "scenario": ["病院の予約"],
-      "type": 3,
+      "type": "AI",
       "name": "Nurse",
       "text": "Hello! How may I help you?",
       "visible": true,

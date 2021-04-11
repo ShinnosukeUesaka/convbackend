@@ -29,7 +29,7 @@
     "model": "demo.logitem",
     "fields": {
       "scenario": ["Buying Tickets"],
-      "type": 1,
+      "type": "Initial prompt",
       "name": "",
       "text": "The following is a conversation at a ticket office of a movie theater. The ticket is $10 each. The clerk is very helpful, kind, and polite. The clerk will ask the man when he will see the movie, the number of people seeing the movie, and where they want to sit.",
       "visible": false,
@@ -44,7 +44,7 @@
     "model": "demo.logitem",
     "fields": {
       "scenario": ["Buying Tickets"],
-      "type": 3,
+      "type": "AI",
       "name": "Clerk",
       "text": "Hello! How may I help you?",
       "visible": true,

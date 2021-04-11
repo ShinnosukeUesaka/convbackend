@@ -18,7 +18,7 @@ from restless.models import serialize
 
 # GPT-3 Things
 from . import gpt3
-from .gpt3 import completion
+from .gpt3 import completion, content_filter_profanity, ContentSafetyPresets
 
 # DB Models & Types
 from .models import Conversation, Scenario, LogItem
@@ -80,6 +80,9 @@ def chat(request: HttpRequest) -> HttpResponse:
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
 
+    if content_filter_profanity(data['user_input']) == ContentSafetyPresets.unsafe or content_filter_profanity(data['user_input']) ==  ContentSafetyPresets.sensitive:
+        return JsonResponse(make_error('error.safety.user_input_unsafe', 'User input contains unsafe words'))
+
     conv: Conversation = Conversation()
 
     #ConvController()
@@ -93,7 +96,7 @@ def chat(request: HttpRequest) -> HttpResponse:
     current_log_number = conv.current_log_number()
 
     print(f'user: {data}')
-    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN,
+    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type="User",
                                            log_number=current_log_number + 1, conversation=conv)
     logitem_human.save()
     conv.save()
@@ -103,7 +106,7 @@ def chat(request: HttpRequest) -> HttpResponse:
 
 
     print(f'response: {response}')
-    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI,
+    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type="AI",
                                         log_number=current_log_number + 2, conversation=conv, safety=safety)
     logitem_ai.save()
     conv.save()

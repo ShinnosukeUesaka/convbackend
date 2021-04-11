@@ -7,40 +7,23 @@ from demo.types import LogText
 
 class Scenario(models.Model):
 
-    class ScenarioManager(models.Manager):
-        def get_by_natural_key(self, title):
-            return self.get(title=title)
-
-    objects = ScenarioManager()
-
-    title = models.CharField(max_length=50, default='Title')
-    description = models.CharField(max_length=100, default='')
-    # scenario description
-    duration = models.IntegerField()
-    # duration of the conversation in min
-    level = models.IntegerField()
-    """
-    1 初心者
-    2 中級者
-    3 上級者
-    """
-
-    information = models.CharField(max_length=1000, default='')
-    mission = models.CharField(max_length=1000, default='', blank=True, null=True)
-    caution = models.CharField(max_length=1000, default='')
-    controller_type = models.CharField(max_length=100, default='simple')
-    controller_variables = models.CharField(max_length=1000)
-    # json that contain variables used in the controllers(not implemented)
-
-    # Initial prompt, similar to narration:
+    title = models.CharField(max_length=50)
+    initial_prompt = models.CharField(max_length=200)
+    # Initial prompt, similar to narratio:
     # The following is a conversation of two {poeple}  talking about {Proper noun}, {category}. They {feeling} {Proper noun}.
-    ai_name = models.CharField(max_length=20, default='AI')
-    human_name = models.CharField(max_length=20, default='Human')
-    info = models.CharField(max_length=100, default='')
+    ai_name = models.CharField(max_length=20)
+    human_name = models.CharField(max_length=20)
+    summarize_token = models.IntegerField()
+    info = models.CharField(max_length=100)
     # info about scenario:
     # place: cafe, mission: buy coffee
+    description = models.CharField(max_length=100)
+    # scenario description
+    statuses = models.CharField(max_length=100)
+    # JSON that contains all possible statuses:
+    # ["happy", "etc"]
+    options = models.CharField(max_length=200)
 
-    options = models.CharField(max_length=200, default='{}')
     # JSON (not dict converted to str) of options:
     # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
 
@@ -108,10 +91,12 @@ class Scenario(models.Model):
         }
 
 
+
 class Conversation(models.Model):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
     scenario_options = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
+
 
     def prepare(self) -> LogText:
         logtext = ''
@@ -135,6 +120,7 @@ class Conversation(models.Model):
     def create_json(self):
         # implement
         return
+
 
 
 class LogItem(models.Model):
@@ -165,3 +151,4 @@ class LogItem(models.Model):
             return f'{self.name}: {self.text}'
         else:
             return f'{self.text}'
+

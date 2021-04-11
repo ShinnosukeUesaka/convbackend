@@ -7,7 +7,6 @@ from typing import Dict, Tuple
 #from convcontrollers import ConvController
 
 # Responses
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpResponse, HttpResponseForbidden
 # CSRF Workaround (API, no tUI)
 from django.views.decorators.csrf import csrf_exempt
@@ -66,7 +65,6 @@ def assert_keys(data: Dict, keys: Dict[str, type]) -> Tuple[JsonResponse, bool]:
 @ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def chat(request: HttpRequest) -> HttpResponse:
-    # TODO:
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_post())
     data = json.loads(request.body)
@@ -92,9 +90,7 @@ def chat(request: HttpRequest) -> HttpResponse:
     scenario = conv.scenario
     current_log_number = conv.current_log_number()
 
-    print(f'user: {data}')
-    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN,
-                                           log_number=current_log_number + 1, conversation=conv)
+    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type=LogItem.Type.HUMAN, log_number=current_log_number+1, conversation=conv)
     logitem_human.save()
     conv.save()
 
@@ -105,6 +101,7 @@ def chat(request: HttpRequest) -> HttpResponse:
     print(f'response: {response}')
     logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type=LogItem.Type.AI,
                                         log_number=current_log_number + 2, conversation=conv, safety=safety)
+
     logitem_ai.save()
     conv.save()
 
@@ -150,6 +147,7 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
         return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
 
 
+
 @ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def log_view(request: HttpRequest) -> HttpResponse:
@@ -170,9 +168,6 @@ def log_view(request: HttpRequest) -> HttpResponse:
     return JsonResponse(serialize(log_items), safe=False)
 
 
-from django.db import connection
-
-
 @ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def scenario(request: HttpRequest) -> HttpResponse:
@@ -191,15 +186,13 @@ def scenario(request: HttpRequest) -> HttpResponse:
 
     scenario_id: int = data['scenario_id']
     if scenario_id == -1:
-        return JsonResponse(
-            {'scenarios': list((s.to_dict() if s is not None else None) for s in Scenario.objects.all()), 'db_queries': len(connection.queries)})
+        return JsonResponse({'scenarios': list((s.to_dict() if s is not None else None) for s in Scenario.objects.all())})
     else:
-        try:
-            s = Scenario.objects.filter(pk=scenario_id).first()
-        except ObjectDoesNotExist:
+        s = Scenario.objects.filter(pk=scenario_id).first()
+        if s is None:
             return JsonResponse(make_error('error.db.not_found', 'Conversation with id not found.'))
         else:
-            return JsonResponse({'scenario': s.to_dict(), 'db_queries': len(connection.queries)})
+            return JsonResponse({'scenario': s.to_dict()})
 
 
 @ratelimit(key='ip', rate='60/h')
@@ -230,8 +223,6 @@ def log_edit(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest()
 
 
-
-
 @csrf_exempt  # REST-like API anyway, who cares lol
 def trigger_action(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
@@ -248,9 +239,10 @@ def trigger_action(request: HttpRequest) -> HttpResponse:
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
 
-    conversation = Conversation.objects.get(data['conversation_id'])
+    conversation=Conversation.objects.get(data['conversation_id'])
     action = conversation.scenario.action_set.get(action_number=data['action_number'])
     return action.user_execute(conversation, data['log_item_params'])
+
 
 
 # 以降 tools
@@ -267,6 +259,7 @@ def gpt(log_text, retry: int = 3, allow_max: int = 0) -> str:
     return re, safety
 
 
-def gpt_check_safety(text: str, allow_max: int = 0) -> bool:
+def gpt_check_safety(text: str, allow_max: int = 0) -> Tuple[str, bool]:
     safety = int(gpt3.content_filter(text))
     return safety <= allow_max
+

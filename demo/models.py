@@ -14,21 +14,20 @@ class Scenario(models.Model):
     objects = ScenarioManager()
 
     title = models.CharField(max_length=50, default='Title')
-    tag = models.CharField(max_length=100, null=True)
-    
+    description = models.CharField(max_length=100, default='')
+    # scenario description
+    duration = models.IntegerField()
+    # duration of the conversation in min
+    level = models.IntegerField()
     """
-    "description": "Sample Scenario 1",
-      "duration": 5,
-      "level": ”初級“,
-
-      "information": "今あなたは映画館のチケット売り場にいます。AIであるClerk(従業員)と会話をして、スターウォーズの前席のチケットを4枚買いましょう。",
-      "mission": "Buy four movie tickets for Star Wars in the front seat.",
-      "caution": "シナリオはミッション達成(自己判断)/会話15往復以上で終了します。ミッションを達成したと判断した場合、終了ボタンを押してください。ミッションはあくまで目安です。（AIの特性上、達成できない場合もあります)英語の練習のために、なるべく長く話してみてください。“
-    初級
-    中級
-    上級
+    1 初心者
+    2 中級者
+    3 上級者
     """
 
+    information = models.CharField(max_length=1000, default='')
+    mission = models.CharField(max_length=1000, default='', blank=True, null=True)
+    caution = models.CharField(max_length=1000, default='')
     controller_type = models.CharField(max_length=100, default='simple')
     controller_variables = models.CharField(max_length=1000)
     # json that contain variables used in the controllers(not implemented)
@@ -37,14 +36,16 @@ class Scenario(models.Model):
     # The following is a conversation of two {poeple}  talking about {Proper noun}, {category}. They {feeling} {Proper noun}.
     ai_name = models.CharField(max_length=20, default='AI')
     human_name = models.CharField(max_length=20, default='Human')
+    info = models.CharField(max_length=100, default='')
+    # info about scenario:
+    # place: cafe, mission: buy coffee
 
     options = models.CharField(max_length=200, default='{}')
     # JSON (not dict converted to str) of options:
     # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
 
     # GPT-3 Settings
-    response_length = models.IntegerField(default=150)  
-    # ai response length
+    response_length = models.IntegerField(default=150)  # ai response length
     temperature = models.DecimalField(max_digits=4, decimal_places=3, default=0.9)
     top_p = models.DecimalField(max_digits=4, decimal_places=3, default=1)
     frequency_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0)

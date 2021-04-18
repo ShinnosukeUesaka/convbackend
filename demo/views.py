@@ -259,39 +259,44 @@ def log_edit(request: HttpRequest) -> HttpResponse:
 @ratelimit(key='ip', rate='120/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def reload(request: HttpRequest) -> HttpResponse:
+
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_post())
 
     data = json.loads(request.body)
+
     err, ok = assert_keys(data, {
         'conversation_id': int,
         'password': str,
         'log_number': int,
     })
-    
+
     if not ok:
         return HttpResponseBadRequest(err)
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
 
-    conv = Conversation.objects.get(data['conversation_id'])
+    try:
+        conversation = Conversation.objects.get(pk=data['conversation_id'])
+    except ObjectDoesNotExist:
+        return JsonResponse(make_error('error.scenario.nonexistent', 'scenario with given scenario ID is nonexistent.'))
 
-    item: LogItem = LogItem.objects.filter(conversation=data['conversation_id']).get(log_number=data['log_number'])
+    item: LogItem = LogItem.objects.filter(conversation=data['conversation_id']).get(log_number=conversation.current_log_number())
+
 
     if item.editable:
         item.delete()
     else:
         return JsonResponse(make_error('error.log.not_editable', 'log is not editable'))
 
+    print("test3")
 
-
-    log_text = conv.prepare()
+    log_text = conversation.prepare()
     response, safety = gpt(log_text=log_text)
     print(f'response: {response}')
-    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type="AI",
-                                        log_number=conv.current_log_number() + 1, conversation=conv, safety=safety)
+    logitem_ai = LogItem.objects.create(text=response, name=conversation.scenario.ai_name, type="AI",
+                                        log_number=conversation.current_log_number() + 1, conversation=conversation, safety=safety)
     logitem_ai.save()
-    conv.save()
 
     return JsonResponse({'response': serialize(logitem_ai)})
 

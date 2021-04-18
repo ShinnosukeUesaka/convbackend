@@ -124,8 +124,8 @@ class Conversation(models.Model):
         return LogText(logtext)
 
     def current_log_number(self) -> int:
-        if self.logitem_set.count == 0:
-            return 1
+        if self.logitem_set.exists() == False:
+            return 0
         else:
             return self.logitem_set.all().order_by('log_number').last().log_number
 
@@ -164,6 +164,12 @@ class LogItem(models.Model):
     log_number = models.IntegerField()
     safety = models.IntegerField(default=0)
     # 0 safe 1 sensitive 2 unsafe
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['log_number', 'conversation'], name='Conversation contraint'),
+            models.UniqueConstraint(fields=['log_number', 'scenario'], name='Scenario contraint')
+        ]
 
     def __str__(self) -> str:
         if self.include_name == True:

@@ -93,8 +93,8 @@ def chat(request: HttpRequest) -> HttpResponse:
         conv = Conversation.objects.get(pk=data['conversation_id'])
 
     scenario = conv.scenario
-    current_log_number = conv.current_log_number()
 
+    current_log_number = conv.current_log_number()
     print(f'user: {data}')
     logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type="User",
                                            log_number=current_log_number + 1, conversation=conv)
@@ -103,7 +103,6 @@ def chat(request: HttpRequest) -> HttpResponse:
 
     log_text = conv.prepare()
     response, safety = gpt(log_text=log_text)
-
 
     print(f'response: {response}')
     logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type="AI",
@@ -125,6 +124,7 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
         'scenario_id': int,
         'password': str,
     })
+
     if not ok:
         return HttpResponseBadRequest(err)
     if not check_pass(data['password']):
@@ -144,7 +144,9 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
         initial_prompts = scenario.logitem_set.all()
 
         for initial_prompt in initial_prompts:
-            log_number = conversation.current_log_number
+
+            initial_prompt.log_number = conversation.current_log_number() + 1
+            print(conversation.current_log_number())
             initial_prompt.pk = None
             initial_prompt.scenario = None
             initial_prompt.conversation = conversation
@@ -208,14 +210,61 @@ def scenario(request: HttpRequest) -> HttpResponse:
 @ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def log_edit(request: HttpRequest) -> HttpResponse:
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        err, ok = assert_keys(data, {
+            'conversation_id': int,
+            'log_number': int,
+
+            #'name': str,
+            'text': str,
+            'password': str,
+        })
+        if not ok:
+            return HttpResponseBadRequest(err)
+        if not check_pass(data['password']):
+            return HttpResponseForbidden('incorrect password')
+
+        item: LogItem = LogItem.objects.filter(conversation=data['conversation_id']).get(log_number=data['log_number'])
+        if item.editable:
+            item.text = data['text']
+            item.save()
+            return JsonResponse(serialize(item))
+        else:
+            return JsonResponse(make_error('error.log.not_editable', 'log is not editable'))
+
+    elif request.method == 'DELETE':
+        data = json.loads(request.body)
+        err, ok = assert_keys(data, {
+            'conversation_id': int,
+            'log_number': int,
+            'password': str,
+        })
+        if not ok:
+            return HttpResponseBadRequest(err)
+        if not check_pass(data['password']):
+            return HttpResponseForbidden('incorrect password')
+
+        item: LogItem = LogItem.objects.filter(conversation=data['conversation_id']).get(log_number=data['log_number'])
+        if item.editable:
+            item.delete()
+            return JsonResponse({"msg": "success"})
+        else:
+            return JsonResponse(make_error('error.log.not_editable', 'log is not editable'))
+    else:
+        return HttpResponseBadRequest()
+
+
+
+@ratelimit(key='ip', rate='120/h')
+@csrf_exempt  # REST-like API anyway, who cares lol
+def reload(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_post())
+
     data = json.loads(request.body)
     err, ok = assert_keys(data, {
         'conversation_id': int,
-        'log_number': int,
-        #'name': str,
-        'text': str,
         'password': str,
     })
     if not ok:
@@ -225,14 +274,22 @@ def log_edit(request: HttpRequest) -> HttpResponse:
 
     item: LogItem = LogItem.objects.filter(conversation=data['conversation_id']).get(log_number=data['log_number'])
     if item.editable:
-        #item.name = data['name']
         item.text = data['text']
-        item.save()
-        return JsonResponse(serialize(item))
+        item.delete()
     else:
-        return HttpResponseBadRequest()
+        return JsonResponse(make_error('error.log.not_editable', 'log is not editable'))
 
+    conv = Conversation.objects.get(data['conversation_id'])
 
+    log_text = conv.prepare()
+    response, safety = gpt(log_text=log_text)
+    print(f'response: {response}')
+    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type="AI",
+                                        log_number=conv.current_log_number() + 1, conversation=conv, safety=safety)
+    logitem_ai.save()
+    conv.save()
+
+    return JsonResponse({'response': serialize(logitem_ai)})
 
 
 @csrf_exempt  # REST-like API anyway, who cares lol

@@ -1,2 +1,2 @@
-release: python manage.py migrate && python manage.py loaddata demo/fixtures/*.json
+release: python manage.py migrate
 web: gunicorn convbackend.wsgi --log-file -

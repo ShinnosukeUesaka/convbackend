@@ -268,6 +268,7 @@ def reload(request: HttpRequest) -> HttpResponse:
         'password': str,
         'log_number': int,
     })
+    
     if not ok:
         return HttpResponseBadRequest(err)
     if not check_pass(data['password']):

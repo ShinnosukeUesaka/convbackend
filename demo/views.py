@@ -266,20 +266,24 @@ def reload(request: HttpRequest) -> HttpResponse:
     err, ok = assert_keys(data, {
         'conversation_id': int,
         'password': str,
+        'log_number': int,
     })
     if not ok:
         return HttpResponseBadRequest(err)
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
 
+    conv = Conversation.objects.get(data['conversation_id'])
+
     item: LogItem = LogItem.objects.filter(conversation=data['conversation_id']).get(log_number=data['log_number'])
+
     if item.editable:
         item.text = data['text']
         item.delete()
     else:
         return JsonResponse(make_error('error.log.not_editable', 'log is not editable'))
 
-    conv = Conversation.objects.get(data['conversation_id'])
+
 
     log_text = conv.prepare()
     response, safety = gpt(log_text=log_text)

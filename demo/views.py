@@ -278,7 +278,6 @@ def reload(request: HttpRequest) -> HttpResponse:
     item: LogItem = LogItem.objects.filter(conversation=data['conversation_id']).get(log_number=data['log_number'])
 
     if item.editable:
-        item.text = data['text']
         item.delete()
     else:
         return JsonResponse(make_error('error.log.not_editable', 'log is not editable'))

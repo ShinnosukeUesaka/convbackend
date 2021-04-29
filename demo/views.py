@@ -206,6 +206,23 @@ def scenario(request: HttpRequest) -> HttpResponse:
         else:
             return JsonResponse({'scenario': s.to_dict(), 'db_queries': len(connection.queries)})
 
+@csrf_exempt  # REST-like API anyway, who cares lol
+def scenario(request: HttpRequest) -> HttpResponse:
+    if not request.method == 'GET':
+        return HttpResponseBadRequest(make_must_get())
+
+    data = json.loads(request.body)
+    err, ok = assert_keys(data, {
+        'password': str,
+    })
+    if not ok:
+        return HttpResponseBadRequest(err)
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
+
+
+    return JsonResponse(serialize(Scenario.objects.all()), safe=False)
+
 
 @ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
@@ -259,7 +276,6 @@ def log_edit(request: HttpRequest) -> HttpResponse:
 @ratelimit(key='ip', rate='120/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def reload(request: HttpRequest) -> HttpResponse:
-
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_post())
 

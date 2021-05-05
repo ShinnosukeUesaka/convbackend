@@ -178,6 +178,7 @@ def log_view(request: HttpRequest) -> HttpResponse:
 from django.db import connection
 
 
+# doesn't work
 @ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def scenario(request: HttpRequest) -> HttpResponse:
@@ -207,9 +208,9 @@ def scenario(request: HttpRequest) -> HttpResponse:
             return JsonResponse({'scenario': s.to_dict(), 'db_queries': len(connection.queries)})
 
 @csrf_exempt  # REST-like API anyway, who cares lol
-def scenario(request: HttpRequest) -> HttpResponse:
-    if not request.method == 'GET':
-        return HttpResponseBadRequest(make_must_get())
+def scenarios(request: HttpRequest) -> HttpResponse:
+    # if not request.method == 'GET':
+    #     return HttpResponseBadRequest(make_must_get())
 
     data = json.loads(request.body)
     err, ok = assert_keys(data, {

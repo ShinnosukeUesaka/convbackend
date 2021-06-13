@@ -41,11 +41,11 @@ def make_header() -> dict:
 def completion(
         prompt_: str,
         engine: str = 'davinci',
-        temperature: str = 0.4,
+        temperature: str = 0.9,
         max_tokens: str = 172,
         top_p: str = 1,
         frequency_penalty: str = 0,
-        presence_penalty: str = 0,
+        presence_penalty: str = 0.6,
         stop: List[str] = None
 ) -> str:
     # hardcode options

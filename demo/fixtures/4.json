@@ -1,0 +1,56 @@
+[
+  {
+    "model": "demo.scenario",
+    "pk": 4,
+    "fields": {
+      "title": "旅行代理店",
+      "description": "Sample Scenario 4",
+      "duration": 5,
+      "level": 1,
+      "information": "今あなたは旅行代理店にいます。AIであるConsultant(相談相手)と会話をして、今年の夏の旅程を立てます。予算は$3000(約33万)です。",
+      "mission": "Make your travel schedule for this summer. Your budget is $3000.",
+      "caution": "シナリオはミッション達成(自己判断)/会話20往復以上で終了します。ミッションを達成したと判断した場合、終了ボタンを押してください。ミッションはあくまで目安です。（AIの特性上、達成できない場合もあります)英語の練習のために、なるべく長く話してみてください。",
+      "ai_name": "Consultant",
+      "human_name": "Man",
+      "info": "",
+
+      "options": "{}",
+
+      "response_length": 150,
+      "temperature": "0.9",
+      "top_p": "1",
+      "frequency_penalty": "0",
+      "presence_penalty": "0.6"
+    }
+  },
+
+  {
+    "model": "demo.logitem",
+    "fields": {
+      "scenario": 4,
+      "type": "Initial prompt",
+      "name": "",
+      "text": "The following is a conversation at a travel agency. The man is talking with the consultant to decide the travel plans. The consultant will ask the man what type of place he would like to go, which region he would like to go, and how much money he can spend. The consultant is very helpful, kind, and polite.",
+      "visible": false,
+      "editable": false,
+      "send": true,
+      "include_name": false,
+      "log_number": 1
+    }
+  },
+
+  {
+    "model": "demo.logitem",
+    "fields": {
+      "scenario": 4,
+      "type": "AI",
+      "name": "Consultant",
+      "text": "Hello! How may I help you?",
+      "visible": true,
+      "editable": false,
+      "send": true,
+      "include_name": true,
+      "log_number": 2
+    }
+  }
+]

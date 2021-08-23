@@ -317,7 +317,7 @@ def reload(request: HttpRequest) -> HttpResponse:
 
     return JsonResponse({'response': serialize(logitem_ai)})
 
-
+# Actions are not used!
 @csrf_exempt  # REST-like API anyway, who cares lol
 def trigger_action(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':

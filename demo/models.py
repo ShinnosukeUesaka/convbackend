@@ -14,7 +14,6 @@ class Scenario(models.Model):
     objects = ScenarioManager()
 
     title = models.CharField(max_length=50, default='Title')
-    description = models.CharField(max_length=100, default='')
     # scenario description
     duration = models.IntegerField()
     # duration of the conversation in min
@@ -26,8 +25,13 @@ class Scenario(models.Model):
     """
 
     information = models.CharField(max_length=1000, default='')
-    mission = models.CharField(max_length=1000, default='', blank=True, null=True)
-    caution = models.CharField(max_length=1000, default='')
+    category = models.CharField(max_length=100, default='Roll Play')
+    """
+        Chat = 雑談
+        Discussion = ディスカッション
+        Role Play = ロールプレイ
+    """
+     
     controller_type = models.CharField(max_length=100, default='simple')
     controller_variables = models.CharField(max_length=1000)
     # json that contain variables used in the controllers(not implemented)

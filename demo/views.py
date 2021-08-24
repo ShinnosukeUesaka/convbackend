@@ -75,6 +75,7 @@ def chat(request: HttpRequest) -> HttpResponse:
         'user_input': str,
         'password': str,
     })
+    
     if not ok:
         return HttpResponseBadRequest(err)
     if not check_pass(data['password']):
@@ -102,7 +103,7 @@ def chat(request: HttpRequest) -> HttpResponse:
     conv.save()
 
     log_text = conv.prepare()
-    response, safety = gpt(log_text=log_text)
+    response, safety = create_response(log_text=log_text)
 
     print(f'response: {response}')
     logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type="AI",
@@ -110,7 +111,11 @@ def chat(request: HttpRequest) -> HttpResponse:
     logitem_ai.save()
     conv.save()
 
-    return JsonResponse({'response': serialize(logitem_ai)})
+    # correct user english
+    good_english = correct_english(data['user_input'])
+    return JsonResponse({'response': serialize(logitem_ai),
+        'english_correction': good_english
+    })
 
 
 @ratelimit(key='ip', rate='60/h')
@@ -340,7 +345,7 @@ def trigger_action(request: HttpRequest) -> HttpResponse:
 
 
 # 以降 tools
-def gpt(log_text, retry: int = 3, allow_max: int = 0) -> str:
+def create_response(log_text, retry: int = 3, allow_max: int = 0) -> str:
     print(f"gpt3 request: {log_text}")
     re = completion(prompt_=log_text)
     safety = int(gpt3.content_filter(re))
@@ -351,6 +356,28 @@ def gpt(log_text, retry: int = 3, allow_max: int = 0) -> str:
     if not ok:
         return gpt(log_text, retry - 1)
     return re, safety
+
+def correct_english(broken_english) -> str:
+    # move the examples to somewhere easily editable.　#https://www.eibunkousei.net/%E6%97%A5%E6%9C%AC%E4%BA%BA%E3%81%AE%E8%8B%B1%E8%AA%9E%E3%81%AB%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E9%96%93%E9%81%95%E3%81%84/
+    examples =  """BrokenEnglish: I like your idea because it is great.
+GoodEnglish: I strongly agree with you, because I see a lot of potential in it.
+
+BrokenEnglish: but
+GoodEnglish: However
+
+BrokenEnglish: I want to make reservation with doctor after one hour.
+GoodEnglish: I would like to make an appointment with the doctor in an hour.
+
+BrokenEnglish: I want to ticket on 5 clock.
+GoodEnglish: I would like to buy a ticket for 5 o'clock.
+
+BrokenEnglish: let's eat morning meal tomorrow to fun.
+GoodEnglish: Let's have breakfast together tomorrow.
+
+BrokenEnglish:"""
+    prompt = examples + broken_english + '\nGoodEnglish:'
+    return completion(prompt_=prompt)
+
 
 
 def gpt_check_safety(text: str, allow_max: int = 0) -> bool:

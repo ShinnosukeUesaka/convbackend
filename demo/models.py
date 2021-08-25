@@ -26,15 +26,19 @@ class Scenario(models.Model):
 
     information = models.CharField(max_length=1000, default='')
     category = models.CharField(max_length=100, default='Roll Play')
-    
     """
-        Exercise = エクササイズ
-        Chat = 雑談
-        Discussion = ディスカッション
-        Role Play = ロールプレイ
+        Exercise: エクササイズ
+        Chat: 雑談
+        Discussion: ディスカッション
+        Role Play: ロールプレイ
     """
 
     controller_type = models.CharField(max_length=100, default='simple')
+    """
+    simple: default controlleer
+    q_exercise: question exercise controller
+    """
+
     controller_variables = models.CharField(max_length=1000)
     # json that contain variables used in the controllers(not implemented)
 
@@ -46,7 +50,7 @@ class Scenario(models.Model):
     # info about scenario:
     # place: cafe, mission: buy coffee
 
-    options = models.CharField(max_length=200, default='{}')
+    options = models.CharField(max_length=200, default='{}') # Not used
     # JSON (not dict converted to str) of options:
     # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
 
@@ -118,6 +122,7 @@ class Conversation(models.Model):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
     scenario_options = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
+    temp_for_conv_controller = models.TextField(blank=True, null=True)
 
     def prepare(self) -> LogText:
         logtext = ''

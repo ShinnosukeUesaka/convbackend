@@ -75,7 +75,7 @@ def chat(request: HttpRequest) -> HttpResponse:
         'user_input': str,
         'password': str,
     })
-    
+
     if not ok:
         return HttpResponseBadRequest(err)
     if not check_pass(data['password']):
@@ -95,25 +95,33 @@ def chat(request: HttpRequest) -> HttpResponse:
 
     scenario = conv.scenario
 
-    current_log_number = conv.current_log_number()
-    print(f'user: {data}')
-    logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type="User",
-                                           log_number=current_log_number + 1, conversation=conv)
-    logitem_human.save()
-    conv.save()
+    if scenario.controller_type == "simple":
+        current_log_number = conv.current_log_number()
+        print(f'user: {data}')
+        logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type="User",
+                                               log_number=current_log_number + 1, conversation=conv)
+        logitem_human.save()
+        conv.save()
 
-    log_text = conv.prepare()
-    response, safety = create_response(log_text=log_text)
+        log_text = conv.prepare()
+        response, safety = create_response(log_text=log_text)
 
-    print(f'response: {response}')
-    logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type="AI",
-                                        log_number=current_log_number + 2, conversation=conv, safety=safety)
-    logitem_ai.save()
-    conv.save()
+        print(f'response: {response}')
+        logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type="AI",
+                                            log_number=current_log_number + 2, conversation=conv, safety=safety)
+        response = serialize(logitem_ai)
+        conv.save()
+    elif scenario.controller_type == "q_excercise":
+
+        # implement
+        conv.save()
+    else:
+        return JsonResponse(make_error('error.conversation.controller_type_unknown', 'Internal server error'))
+
 
     # correct user english
     good_english = correct_english(data['user_input'])
-    return JsonResponse({'response': serialize(logitem_ai),
+    return JsonResponse({'response': response,
         'english_correction': good_english
     })
 

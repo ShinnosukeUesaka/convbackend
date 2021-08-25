@@ -38,7 +38,7 @@ INSTALLED_APPS = [
 
     'corsheaders',
     'restless',
-    'fixture_magic',
+    #'fixture_magic',
 
     'django.contrib.admin',
     'django.contrib.auth',

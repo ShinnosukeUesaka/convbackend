@@ -24,6 +24,8 @@ from .gpt3 import completion, content_filter_profanity, ContentSafetyPresets
 from .models import Conversation, Scenario, LogItem
 from .types import LogText
 
+from . import convcontrollers
+
 
 def make_error(id_: str, msg: str, **kwargs) -> Dict:
     return {
@@ -96,21 +98,8 @@ def chat(request: HttpRequest) -> HttpResponse:
     scenario = conv.scenario
 
     if scenario.controller_type == "simple":
-        current_log_number = conv.current_log_number()
-        print(f'user: {data}')
-        logitem_human = LogItem.objects.create(text=data['user_input'], name=scenario.human_name, type="User",
-                                               log_number=current_log_number + 1, conversation=conv)
-        logitem_human.save()
-        conv.save()
-
-        log_text = conv.prepare()
-        response, safety = create_response(log_text=log_text)
-
-        print(f'response: {response}')
-        logitem_ai = LogItem.objects.create(text=response, name=scenario.ai_name, type="AI",
-                                            log_number=current_log_number + 2, conversation=conv, safety=safety)
-        response = serialize(logitem_ai)
-        conv.save()
+        controller = convcontrollers.ConvController(conv)
+        response = controller.chat(data['user_input'])
     elif scenario.controller_type == "q_excercise":
 
         # implement

@@ -25,7 +25,7 @@ class ConvController:
         try:
             self.temp_data = json.loads(conversation.temp_for_conv_controller)
         except:
-            self.temp_data　= {}
+            self.temp_data = {}
 
 
    def chat(self, message):

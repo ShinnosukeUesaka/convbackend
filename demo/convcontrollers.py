@@ -82,7 +82,7 @@ class ConvController:
 class QConvController(ConvController):
 
 
-    user_name = "answer"
+    user_name = "Answer"
     ai_name_followup = "Comment and Follow-up question"
     ai_name_second_followup = "Comment and Follow-up question"
     ai_name_last_comment = "Comment"

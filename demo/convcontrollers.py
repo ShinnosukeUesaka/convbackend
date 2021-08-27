@@ -21,7 +21,6 @@ class ConvController:
    def __init__(self, conversation: Conversation):
         self.conversation = conversation
         self.scenario = conversation.scenario
-        self.current_log_number = conversation.current_log_number()
         try:
             self.temp_data = json.loads(conversation.temp_for_conv_controller)
         except:
@@ -30,7 +29,7 @@ class ConvController:
 
    def chat(self, message):
         logitem_human = LogItem.objects.create(text=message, name=self.scenario.human_name, type="User",
-                                               log_number=self.current_log_number + 1, conversation=self.conversation)
+                                               log_number=self.conversation.current_log_number() + 1, conversation=self.conversation)
         logitem_human.save()
 
         log_text = self.conversation.prepare()
@@ -38,12 +37,12 @@ class ConvController:
 
         print(f'response: {response}')
         logitem_ai = LogItem.objects.create(text=response, name=self.scenario.ai_name, type="AI",
-                                            log_number=self.current_log_number + 2, conversation=self.conversation, safety=safety)
+                                            log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
 
 
         logitem_ai.save()
 
-        return serialize(logitem_ai)
+        return serialize([logitem_ai])
 
    def create_response(self, log_text, retry: int = 3, allow_max: int = 0) -> str:
         #print(f"GPT3 request: \n {log_text}")
@@ -81,7 +80,7 @@ class ConvController:
         #json.dumps(self.temp_data)
 class QConvController(ConvController):
 
-
+    ai_name_question = "Question"
     user_name = "Answer"
     ai_name_followup = "Comment and Follow-up question"
     ai_name_second_followup = "Comment and Follow-up question"
@@ -142,10 +141,10 @@ Comment: It is sometimes important to take a break!
 
     questions_dic = {
         'what-if': ['If you could have lunch with anyone in the world, who would you choose?', 'If money was no problem, where would you like to travel on holiday?', 'If you could address the whole world, what would you say?', 'Would you rather be a big fish in a small pond or a small fish in a big pond?', 'What would you do if a genie gave you three wishes?', 'What would you do differently if there were 30 hours in a day?', 'Would you like to live in America?', 'Would you like to live in Japan?', 'Would you like to travel in space?', 'If an alien came to Earth, where would you show it around?'],
-        'learning-english': ['Do you enjoy speaking English?', 'What is the best way to improve your speaking?', 'What is the best way to improve your listening?', 'What is the best way to improve your vocabulary?', 'What is the best way to improve your writing?', 'What is the most difficult part of learning English?', 'How is English different from your language?', 'How can you be a good conversationalist?'],
+        'learning-english': ['Do you enjoy speaking English?', 'What is the best way to improve your speaking?', 'What is the best way to improve your listening?', 'What is the best way to improve your vocabulary?', 'What is the most difficult part of learning English?', 'How is English different from your language?', 'Why do you want to learn English?'],
         'motivational': ['Which person in your life has motivated you the most?', 'Who do you admire the most?', 'What is your definition of happiness?', 'Name three things that make you happy.', 'What are your strengths?', 'Think up three ways to spice up your life and share them with your partner.', 'What is your favorite saying?'],
-        'likes-dislikes': ['What phobias do you have?', 'What is your favorite song?', 'What is the best modern invention?', 'Which is more important: love, money or health?', 'Describe your ideal partner.', 'Are you a pet lover?', 'Would you like to be a celebrity?', 'Who is your favorite celebrity?', 'What was your favorite subject at school?', 'What is your favorite time of the day?', 'Are you a romantic person?', 'What gets you really angry?'],
-        'other': ['What are your plans for the weekends?', 'What is your country famous for?', 'What are your plans for the weekends?']
+        'likes-dislikes': ['What phobias do you have?', 'What is your favorite song?', 'What is the best modern invention?', 'Which is more important: love, money or health?', 'Describe your ideal partner.', 'Are you a pet lover?', 'Would you like to be a celebrity?', 'Who is your favorite celebrity?', 'What was your favorite subject at school?', 'What is your favorite time of the day?', 'What gets you really angry?'],
+        'other': ['What are your plans for the weekends?', 'What is your country famous for?', 'What are your plans for the weekends?', 'What did you do yesterday?', 'What are your plans for tomorrow?', 'What did you eat this morning?', 'What is your hobby?', 'What do you hate the most?', 'What is your dream?', 'How is the weather today?']
     }
     #http://www.roadtogrammar.com/dl/warmers.pdf
     questions = combine_lists(questions_dic)
@@ -160,13 +159,14 @@ Comment: It is sometimes important to take a break!
     def chat(self, message):
 
 
-        current_log_number = self.conversation.current_log_number()
         logitem_human = LogItem.objects.create(text=message, name=QConvController.user_name, type="User",
-                                               log_number=self.current_log_number + 1, conversation=self.conversation)
+                                               log_number=self.conversation.current_log_number() + 1, conversation=self.conversation)
         logitem_human.save()
 
 
         status = self.temp_data['status']
+
+        log_items = []
 
         print(status)
         if status == 1: #final comment and Question
@@ -175,10 +175,14 @@ Comment: It is sometimes important to take a break!
 
             # generate next question.
             question = random.choice(QConvController.questions)
-            response = response + "\n" + question
 
-            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_last_comment, type="AI",
-                                                log_number=current_log_number + 2, conversation=self.conversation, safety=safety)
+            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_question, type="AI",
+                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
+            logitem_ai.save()
+            logitem_ai2 = LogItem.objects.create(text=question, name=QConvController.ai_name_question, type="AI",
+                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
+            logitem_ai2.save()
+            log_items = [logitem_ai, logitem_ai2]
 
             self.temp_data['question'] = question
             self.temp_data['status'] = 2
@@ -187,7 +191,9 @@ Comment: It is sometimes important to take a break!
             log_text = QConvController.first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nComment and Follow-up question:"
             response, safety =  self.create_response(log_text=log_text)
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_followup, type="AI",
-                                                log_number=current_log_number + 2, conversation=self.conversation, safety=safety)
+                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
+            logitem_ai.save()
+            log_items = [logitem_ai]
             self.temp_data['first_answer'] = message
             self.temp_data['followup'] = response
             self.temp_data['status'] = 3
@@ -196,7 +202,9 @@ Comment: It is sometimes important to take a break!
             log_text = QConvController.second_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + message + "\nComment and Follow-up question:"
             response, safety =  self.create_response(log_text=log_text)
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_second_followup, type="AI",
-                                                log_number=current_log_number + 2, conversation=self.conversation, safety=safety)
+                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
+            logitem_ai.save()
+            log_items = [logitem_ai]
             self.temp_data['second_answer'] = message
             self.temp_data['second_followup'] = response
             self.temp_data['status'] = 1
@@ -208,7 +216,7 @@ Comment: It is sometimes important to take a break!
         self.conversation.temp_for_conv_controller = json.dumps(self.temp_data)
         self.conversation.save()
 
-        return serialize(logitem_ai)
+        return serialize(log_items)
 
     # create first question
     def initialise(self):

@@ -308,27 +308,6 @@ def reload(request: HttpRequest) -> HttpResponse:
 
     return JsonResponse({'response': serialize(logitem_ai)})
 
-# Actions are not used!
-@csrf_exempt  # REST-like API anyway, who cares lol
-def trigger_action(request: HttpRequest) -> HttpResponse:
-    if not request.method == 'POST':
-        return HttpResponseBadRequest(make_must_post())
-    data = json.loads(request.body)
-    err, ok = assert_keys(data, {
-        'conversation_id': int,
-        'log_number': int,
-        'log_item_params': str,
-        'password': str,
-    })
-    if not ok:
-        return HttpResponseBadRequest(err)
-    if not check_pass(data['password']):
-        return HttpResponseForbidden('incorrect password')
-
-    conversation = Conversation.objects.get(data['conversation_id'])
-    action = conversation.scenario.action_set.get(action_number=data['action_number'])
-    return action.user_execute(conversation, data['log_item_params'])
-
 
 # 以降 tools
 def create_response(log_text, retry: int = 3, allow_max: int = 0) -> str:
@@ -374,4 +353,4 @@ def instantiate_controller(type: str, conv: Conversation):
         return convcontrollers.ConvController(conv)
     elif conv.scenario.controller_type == "q_excercise":
         return convcontrollers.QConvController(conv)
-    return 
+    return

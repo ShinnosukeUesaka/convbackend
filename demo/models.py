@@ -14,6 +14,7 @@ class Scenario(models.Model):
     objects = ScenarioManager()
 
     title = models.CharField(max_length=50, default='Title')
+    title_en = models.CharField(max_length=50, default='English_title')
     # scenario description
     duration = models.IntegerField()
     # duration of the conversation in min
@@ -25,6 +26,8 @@ class Scenario(models.Model):
     """
 
     information = models.CharField(max_length=1000, default='')
+    information_en = models.CharField(max_length=1000, default='')
+    
     category = models.CharField(max_length=100, default='Roll Play')
     """
         Exercise: エクササイズ

@@ -122,7 +122,7 @@ class Conversation(models.Model):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
     scenario_options = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
-    temp_for_conv_controller = models.TextField(blank=True, null=True)
+    temp_for_conv_controller = models.TextField(blank=True, null=True, default="{}")
 
     def prepare(self) -> LogText:
         logtext = ''

@@ -97,16 +97,10 @@ def chat(request: HttpRequest) -> HttpResponse:
 
     scenario = conv.scenario
 
-    if scenario.controller_type == "simple":
-        controller = convcontrollers.ConvController(conv)
-        response = controller.chat(data['user_input'])
-    elif scenario.controller_type == "q_excercise":
+    controller = instantiate_controller(scenario.controller_type, conv)
 
-        # implement
-        conv.save()
-    else:
-        return JsonResponse(make_error('error.conversation.controller_type_unknown', 'Internal server error'))
 
+    response = controller.chat(data['user_input'])
 
     # correct user english
     good_english = correct_english(data['user_input'])
@@ -137,24 +131,19 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
     except ObjectDoesNotExist:
         return JsonResponse(make_error('error.scenario.nonexistent', 'scenario with given scenario ID is nonexistent.'))
     else:
+
         conversation = Conversation.objects.create(
             scenario=scenario,
             active=True
         )
         conversation.save()
 
-        initial_prompts = scenario.logitem_set.all()
+        controller = instantiate_controller(scenario.controller_type, conversation)
 
-        for initial_prompt in initial_prompts:
+        initial_messages = controller.initialise()
 
-            initial_prompt.log_number = conversation.current_log_number() + 1
-            print(conversation.current_log_number())
-            initial_prompt.pk = None
-            initial_prompt.scenario = None
-            initial_prompt.conversation = conversation
-            initial_prompt.save()
 
-        return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario)})
+        return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario), 'initial_messages': initial_messages})
 
 
 @ratelimit(key='ip', rate='60/h')
@@ -376,7 +365,13 @@ BrokenEnglish:"""
     return completion(prompt_=prompt)
 
 
-
 def gpt_check_safety(text: str, allow_max: int = 0) -> bool:
     safety = int(gpt3.content_filter(text))
     return safety <= allow_max
+
+def instantiate_controller(type: str, conv: Conversation):
+    if conv.scenario.controller_type == "simple":
+        return convcontrollers.ConvController(conv)
+    elif conv.scenario.controller_type == "q_excercise":
+        return convcontrollers.QConvController(conv)
+    return 

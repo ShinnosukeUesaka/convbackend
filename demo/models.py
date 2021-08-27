@@ -30,7 +30,7 @@ class Scenario(models.Model):
         Exercise: エクササイズ
         Chat: 雑談
         Discussion: ディスカッション
-        Role Play: ロールプレイ
+        Roll Play: ロールプレイ
     """
 
     controller_type = models.CharField(max_length=100, default='simple')

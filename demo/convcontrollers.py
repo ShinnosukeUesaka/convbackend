@@ -21,8 +21,12 @@ class ConvController:
    def __init__(self, conversation: Conversation):
         self.conversation = conversation
         self.scenario = conversation.scenario
-        self.temp_data = json.loads(conversation.temp_for_conv_controller)
         self.current_log_number = conversation.current_log_number()
+        try:
+            self.temp_data = json.loads(conversation.temp_for_conv_controller)
+        except:
+            self.temp_data　= {}
+
 
    def chat(self, message):
         logitem_human = LogItem.objects.create(text=message, name=self.scenario.human_name, type="User",
@@ -42,7 +46,7 @@ class ConvController:
         return serialize(logitem_ai)
 
    def create_response(self, log_text, retry: int = 3, allow_max: int = 0) -> str:
-        print(f"gpt3 request: {log_text}")
+        print(f"GPT3 request: \n {log_text}")
         re = completion(prompt_=log_text)
         safety = int(gpt3.content_filter(re))
         ok = safety <= allow_max
@@ -100,7 +104,7 @@ Question: What is your hobby.
 Answer: My hobby is to do programing or coding.
 Comment and Follow-up question: Solving problems is fun! Do you develop your own games?
 --
-Question:"""
+"""
 
     second_followup_prompt = """I am a polite friendly intelligent AI English teacher.
 
@@ -116,7 +120,7 @@ Comment and Follow-up question: Sounds fun! What did you do there?
 Answer: I was relaxing in a hotel.
 Comment and Follow-up question: It is sometimes important to take a break. How was food there?
 --
-Question: """
+"""
 
     final_comment_prompt = """I am a polite friendly intelligent AI English teacher.
 
@@ -131,14 +135,15 @@ Answer: I went to Los last month.
 Comment and Follow-up question: Sounds fun! What did you do there?
 Answer: I was relaxing in a hotel.
 Comment: It is sometimes important to take a break!
---"""
+--
+"""
 
     questions_dic = {
         'what-if': ['If you could have lunch with anyone in the world, who would you choose?', 'If money was no problem, where would you like to travel on holiday?', 'If you could address the whole world, what would you say?', 'Would you rather be a big fish in a small pond or a small fish in a big pond?', 'What would you do if a genie gave you three wishes?', 'What would you do differently if there were 30 hours in a day?', 'Would you like to live in America?', 'Would you like to live in Japan?', 'Would you like to travel in space?', 'If an alien came to Earth, where would you show it around?'],
         'learning-english': ['Do you enjoy speaking English?', 'What is the best way to improve your speaking?', 'What is the best way to improve your listening?', 'What is the best way to improve your vocabulary?', 'What is the best way to improve your writing?', 'What is the most difficult part of learning English?', 'How is English different from your language?', 'How can you be a good conversationalist?'],
         'motivational': ['Which person in your life has motivated you the most?', 'Who do you admire the most?', 'What is your definition of happiness?', 'Name three things that make you happy.', 'What are your strengths?', 'Think up three ways to spice up your life and share them with your partner.', 'What is your favorite saying?'],
         'likes-dislikes': ['What phobias do you have?', 'What is your favorite song?', 'What is the best modern invention?', 'Which is more important: love, money or health?', 'Describe your ideal partner.', 'Are you a pet lover?', 'Would you like to be a celebrity?', 'Who is your favorite celebrity?', 'What was your favorite subject at school?', 'What is your favorite time of the day?', 'Are you a romantic person?', 'What gets you really angry?'],
-        'other': ['What are your plans for the weekends?', 'What is your country famous for?']
+        'other': ['What are your plans for the weekends?', 'What is your country famous for?', 'What are your plans for the weekends?']
     }
     #http://www.roadtogrammar.com/dl/warmers.pdf
     questions = combine_lists(questions_dic)
@@ -147,37 +152,51 @@ Comment: It is sometimes important to take a break!
     def chat(self, message):
 
 
+        current_log_number = self.conversation.current_log_number()
+        logitem_human = LogItem.objects.create(text=message, name=user_name, type="User",
+                                               log_number=self.current_log_number + 1, conversation=self.conversation)
+        logitem_human.save()
+
 
         status = self.temp_data['status']
 
         if status == 1: #final comment and Question
-            #implement
-            self.temp_data['status'] = 2
-        elif self.temp_data == 2: #followup question
-
-            current_log_number = self.conversation.current_log_number()
-            logitem_human = LogItem.objects.create(text=message, name=user_name, type="User",
-                                                   log_number=self.current_log_number + 1, conversation=self.conversation)
-            logitem_human.save()
-
-
-            log_text = first_question_prompt + message
-            self.conversation.prepare()
+            log_text = final_comment_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + self.temp_data['second_answer'] + "\nComment and Follow-up question:" + self.temp_data['second_followup'] + "\nAnswer: " + message + "\nComment: "
             response, safety = self.create_response(log_text=log_text)
 
-            print(f'response: {response}')
-            logitem_ai = LogItem.objects.create(text=response, name=self.scenario.ai_name, type="AI",
-                                                log_number=current_log_number + 2, conversation=self.conversation, safety=safety)
+            # generate next question.
+            question = random.choice(questions)
+            response = response + "\n" + question
 
+            self.temp_data['question'] = question
+            self.temp_data['status'] = 2
 
-            logitem_ai.save()
+        elif self.temp_data == 2: #followup question
+            log_text = first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nComment and Follow-up question:"
+            response, safety = self.create_response(log_text=log_text)
 
-            return serialize(logitem_ai)
-            self.temp_data['status'] == 3
+            self.temp_data['first_answer'] = message
+            self.temp_data['followup'] = response
+            self.temp_data['status'] = 3
+
         elif self.temp_data == 3: #followup question 2
-            self.temp_data['status'] == 1
+            log_text = second_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + message + "\nComment and Follow-up question:"
+            response, safety = self.create_response(log_text=log_text)
+
+            self.temp_data['second_answer'] = message
+            self.temp_data['second_followup'] = response
+            self.temp_data['status'] = 1
+
+        logitem_ai = LogItem.objects.create(text=response, name=self.scenario.ai_name, type="AI",
+                                            log_number=current_log_number + 2, conversation=self.conversation, safety=safety)
 
 
+        logitem_ai.save()
+
+        self.conversation.temp_for_conv_controller = json.dumps(self.temp_data)
+        self.conversation.save()
+
+        return serialize(logitem_ai)
 
 
 
@@ -189,6 +208,9 @@ Comment: It is sometimes important to take a break!
         def initialise(self):
 
             first_question = random.choice(questions)
+
+            self.temp_data['question'] = first_question
+
             first_log = LogItem.objects.create(
                 log_number = 1,
                 scenario = None,
@@ -204,7 +226,7 @@ Comment: It is sometimes important to take a break!
 
             first_log.save()
 
-            self.conversation.temp_for_conv_controller = json.dumps({'status': 2, 'question': "", 'first_answer': "", 'followup': "", 'second_answer': "", 'second_followup': "", 'last_answer': "", 'final_comment': ""})
+            self.conversation.temp_for_conv_controller = json.dumps({'status': 2, 'question': "", 'first_answer': "", 'followup': "", 'second_answer': "", 'second_followup': ""})
             self.conversation.save()
 
-            return
+            return serialize([first_log])

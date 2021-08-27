@@ -45,8 +45,8 @@ class ConvController:
 
         return serialize(logitem_ai)
 
-   def create_response(self, log_text, retry: int = 1, allow_max: int = 0) -> str:
-        print(f"GPT3 request: \n {log_text}")
+   def create_response(self, log_text, retry: int = 3, allow_max: int = 0) -> str:
+        #print(f"GPT3 request: \n {log_text}")
         re = completion(prompt_=log_text)
         safety = int(gpt3.content_filter(re))
         ok = safety <= allow_max
@@ -87,6 +87,9 @@ class QConvController(ConvController):
     ai_name_second_followup = "Comment and Follow-up question"
     ai_name_last_comment = "Comment"
 
+    temperature = 0.3
+    frequency_penalty = 0.5
+    presence_penalty = 0.5
 
     #https://beta.openai.com/playground/p/PfMXPerz7HVSvNv19xm6tLiD?model=davinci
     first_followup_prompt = """I am a polite friendly intelligent AI English teacher.
@@ -147,6 +150,12 @@ Comment: It is sometimes important to take a break!
     #http://www.roadtogrammar.com/dl/warmers.pdf
     questions = combine_lists(questions_dic)
 
+    def create_response(self, log_text) -> str:
+         #print(f"GPT3 request: \n {log_text}")
+         print("HI!!!")
+         re = completion(prompt_=log_text, temperature = QConvController.temperature, presence_penalty = QConvController.presence_penalty, frequency_penalty = QConvController.frequency_penalty)
+         safety = int(gpt3.content_filter(re))
+         return re, safety
 
     def chat(self, message):
 
@@ -162,7 +171,7 @@ Comment: It is sometimes important to take a break!
         print(status)
         if status == 1: #final comment and Question
             log_text = QConvController.final_comment_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + self.temp_data['second_answer'] + "\nComment and Follow-up question:" + self.temp_data['second_followup'] + "\nAnswer: " + message + "\nComment: "
-            response, safety = self.create_response(log_text=log_text)
+            response, safety =  self.create_response(log_text=log_text)
 
             # generate next question.
             question = random.choice(QConvController.questions)
@@ -176,7 +185,7 @@ Comment: It is sometimes important to take a break!
 
         elif status == 2: #followup question
             log_text = QConvController.first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nComment and Follow-up question:"
-            response, safety = self.create_response(log_text=log_text)
+            response, safety =  self.create_response(log_text=log_text)
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_followup, type="AI",
                                                 log_number=current_log_number + 2, conversation=self.conversation, safety=safety)
             self.temp_data['first_answer'] = message
@@ -185,7 +194,7 @@ Comment: It is sometimes important to take a break!
 
         elif status == 3: #followup question 2
             log_text = QConvController.second_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + message + "\nComment and Follow-up question:"
-            response, safety = self.create_response(log_text=log_text)
+            response, safety =  self.create_response(log_text=log_text)
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_second_followup, type="AI",
                                                 log_number=current_log_number + 2, conversation=self.conversation, safety=safety)
             self.temp_data['second_answer'] = message
@@ -222,11 +231,9 @@ Comment: It is sometimes important to take a break!
 
         first_log.save()
 
-        self.conversation.temp_for_conv_controller = json.dumps({'status': 2, 'question': "", 'first_answer': "", 'followup': "", 'second_answer': "", 'second_followup': ""})
-        self.temp_data['question'] = first_question
+        self.conversation.temp_for_conv_controller = json.dumps({'status': 2, 'question': first_question, 'first_answer': "", 'followup': "", 'second_answer': "", 'second_followup': ""})
         self.conversation.save()
 
-        print("HI!")
         print( serialize(first_log))
 
         return serialize([first_log])

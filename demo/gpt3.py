@@ -41,13 +41,14 @@ def make_header() -> dict:
 def completion(
         prompt_: str,
         engine: str = 'davinci',
-        temperature: float = 0.9,
+        temperature: float = 0.5,
         max_tokens: int = 172,
         top_p: float = 1,
         frequency_penalty: float = 0,
         presence_penalty: float = 0.6,
         stop: List[str] = None
 ) -> str:
+    print(prompt_)
     # hardcode options
     """
     r = requests.post(

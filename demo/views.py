@@ -99,7 +99,6 @@ def chat(request: HttpRequest) -> HttpResponse:
 
     controller = instantiate_controller(scenario.controller_type, conv)
 
-
     response = controller.chat(data['user_input'])
 
     # correct user english
@@ -137,9 +136,8 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
             active=True
         )
         conversation.save()
-
         controller = instantiate_controller(scenario.controller_type, conversation)
-
+        print(type(controller))
         initial_messages = controller.initialise()
 
 
@@ -341,7 +339,12 @@ GoodEnglish: Let's have breakfast together tomorrow.
 
 BrokenEnglish:"""
     prompt = examples + broken_english + '\nGoodEnglish:'
-    return completion(prompt_=prompt)
+    return completion(prompt_=prompt,
+    temperature = 0,
+    max_tokens = 172,
+    top_p = 1,
+    frequency_penalty = 0,
+    presence_penalty = 0)
 
 
 def gpt_check_safety(text: str, allow_max: int = 0) -> bool:
@@ -351,6 +354,6 @@ def gpt_check_safety(text: str, allow_max: int = 0) -> bool:
 def instantiate_controller(type: str, conv: Conversation):
     if conv.scenario.controller_type == "simple":
         return convcontrollers.ConvController(conv)
-    elif conv.scenario.controller_type == "q_excercise":
+    elif conv.scenario.controller_type == "q_exercise":
         return convcontrollers.QConvController(conv)
     return

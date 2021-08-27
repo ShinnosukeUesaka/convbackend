@@ -165,7 +165,7 @@ class LogItem(models.Model):
     #Narration
     #AI
     #User
-    name = models.CharField(max_length=20, blank=True)
+    name = models.CharField(max_length=50, blank=True)
     text = models.CharField(max_length=1000)
     visible = models.BooleanField(default=True)
     editable = models.BooleanField(default=True)

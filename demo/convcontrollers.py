@@ -45,7 +45,7 @@ class ConvController:
 
         return serialize(logitem_ai)
 
-   def create_response(self, log_text, retry: int = 3, allow_max: int = 0) -> str:
+   def create_response(self, log_text, retry: int = 1, allow_max: int = 0) -> str:
         print(f"GPT3 request: \n {log_text}")
         re = completion(prompt_=log_text)
         safety = int(gpt3.content_filter(re))
@@ -54,11 +54,10 @@ class ConvController:
             # return f'The AI response included content deemed as sensitive or unsafe, so it was hidden.\n{re}'
             return re, safety
         if not ok:
-            return gpt(log_text, retry - 1)
+            return create_response(log_text, retry - 1)
         return re, safety
 
    def initialise(self):
-
         initial_prompts = self.scenario.logitem_set.all()
 
         messages = []
@@ -153,42 +152,46 @@ Comment: It is sometimes important to take a break!
 
 
         current_log_number = self.conversation.current_log_number()
-        logitem_human = LogItem.objects.create(text=message, name=user_name, type="User",
+        logitem_human = LogItem.objects.create(text=message, name=QConvController.user_name, type="User",
                                                log_number=self.current_log_number + 1, conversation=self.conversation)
         logitem_human.save()
 
 
         status = self.temp_data['status']
 
+        print(status)
         if status == 1: #final comment and Question
-            log_text = final_comment_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + self.temp_data['second_answer'] + "\nComment and Follow-up question:" + self.temp_data['second_followup'] + "\nAnswer: " + message + "\nComment: "
+            log_text = QConvController.final_comment_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + self.temp_data['second_answer'] + "\nComment and Follow-up question:" + self.temp_data['second_followup'] + "\nAnswer: " + message + "\nComment: "
             response, safety = self.create_response(log_text=log_text)
 
             # generate next question.
-            question = random.choice(questions)
+            question = random.choice(QConvController.questions)
             response = response + "\n" + question
+
+            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_last_comment, type="AI",
+                                                log_number=current_log_number + 2, conversation=self.conversation, safety=safety)
 
             self.temp_data['question'] = question
             self.temp_data['status'] = 2
 
-        elif self.temp_data == 2: #followup question
-            log_text = first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nComment and Follow-up question:"
+        elif status == 2: #followup question
+            log_text = QConvController.first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nComment and Follow-up question:"
             response, safety = self.create_response(log_text=log_text)
-
+            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_followup, type="AI",
+                                                log_number=current_log_number + 2, conversation=self.conversation, safety=safety)
             self.temp_data['first_answer'] = message
             self.temp_data['followup'] = response
             self.temp_data['status'] = 3
 
-        elif self.temp_data == 3: #followup question 2
-            log_text = second_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + message + "\nComment and Follow-up question:"
+        elif status == 3: #followup question 2
+            log_text = QConvController.second_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + message + "\nComment and Follow-up question:"
             response, safety = self.create_response(log_text=log_text)
-
+            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_second_followup, type="AI",
+                                                log_number=current_log_number + 2, conversation=self.conversation, safety=safety)
             self.temp_data['second_answer'] = message
             self.temp_data['second_followup'] = response
             self.temp_data['status'] = 1
 
-        logitem_ai = LogItem.objects.create(text=response, name=self.scenario.ai_name, type="AI",
-                                            log_number=current_log_number + 2, conversation=self.conversation, safety=safety)
 
 
         logitem_ai.save()
@@ -198,35 +201,32 @@ Comment: It is sometimes important to take a break!
 
         return serialize(logitem_ai)
 
+    # create first question
+    def initialise(self):
+        first_question = random.choice(QConvController.questions)
 
 
-        self.conversation.temp_for_conv_controller = json.dumps(self.temp_data)
 
-        return serialize(logitem_ai)
+        first_log = LogItem.objects.create(
+            log_number = 1,
+            scenario = None,
+            conversation = self.conversation,
+            type = "AI",
+            name = "Question",
+            text = first_question,
+            visible = True,
+            editable = True,
+            send = True,
+            include_name = True
+        )
 
-        # create first question
-        def initialise(self):
+        first_log.save()
 
-            first_question = random.choice(questions)
+        self.conversation.temp_for_conv_controller = json.dumps({'status': 2, 'question': "", 'first_answer': "", 'followup': "", 'second_answer': "", 'second_followup': ""})
+        self.temp_data['question'] = first_question
+        self.conversation.save()
 
-            self.temp_data['question'] = first_question
+        print("HI!")
+        print( serialize(first_log))
 
-            first_log = LogItem.objects.create(
-                log_number = 1,
-                scenario = None,
-                conversation = self.conversation,
-                type = "AI",
-                name = "Question",
-                text = first_question,
-                visible = True,
-                editable = True,
-                send = True,
-                include_name = True
-            )
-
-            first_log.save()
-
-            self.conversation.temp_for_conv_controller = json.dumps({'status': 2, 'question': "", 'first_answer': "", 'followup': "", 'second_answer': "", 'second_followup': ""})
-            self.conversation.save()
-
-            return serialize([first_log])
+        return serialize([first_log])

@@ -322,11 +322,8 @@ def create_response(log_text, retry: int = 3, allow_max: int = 0) -> str:
 
 def correct_english(broken_english) -> str:
     # move the examples to somewhere easily editable.　#https://www.eibunkousei.net/%E6%97%A5%E6%9C%AC%E4%BA%BA%E3%81%AE%E8%8B%B1%E8%AA%9E%E3%81%AB%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E9%96%93%E9%81%95%E3%81%84/
-    examples =  """BrokenEnglish: I like your idea because it is great.
-GoodEnglish: I strongly agree with you, because I see a lot of potential in it.
-
-BrokenEnglish: but
-GoodEnglish: However
+    examples =  """BrokenEnglish: Its like that i'm chat with a really person not robot.
+GoodEnglish: It feels like chatting with a real person not a robot.
 
 BrokenEnglish: I want to make reservation with doctor after one hour.
 GoodEnglish: I would like to make an appointment with the doctor in an hour.

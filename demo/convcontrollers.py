@@ -82,8 +82,8 @@ class QConvController(ConvController):
 
     ai_name_question = "Question"
     user_name = "Answer"
-    ai_name_followup = "Comment and Follow-up question"
-    ai_name_second_followup = "Comment and Follow-up question"
+    ai_name_followup = "Question"
+    ai_name_second_followup = "Question"
     ai_name_last_comment = "Comment"
 
     temperature = 0.3
@@ -95,15 +95,15 @@ class QConvController(ConvController):
 
 Question: What sport do you play?
 Answer: I like playing soccer!
-Comment and Follow-up question: I am not good at soccer but I like watching people play! Who is your favorite soccer player?
+Question: I am not good at soccer but I like watching people play! Who is your favorite soccer player?
 --
 Question: What did you last summer?
 Answer: I went to Tokyo last month.
-Comment and Follow-up question: Tokyo is such a beautiful city with rich culture! Did you eat sushi?
+Question: Tokyo is such a beautiful city with rich culture! Did you eat sushi?
 --
 Question: What is your hobby.
 Answer: My hobby is to do programing or coding.
-Comment and Follow-up question: Solving problems is fun! Do you develop your own games?
+Question: Solving problems is fun! Do you develop your own games?
 --
 """
 
@@ -111,15 +111,15 @@ Comment and Follow-up question: Solving problems is fun! Do you develop your own
 
 Question: What sport do you play?
 Answer: I like playing soccer!
-Comment and Follow-up question: Soccer is pretty hard. Why do you like soccer?
+Question: Soccer is pretty hard. Why do you like soccer?
 Answer: I used to watch soccer players on TV. I admired them so much. I wanted to be like them one day.
-Comment and Follow-up question: Yes you can be like them! Who is your favorite player?
+Question: Yes you can be like them! Who is your favorite player?
 --
 Question: What did you do month?
-Answer: I went to Los last month.
-Comment and Follow-up question: Sounds fun! What did you do there?
-Answer: I was relaxing in a hotel.
-Comment and Follow-up question: It is sometimes important to take a break. How was food there?
+Answer: I traveled to three different countries.
+Question: Wow! Sounds exciting! Which countries did you visit?
+Answer: Korea, Japan and the United states!
+Question: I have never been to Korea. What was for favorite part of the trip?
 --
 """
 
@@ -127,24 +127,24 @@ Comment and Follow-up question: It is sometimes important to take a break. How w
 
 Question: What sport do you play?
 Answer: I like playing soccer!
-Comment and Follow-up question: Soccer is pretty hard. Why do you like soccer?
+Question: Soccer is pretty hard. Why do you like soccer?
 Answer: I used to watch soccer players on TV. I admired them so much. I wanted to be like them one day.
 Comment: Yes you can be like them!
 --
 Question: What did you do month?
 Answer: I went to Los last month.
-Comment and Follow-up question: Sounds fun! What did you do there?
+Question: Sounds fun! What did you do there?
 Answer: I was relaxing in a hotel.
 Comment: It is sometimes important to take a break!
 --
 """
 
     questions_dic = {
-        'what-if': ['If you could have lunch with anyone in the world, who would you choose?', 'If money was no problem, where would you like to travel on holiday?', 'If you could address the whole world, what would you say?', 'Would you rather be a big fish in a small pond or a small fish in a big pond?', 'What would you do if a genie gave you three wishes?', 'What would you do differently if there were 30 hours in a day?', 'Would you like to live in America?', 'Would you like to live in Japan?', 'Would you like to travel in space?', 'If an alien came to Earth, where would you show it around?'],
-        'learning-english': ['Do you enjoy speaking English?', 'What is the best way to improve your speaking?', 'What is the best way to improve your listening?', 'What is the best way to improve your vocabulary?', 'What is the most difficult part of learning English?', 'How is English different from your language?', 'Why do you want to learn English?'],
+        'what-if': ['If you could have lunch with anyone in the world, who would you choose?', 'If money was no problem, where would you like to travel on holiday?', 'If you could address the whole world, what would you say?', 'Would you rather be a big fish in a small pond or a small fish in a big pond?', 'What would you do if a genie gave you three wishes?', 'What would you do differently if there were 30 hours in a day?', 'Would you like to travel in space?', 'If an alien came to Earth, where would you show it around?'],
+        'learning-english': ['Do you enjoy speaking English?', 'What is the best way to improve your speaking?', 'What is the most difficult part of learning English?', 'How is English different from your language?', 'Why do you want to learn English?'],
         'motivational': ['Which person in your life has motivated you the most?', 'Who do you admire the most?', 'What is your definition of happiness?', 'Name three things that make you happy.', 'What are your strengths?', 'Think up three ways to spice up your life and share them with your partner.', 'What is your favorite saying?'],
-        'likes-dislikes': ['What phobias do you have?', 'What is your favorite song?', 'What is the best modern invention?', 'Which is more important: love, money or health?', 'Describe your ideal partner.', 'Are you a pet lover?', 'Would you like to be a celebrity?', 'Who is your favorite celebrity?', 'What was your favorite subject at school?', 'What is your favorite time of the day?', 'What gets you really angry?'],
-        'other': ['What are your plans for the weekends?', 'What is your country famous for?', 'What are your plans for the weekends?', 'What did you do yesterday?', 'What are your plans for tomorrow?', 'What did you eat this morning?', 'What is your hobby?', 'What do you hate the most?', 'What is your dream?', 'How is the weather today?']
+        'likes-dislikes': ['What phobias do you have?', 'What is your favorite song?', 'What is the best modern invention?', 'Which is more important: love, money or health?', 'Describe your ideal partner.', 'Are you a pet lover?', 'Would you like to be a celebrity?', 'Who is your favorite celebrity?', 'What was your favorite subject at school?', 'What is your favorite time of the day?', 'What gets you really angry?', 'What is your favorite food?'],
+        'other': ['What are your plans for the weekends?', 'What is your country famous for?', 'What are your plans for the weekends?', 'What did you do yesterday?', 'What are your plans for tomorrow?', 'What did you eat this morning?', 'What is your hobby?', 'What do you hate the most?', 'What is your dream?', 'How is the weather today?', 'Tell me something about you', 'What do you do in your free time?', 'What is the weather like?', 'What have you been up to lately?', 'How much sleep do you usually get?', 'Tell me about your friend', '']
     }
     #http://www.roadtogrammar.com/dl/warmers.pdf
     questions = combine_lists(questions_dic)
@@ -170,7 +170,7 @@ Comment: It is sometimes important to take a break!
 
         print(status)
         if status == 1: #final comment and Question
-            log_text = QConvController.final_comment_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + self.temp_data['second_answer'] + "\nComment and Follow-up question:" + self.temp_data['second_followup'] + "\nAnswer: " + message + "\nComment: "
+            log_text = QConvController.final_comment_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nQuestion: " + self.temp_data['followup'] + "\nAnswer: " + self.temp_data['second_answer'] + "\nQuestion:" + self.temp_data['second_followup'] + "\nAnswer: " + message + "\nComment: "
             response, safety =  self.create_response(log_text=log_text)
 
             # generate next question.
@@ -188,7 +188,7 @@ Comment: It is sometimes important to take a break!
             self.temp_data['status'] = 2
 
         elif status == 2: #followup question
-            log_text = QConvController.first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nComment and Follow-up question:"
+            log_text = QConvController.first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nQuestion:"
             response, safety =  self.create_response(log_text=log_text)
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_followup, type="AI",
                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
@@ -199,7 +199,7 @@ Comment: It is sometimes important to take a break!
             self.temp_data['status'] = 3
 
         elif status == 3: #followup question 2
-            log_text = QConvController.second_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + message + "\nComment and Follow-up question:"
+            log_text = QConvController.second_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nQuestion: " + self.temp_data['followup'] + "\nAnswer: " + message + "\nQuestion:"
             response, safety =  self.create_response(log_text=log_text)
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_second_followup, type="AI",
                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)

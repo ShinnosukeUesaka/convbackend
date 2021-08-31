@@ -336,7 +336,7 @@ GoodEnglish: Let's have breakfast together tomorrow.
 
 BrokenEnglish:"""
     prompt = examples + broken_english + '\nGoodEnglish:'
-    return completion(prompt_=prompt,
+    return completion(engine='curie', prompt_=prompt,
     temperature = 0,
     max_tokens = 172,
     top_p = 1,

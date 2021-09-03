@@ -27,7 +27,7 @@ class Scenario(models.Model):
 
     information = models.CharField(max_length=1000, default='')
     information_en = models.CharField(max_length=1000, default='')
-    
+
     category = models.CharField(max_length=100, default='Roll Play')
     """
         Exercise: エクササイズ
@@ -59,10 +59,10 @@ class Scenario(models.Model):
 
     # GPT-3 Settings
     response_length = models.IntegerField(default=150)  # ai response length
-    temperature = models.DecimalField(max_digits=4, decimal_places=3, default=0.9)
+    temperature = models.DecimalField(max_digits=4, decimal_places=3, default=0.4)
     top_p = models.DecimalField(max_digits=4, decimal_places=3, default=1)
-    frequency_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0)
-    presence_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0.6)
+    frequency_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0.5)
+    presence_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0)
 
     voice = models.CharField(max_length=200, default="en-US_AllisonV2Voice")
 

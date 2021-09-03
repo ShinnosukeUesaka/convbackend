@@ -88,14 +88,14 @@ class QConvController(ConvController):
 
     temperature = 0.3
     frequency_penalty = 0.5
-    presence_penalty = 0.3
+    presence_penalty = 0.5
 
     #https://beta.openai.com/playground/p/PfMXPerz7HVSvNv19xm6tLiD?model=davinci
     first_followup_prompt = """I am a polite friendly intelligent AI English teacher.
 
 Question: What is your hobby?
 Answer: I like playing the piano.
-Comment and Follow-up question: Playing piano seems very difficult. How long have you been practicing playing the piano?
+Comment and Follow-up question: Playing the piano seems very difficult. How long have you been practicing playing the piano?
 --
 Question: What are your plans for the weekends?
 Answer: I will go to the gym.
@@ -113,13 +113,13 @@ Question: What sport do you play?
 Answer: I like playing soccer!
 Comment and Follow-up question: Soccer is pretty hard. Why do you like soccer?
 Answer: I used to watch soccer players on TV. I admired them so much. I wanted to be like them one day.
-Comment and Follow-up question: Yes you can be like them! Who is your favorite player?
+Comment and Follow-up question: Yes you can be like them! Who is your favorite soccer player?
 --
-Question: What did you do month?
-Answer: I traveled to three different countries.
-Comment and Follow-up question: Wow! Sounds exciting! Which countries did you visit?
-Answer: Korea, Japan and the United states!
-Comment and Follow-up question: What was for favorite part of the trip?
+Question: What is your hobby?
+Answer: I like playing the piano.
+Comment and Follow-up question: Playing piano seems very difficult. How long have you been practicing playing the piano?
+Answer: More than an hour everyday!
+Comment and Follow-up question: You are very hard working! Which piano song are you practicing right now?
 --
 """
 
@@ -132,19 +132,20 @@ Answer: I used to watch soccer players on TV. I admired them so much. I wanted t
 Comment: Yes you can be like them!
 --
 Question: What did you do last month?
-Answer: I went to Los last month.
+Answer: I went to Japan last month.
 Comment and Follow-up question: Sounds fun! What did you do there?
-Answer: I was relaxing in a hotel.
-Comment: It is sometimes important to take a break!
+Answer: I saw a lot of temples.
+Comment: Cool! I wish I can go to Japan someday.
 --
 """
 
     questions_dic = {
-        'what-if': ['If you could have lunch with anyone in the world, who would you choose?', 'If money was no problem, where would you like to travel on holiday?', 'If you could address the whole world, what would you say?', 'Would you rather be a big fish in a small pond or a small fish in a big pond?', 'What would you do if a genie gave you three wishes?', 'What would you do differently if there were 30 hours in a day?', 'Would you like to travel in space?', 'If an alien came to Earth, where would you show it around?'],
+        'what-if': ['If you could have lunch with anyone in the world, who would you choose?', 'If money was no problem, where would you like to travel on holiday?', 'If you could address the whole world, what would you say?', 'What would you do differently if there were 30 hours in a day?', 'Would you like to travel in space?', 'If an alien came to Earth, where would you show it around?'],
         'learning-english': ['Do you enjoy speaking English?', 'What is the best way to improve your speaking?', 'What is the most difficult part of learning English?', 'How is English different from your language?', 'Why do you want to learn English?'],
-        'motivational': ['Which person in your life has motivated you the most?', 'Who do you admire the most?', 'What are your strengths?', 'Think up three ways to spice up your life and share them with your partner.', 'What is your favorite saying?'],
-        'likes-dislikes': ['What phobias do you have?', 'What is your favorite song?', 'What is the best modern invention?', 'Which is more important: love, money or health?', 'Describe your ideal partner.', 'Are you a pet lover?', 'Would you like to be a celebrity?', 'Who is your favorite celebrity?', 'What was your favorite subject at school?', 'What is your favorite time of the day?', 'What gets you really angry?', 'What is your favorite food?'],
-        'other': ['What are your plans for the weekends?', 'What is your country famous for?', 'What are your plans for the weekends?', 'What did you do yesterday?', 'What are your plans for tomorrow?', 'What did you eat this morning?', 'What is your hobby?', 'What do you hate the most?', 'What is your dream?', 'How is the weather today?', 'Tell me something about you', 'What do you do in your free time?', 'What is the weather like?', 'What have you been up to lately?', 'How much sleep do you usually get?', 'Tell me about your friend']
+        'motivational': ['Which person in your life has motivated you the most?', 'Who do you admire the most?', 'What are your strengths?', 'What is your favorite saying?'],
+        'likes-dislikes': ['What phobias do you have?', 'What is your favorite song?', 'What is the best modern invention?', 'Which is more important: love, money or health?', 'Are you a pet lover?', 'Who is your favorite celebrity?', 'What was your favorite subject at school?', 'What is your favorite time of the day?', 'What gets you really angry?', 'What is your favorite food?'],
+        'other': ['What are your plans for the weekends?', 'What is your country famous for?', 'What are your plans for the weekends?', 'What did you do yesterday?', 'What are your plans for tomorrow?', 'What did you eat this morning?', 'What is your hobby?', 'What do you hate the most?', 'What is your dream?', 'How is the weather today?', 'Tell me something about you', 'What do you do in your free time?', 'What is the weather like?', 'What have you been up to lately?', 'How much sleep do you usually get?', 'Tell me about your friend'],
+        'AI generated': ['Where do you live?', 'How many people live in your family?', 'How do you spend your free time?', 'How do you like your life?', 'What do you usually do on your days off?', 'What do you hate?', 'What do you like best about your job?', 'What do you do in your free time?', 'How do you spend your free time?', 'What is your dream?', 'Which country have you been to?',  'What makes you happy?', 'Describe your town', 'Which countries have you been to?', 'What do you plan to do today?', 'What do you plan to do tomorrow?', 'What do you do on your days off?', 'Are you happy?', 'What is your favorite food?', 'What is your favorite movie?', 'What is your favorite song?', 'What is your favorite colour?', 'What is your favorite sport?', 'What is your favorite show?', 'What is your favorite song?', 'What is your favorite movie?', 'What is your favorite book?', "What's your favorite toy as a child?", 'Which celebrity would you like to meet?', 'What do you like the most about winter?', 'What do you think is the best season?']
     }
     #http://www.roadtogrammar.com/dl/warmers.pdf
     questions = combine_lists(questions_dic)

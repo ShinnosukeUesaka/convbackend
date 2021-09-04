@@ -244,7 +244,7 @@ Comment: Cool! I wish I can go to Japan someday.
         self.conversation.temp_for_conv_controller = json.dumps(self.temp_data)
         self.conversation.save()
 
-        return serialize(log_items)
+        return serialize(log_items), "Unavailabe"
 
     # create first question
     def initialise(self):

@@ -126,6 +126,7 @@ class Conversation(models.Model):
     scenario_options = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
     temp_for_conv_controller = models.TextField(blank=True, null=True, default="{}")
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def prepare(self) -> LogText:
         logtext = ''
@@ -158,7 +159,7 @@ class LogItem(models.Model):
     #     NARRATION = 2
     #     AI = 3
     #     HUMAN = 4
-
+    created_at = models.DateTimeField(auto_now_add=True)
 
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, blank=True, null=True)
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, blank=True, null=True)

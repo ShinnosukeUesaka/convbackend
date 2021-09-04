@@ -6,6 +6,8 @@ from .gpt3 import completion, content_filter_profanity, ContentSafetyPresets
 import json
 from restless.models import serialize
 
+from typing import List
+import re
 import random
 
 
@@ -25,6 +27,10 @@ class ConvController:
             self.temp_data = json.loads(conversation.temp_for_conv_controller)
         except:
             self.temp_data = {}
+        try:
+            self.scenario_option = json.loads(self.scenario.option)
+        except:
+            self.scenario_option = {}
 
 
    def chat(self, message):
@@ -33,7 +39,18 @@ class ConvController:
         logitem_human.save()
 
         log_text = self.conversation.prepare()
-        response, safety = self.create_response(log_text=log_text)
+
+        if sef.scenario_option.get("example") == None or False:
+            stop_sequence = "\n"
+            response, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
+            example_response = "Unavailable"
+
+        else:
+
+            stop_sequence = "\n" + self.scenario.ai_name
+            output, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
+
+            response, example_response = re.split("\n" + self.scenario.human_name, output)
 
         print(f'response: {response}')
         logitem_ai = LogItem.objects.create(text=response, name=self.scenario.ai_name, type="AI",
@@ -42,11 +59,12 @@ class ConvController:
 
         logitem_ai.save()
 
-        return serialize([logitem_ai])
 
-   def create_response(self, log_text, retry: int = 3, allow_max: int = 0) -> str:
+        return serialize([logitem_ai]), example_response
+
+   def create_response(self, log_text, retry: int = 3, allow_max: int = 0, stop: List[str] = None) -> str:
         #print(f"GPT3 request: \n {log_text}")
-        re = completion(prompt_=log_text)
+        re = completion(prompt_=log_text, stop=stop)
         safety = int(gpt3.content_filter(re))
         ok = safety <= allow_max
         if not ok and retry <= 0:

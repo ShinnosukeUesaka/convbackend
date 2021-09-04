@@ -122,8 +122,12 @@ GoodEnglish: Let's have breakfast together tomorrow.
 
 BrokenEnglish: """
         examples_context = """What is your favorite color?
-BrokenEnglish: Blue is what I like. It color of sky.
-GoodEnglish: My favorite color is blue. It is the color of the sky.
+BrokenEnglish: Blue. It color of sky.
+GoodEnglish: Blue. It is the color of the sky.
+
+Do you play any sports?
+BrokenEnglish: Soccer. I am good at it.
+GoodEnglish: I play soccer. I am good at it.
 
 How may I help you?
 BrokenEnglish: I want to make reservation with doctor after one hour.

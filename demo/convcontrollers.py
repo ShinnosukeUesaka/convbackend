@@ -40,17 +40,16 @@ class ConvController:
 
         log_text = self.conversation.prepare()
 
-        if self.scenario_option.get("example") == None or False:
+        if self.scenario_option.get("example") == False:
             stop_sequence = "\n"
             response, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
             example_response = "Unavailable"
 
         else:
-
             stop_sequence = "\n" + self.scenario.ai_name
             output, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
 
-            response, example_response = re.split("\n" + self.scenario.human_name, output)
+            response, example_response = re.split("\n" + self.scenario.human_name + ": ", output)
 
         print(f'response: {response}')
         logitem_ai = LogItem.objects.create(text=response, name=self.scenario.ai_name, type="AI",
@@ -58,9 +57,9 @@ class ConvController:
 
 
         logitem_ai.save()
+        good_english = self.generate_correct_english()
 
-
-        return serialize([logitem_ai]), example_response
+        return serialize([logitem_ai]), example_response, good_english
 
    def create_response(self, log_text, retry: int = 3, allow_max: int = 0, stop: List[str] = None) -> str:
         #print(f"GPT3 request: \n {log_text}")
@@ -95,7 +94,63 @@ class ConvController:
 
         return serialize(messages)
 
-        #json.dumps(self.temp_data)
+    #json.dumps(self.temp_data)
+   def generate_correct_english(self):
+        if self.scenario_option.get("context_for_correction") == False:
+            broken_english = self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text
+            return self.correct_english(broken_english)
+        else:
+            broken_english = self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text
+            context = self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-2).text
+            return self.correct_english(broken_english, context)
+
+
+
+   def correct_english(self, broken_english, context=None) -> str:
+        # move the examples to somewhere easily editable.　#https://www.eibunkousei.net/%E6%97%A5%E6%9C%AC%E4%BA%BA%E3%81%AE%E8%8B%B1%E8%AA%9E%E3%81%AB%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E9%96%93%E9%81%95%E3%81%84/
+        examples =  """BrokenEnglish: Its like that i'm chat with a really person not robot.
+GoodEnglish: It feels like chatting with a real person not a robot.
+
+BrokenEnglish: I want to make reservation with doctor after one hour.
+GoodEnglish: I would like to make an appointment with the doctor in an hour.
+
+BrokenEnglish: I want to ticket on 5 clock.
+GoodEnglish: I would like to buy a ticket for 5 o'clock.
+
+BrokenEnglish: let's eat morning meal tomorrow to fun.
+GoodEnglish: Let's have breakfast together tomorrow.
+
+BrokenEnglish: """
+        examples_context = """What is your favorite color?
+BrokenEnglish: Blue is what I like. It color of sky.
+GoodEnglish: My favorite color is blue. It is the color of the sky.
+
+How may I help you?
+BrokenEnglish: I want to make reservation with doctor after one hour.
+GoodEnglish: I would like to make an appointment with the doctor in an hour.
+
+What should we do tomorrow?
+BrokenEnglish: let's eat morning meal tomorrow.
+GoodEnglish: Let's have breakfast together tomorrow.
+
+"""
+        if context == None or "":
+            prompt = examples + broken_english + '\nGoodEnglish:'
+        else:
+            prompt = examples_context + context + "\nBrokenEnglish: " + broken_english + '\nGoodEnglish:'
+
+        good_english = completion(engine='curie', prompt_=prompt,
+        temperature = 0,
+        max_tokens = 172,
+        top_p = 1,
+        frequency_penalty = 0,
+        presence_penalty = 0)
+
+        if good_english[0] == " ":
+            return good_english[1:]
+        else:
+            return good_english
+
 class QConvController(ConvController):
 
     ai_name_question = "Question"
@@ -207,6 +262,9 @@ Comment: Cool! I wish I can go to Japan someday.
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_question, type="AI",
                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
             logitem_ai.save()
+
+            good_english = self.generate_correct_english()
+
             logitem_ai2 = LogItem.objects.create(text=question, name=QConvController.ai_name_question, type="AI",
                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
             logitem_ai2.save()
@@ -221,6 +279,9 @@ Comment: Cool! I wish I can go to Japan someday.
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_followup, type="AI",
                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
             logitem_ai.save()
+
+            good_english = self.generate_correct_english()
+
             log_items = [logitem_ai]
             self.temp_data['first_answer'] = message
             self.temp_data['followup'] = response
@@ -232,6 +293,9 @@ Comment: Cool! I wish I can go to Japan someday.
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_second_followup, type="AI",
                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
             logitem_ai.save()
+
+            good_english = self.generate_correct_english()
+
             log_items = [logitem_ai]
             self.temp_data['second_answer'] = message
             self.temp_data['second_followup'] = response
@@ -244,7 +308,7 @@ Comment: Cool! I wish I can go to Japan someday.
         self.conversation.temp_for_conv_controller = json.dumps(self.temp_data)
         self.conversation.save()
 
-        return serialize(log_items), "Unavailabe"
+        return serialize(log_items), "Unavailabe", good_english
 
     # create first question
     def initialise(self):

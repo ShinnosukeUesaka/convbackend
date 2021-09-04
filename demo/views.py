@@ -99,10 +99,10 @@ def chat(request: HttpRequest) -> HttpResponse:
 
     controller = instantiate_controller(scenario.controller_type, conv)
 
-    response, example_response = controller.chat(data['user_input'])
+    response, example_response, good_english = controller.chat(data['user_input'])
 
     # correct user english
-    good_english = correct_english(data['user_input'])
+    #good_english = correct_english(data['user_input'])
     return JsonResponse({'response': response,
         'example_response': example_response,
         'english_correction': good_english

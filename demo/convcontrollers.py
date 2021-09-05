@@ -48,7 +48,7 @@ class ConvController:
         else:
             stop_sequence = "\n" + self.scenario.ai_name
             output, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
-
+            print(f'the pure response from gpt3: {response}')
             response, example_response = re.split("\n" + self.scenario.human_name + ": ", output)
 
         if response[0] == " ":

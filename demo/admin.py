@@ -15,11 +15,19 @@ class ScenarioAdmin(admin.ModelAdmin):
 
 
 class LogItemAdmin(admin.ModelAdmin):
+    readonly_fields = ('created_at', )
     readonly_fields = ('type', )
+
+class ConversationAdmin(admin.ModelAdmin):
+    readonly_fields = ('created_at', )
+    readonly_fields = ('id', )
+    inlines = [
+        LogitemInline,
+    ]
 
 
 
 
 admin.site.register(Scenario, ScenarioAdmin)
-admin.site.register(Conversation)
+admin.site.register(Conversation, ConversationAdmin)
 admin.site.register(LogItem, LogItemAdmin)

@@ -52,9 +52,7 @@ class ConvController:
             response, example_response = re.split("\n" + self.scenario.human_name + ": ", output)
 
         if response[0] == " ":
-            return response[1:]
-        else:
-            return response
+            response = response[1:]
 
         print(f'response: {response}')
         logitem_ai = LogItem.objects.create(text=response, name=self.scenario.ai_name, type="AI",

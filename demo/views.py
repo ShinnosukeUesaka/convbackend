@@ -26,6 +26,7 @@ from .types import LogText
 
 from . import convcontrollers
 
+import re
 
 def make_error(id_: str, msg: str, **kwargs) -> Dict:
     return {
@@ -99,7 +100,12 @@ def chat(request: HttpRequest) -> HttpResponse:
 
     controller = instantiate_controller(scenario.controller_type, conv)
 
-    response, example_response, good_english = controller.chat(data['user_input'])
+    user_input = data['user_input']
+
+    if user_input[0] == " ":
+        user_input = user_input[1:]
+
+    response, example_response, good_english = controller.chat(user_input)
 
     # correct user english
     #good_english = correct_english(data['user_input'])

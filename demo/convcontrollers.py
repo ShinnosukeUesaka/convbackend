@@ -70,7 +70,7 @@ class ConvController:
             # return f'The AI response included content deemed as sensitive or unsafe, so it was hidden.\n{re}'
             return re, safety
         if not ok:
-            return create_response(log_text, retry - 1)
+            return self.create_response(log_text, retry - 1)
         return re, safety
 
    def initialise(self):

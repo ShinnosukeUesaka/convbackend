@@ -49,8 +49,12 @@ class ConvController:
             stop_sequence = "\n" + self.scenario.ai_name
             output, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
             print(f'the pure response from gpt3: {output}')
-            response, example_response = re.split("\n" + self.scenario.human_name + ": ", output)
-
+            try:
+                response, example_response = re.split("\n" + self.scenario.human_name + ": ", output)
+            except:
+                response = output
+                example_response = "Unavailabe"
+                
         if response[0] == " ":
             response = response[1:]
 

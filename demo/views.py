@@ -77,7 +77,7 @@ def chat(request: HttpRequest) -> HttpResponse:
         'user_input': str,
         'password': str,
     })
-
+    print("data")
     if not ok:
         return HttpResponseBadRequest(err)
     if not check_pass(data['password']):

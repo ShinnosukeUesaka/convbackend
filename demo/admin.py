@@ -29,5 +29,6 @@ class ConversationAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Scenario, ScenarioAdmin)
-admin.site.register(Conversation, ConversationAdmin)
+#admin.site.register(Conversation, ConversationAdmin)
+admin.site.register(Conversation)
 admin.site.register(LogItem, LogItemAdmin)

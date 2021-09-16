@@ -14,7 +14,15 @@ class Scenario(models.Model):
     objects = ScenarioManager()
 
     title = models.CharField(max_length=50, default='Title')
-    title_en = models.CharField(max_length=50, default='English_title')
+    title_en = models.CharField(max_length=50, default='English title')
+    title_cs = models.CharField(max_length=50, default='Simplified Chinese title')
+    title_ct = models.CharField(max_length=50, default='Traditional Chinese title')
+    title_ko = models.CharField(max_length=50, default='Korean Title')
+    title_vi = models.CharField(max_length=50, default='Vietnamese Title')
+    title_es = models.CharField(max_length=50, default='Spanish Title')
+    title_ru = models.CharField(max_length=50, default='Russian Title')
+
+
     # scenario description
     duration = models.IntegerField()
     # duration of the conversation in min
@@ -25,8 +33,15 @@ class Scenario(models.Model):
     3 上級者
     """
 
-    information = models.CharField(max_length=1000, default='')
-    information_en = models.CharField(max_length=1000, default='')
+    information = models.CharField(max_length=1000, default='Japanese info')
+    information_en = models.CharField(max_length=1000, default='English info')
+    information_cs = models.CharField(max_length=1000, default='Traditional Chinese info')
+    information_ct = models.CharField(max_length=1000, default='Simplified Chinese info')
+    information_ko = models.CharField(max_length=1000, default='Korean info')
+    information_vi = models.CharField(max_length=1000, default='Vietnamese info')
+    information_es = models.CharField(max_length=1000, default='Spanish info')
+    information_ru = models.CharField(max_length=1000, default='Russian info')
+
 
     category = models.CharField(max_length=100, default='Roll Play')
     """
@@ -100,7 +115,7 @@ class Scenario(models.Model):
 
 
     def __str__(self) -> str:
-        return self.title
+        return self.title_en
 
     def to_dict(self) -> dict:
         return {

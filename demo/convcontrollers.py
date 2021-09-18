@@ -107,7 +107,7 @@ class ConvController:
         if self.scenario_option.get("context_for_correction") == False:
             return self.correct_english(broken_english)
         else:
-            if len(broken_english) <= 2:
+            if len(broken_english.split()) <= 2:
                 return broken_english
             elif '?' in broken_english:
                 self.correct_english(broken_english)

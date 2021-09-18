@@ -54,7 +54,7 @@ class ConvController:
             except:
                 response = output
                 example_response = "Unavailabe"
-                
+
         if response[0] == " ":
             response = response[1:]
 
@@ -103,13 +103,15 @@ class ConvController:
 
     #json.dumps(self.temp_data)
    def generate_correct_english(self):
+        broken_english = self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text
         if self.scenario_option.get("context_for_correction") == False:
-            broken_english = self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text
             return self.correct_english(broken_english)
         else:
-            broken_english = self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text
-            context = self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-2).text
-            return self.correct_english(broken_english, context)
+            if len(broken_english) <= 2 or '?' in broken_english:
+                self.correct_english(broken_english)
+            else:
+                context = self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-2).text
+                return self.correct_english(broken_english, context)
 
 
 

@@ -107,7 +107,9 @@ class ConvController:
         if self.scenario_option.get("context_for_correction") == False:
             return self.correct_english(broken_english)
         else:
-            if len(broken_english) <= 2 or '?' in broken_english:
+            if len(broken_english) <= 2:
+                return broken_english
+            elif '?' in broken_english:
                 self.correct_english(broken_english)
             else:
                 context = self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-2).text

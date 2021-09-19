@@ -66,7 +66,7 @@ def assert_keys(data: Dict, keys: Dict[str, type]) -> Tuple[JsonResponse, bool]:
     return JsonResponse({}), True
 
 
-@ratelimit(key='ip', rate='60/h')
+#@ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def chat(request: HttpRequest) -> HttpResponse:
     # TODO:
@@ -314,18 +314,48 @@ def reload(request: HttpRequest) -> HttpResponse:
     return JsonResponse({'response': serialize(logitem_ai)})
 
 
-# 以降 tools
-def create_response(log_text, retry: int = 3, allow_max: int = 0) -> str:
-    print(f"gpt3 request: {log_text}")
-    re = completion(prompt_=log_text)
-    safety = int(gpt3.content_filter(re))
-    ok = safety <= allow_max
-    if not ok and retry <= 0:
-        # return f'The AI response included content deemed as sensitive or unsafe, so it was hidden.\n{re}'
-        return re, safety
-    if not ok:
-        return gpt(log_text, retry - 1)
-    return re, safety
+
+@csrf_exempt  # REST-like API anyway, who cares lol
+def dictionary(request: HttpRequest) -> HttpResponse:
+    # TODO:
+    PROMPT = """Define the word and use the word in a sentence.
+
+Word:  Population
+Definition: The number of people in a particular area
+Example: The population of India is 1.2 billion.
+
+Word: """
+
+
+    if not request.method == 'GET':
+        return HttpResponseBadRequest(make_must_get())
+
+    data = json.loads(request.body)
+
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
+
+    input = PROMPT + data['word'] + "\n" + "Definition:"
+
+    output =  completion(engine='davinci', prompt_=input,
+    temperature = 0,
+    max_tokens = 300,
+    top_p = 1,
+    frequency_penalty = 0,
+    presence_penalty = 0,
+    stop=["\n\n"])
+
+    output = output[1:]
+    
+    try:
+        definition, example = re.split("\nExample: ", output)
+    except:
+        definition, example = "error", "error"
+
+    return JsonResponse({'definition': definition,
+        'example': example,
+    })
+
 
 def correct_english(broken_english) -> str:
     # move the examples to somewhere easily editable.　#https://www.eibunkousei.net/%E6%97%A5%E6%9C%AC%E4%BA%BA%E3%81%AE%E8%8B%B1%E8%AA%9E%E3%81%AB%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E9%96%93%E9%81%95%E3%81%84/

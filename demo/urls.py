@@ -8,5 +8,6 @@ urlpatterns = [
     path('conversation/chat/', views.chat, name='chat'),
     path('conversation/log/view', views.log_view, name='log_view'),
     path('conversation/log/edit', views.log_edit, name='log_edit'),
-    path('conversation/reload', views.reload, name='reload') # Ending conversation, Regenerating Conversation and other actions
+    path('dictionary', views.dictionary, name='dictionary'),
+    path('conversation/reload', views.reload, name='reload') # Not implemented Ending conversation, Regenerating Conversation and other actions
 ]

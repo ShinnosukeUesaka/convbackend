@@ -9,7 +9,7 @@ from restless.models import serialize
 from typing import List
 import re
 import random
-
+import difflib
 
 
 def combine_lists(dictionary):
@@ -103,18 +103,35 @@ class ConvController:
 
     #json.dumps(self.temp_data)
    def generate_correct_english(self):
+        def correction_insignificant(correction):
+            for i in correction:
+                if i != '+ .' and i != '+ ?':
+                    return False
+            return True
+
         broken_english = self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text
+
         if self.scenario_option.get("context_for_correction") == False:
-            return self.correct_english(broken_english)
-        else:
+            correct_english = self.correct_english(broken_english)
+
+        else: # 文脈判断オン
             if len(broken_english.split()) <= 2:
                 return broken_english
             elif '?' in broken_english:
-                self.correct_english(broken_english)
+                correct_english = self.correct_english(broken_english)
             else:
                 context = self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-2).text
-                return self.correct_english(broken_english, context)
+                correct_english =  self.correct_english(broken_english, context)
 
+                if correct_english == context: #バグが発生した場合
+                    return broken_english
+
+        corrections = [li for li in difflib.ndiff(broken_english, correct_english) if li[0] != ' ']
+        print(corrections)
+        if correction_insignificant(corrections):
+            return broken_english
+        else:
+            return correct_english
 
 
    def correct_english(self, broken_english, context=None) -> str:

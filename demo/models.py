@@ -24,9 +24,9 @@ class Scenario(models.Model):
 
 
     # scenario description
-    duration = models.IntegerField()
+    duration = models.IntegerField(default='3')
     # duration of the conversation in min
-    level = models.IntegerField()
+    level = models.IntegerField(default='2')
     """
     1 初心者
     2 中級者
@@ -57,16 +57,11 @@ class Scenario(models.Model):
     q_exercise: question exercise controller
     """
 
-    controller_variables = models.CharField(max_length=1000)
-    # json that contain variables used in the controllers(not implemented)
-
     # Initial prompt, similar to narration:
     # The following is a conversation of two {poeple}  talking about {Proper noun}, {category}. They {feeling} {Proper noun}.
     ai_name = models.CharField(max_length=20, default='AI')
     human_name = models.CharField(max_length=20, default='Human')
-    info = models.CharField(max_length=100, default='')
-    # info about scenario:
-    # place: cafe, mission: buy coffee
+    article = models.TextField(max_length=10000, default='', blank=True, null=True)
 
     options = models.CharField(max_length=200, default='{}') # Not used
     # JSON (not dict converted to str) of options:
@@ -124,7 +119,7 @@ class Scenario(models.Model):
             'ai_name': self.ai_name,
             'human_name': self.human_name,
             'summarize_token': self.summarize_token,
-            'info': self.info,
+            #'info': self.info,
             'description': self.description,
             'response_length': self.response_length,
             'temperature': self.temperature,
@@ -133,6 +128,7 @@ class Scenario(models.Model):
             'presence_penalty': self.presence_penalty,
             'duration': self.duration,
             'level': self.level,
+            'article': self.article
         }
 
 

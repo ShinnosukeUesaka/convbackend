@@ -347,7 +347,7 @@ Comment: Cool! I wish I can go to Japan someday.
 
     # create first question
     def initialise(self):
-        first_question = random.choice(QConvController.questions)
+        first_question = self.choose_question()
 
 
 
@@ -369,8 +369,6 @@ Comment: Cool! I wish I can go to Japan someday.
         self.conversation.temp_for_conv_controller = json.dumps({'status': 2, 'question': first_question, 'first_answer': "", 'followup': "", 'second_answer': "", 'second_followup': ""})
         self.conversation.save()
 
-        print( serialize(first_log))
-
         return serialize([first_log])
 
     def choose_qestion(self):
@@ -378,8 +376,42 @@ Comment: Cool! I wish I can go to Japan someday.
 
 
 
-class ArticleQuestionConvController(ConvController):
-    pass
+class ArticleDiscussionConvController(ConvController):
+    # new temp data added: question_number
+    def initialise(self):
+        self.temp_data["question_number"] = 0
 
-class ArticleDiscussionConvConroller(QConvController):
+        first_question = self.choose_question()
+
+        first_log = LogItem.objects.create(
+            log_number = 1,
+            scenario = None,
+            conversation = self.conversation,
+            type = "AI",
+            name = "Question",
+            text = first_question,
+            visible = True,
+            editable = True,
+            send = True,
+            include_name = True
+        )
+
+        first_log.save()
+
+        self.conversation.temp_for_conv_controller = json.dumps({'status': 2, 'question': first_question, 'first_answer': "", 'followup': "", 'second_answer': "", 'second_followup': "", 'question_number': 1})
+        self.conversation.save()
+
+        return serialize([first_log])
+
+    def choose_qestion(self):
+        questions = self.scenario_option.get("questions")
+        question = questions[self.temp_data["question_number"]]
+        self.temp_data["question_number"] = self.temp_data["question_number"] + 1
+        return question
+
+    def conversation_is_done(self):
+        #return self.temp_data["status"] ==
+        pass
+
+class ArticleQuestionConvConroller(QConvController):
     pass

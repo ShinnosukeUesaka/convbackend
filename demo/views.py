@@ -105,13 +105,14 @@ def chat(request: HttpRequest) -> HttpResponse:
     if user_input[0] == " ":
         user_input = user_input[1:]
 
-    response, example_response, good_english = controller.chat(user_input)
+    response, example_response, good_english, end_conversation = controller.chat(user_input)
 
     # correct user english
     #good_english = correct_english(data['user_input'])
     return JsonResponse({'response': response,
         'example_response': example_response,
-        'english_correction': good_english
+        'english_correction': good_english,
+        'end_conversation': end_conversation
     })
 
 
@@ -346,7 +347,7 @@ Word: """
     stop=["\n\n"])
 
     output = output[1:]
-    
+
     try:
         definition, example = re.split("\nExample: ", output)
     except:

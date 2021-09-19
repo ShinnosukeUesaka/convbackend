@@ -66,7 +66,7 @@ class ConvController:
         logitem_ai.save()
         good_english = self.generate_correct_english()
 
-        return serialize([logitem_ai]), example_response, good_english
+        return serialize([logitem_ai]), example_response, good_english, self.conversation_is_done()
 
    def create_response(self, log_text, retry: int = 3, allow_max: int = 0, stop: List[str] = None) -> str:
         #print(f"GPT3 request: \n {log_text}")
@@ -127,7 +127,7 @@ class ConvController:
                     return broken_english
 
         corrections = [li for li in difflib.ndiff(broken_english, correct_english) if li[0] != ' ']
-        print(corrections)
+
         if correction_insignificant(corrections):
             return broken_english
         else:
@@ -182,6 +182,10 @@ GoodEnglish: Let's have breakfast together tomorrow.
             return good_english[1:]
         else:
             return good_english
+
+   def conversation_is_done(self):
+       return False
+
 
 class QConvController(ConvController):
 
@@ -288,22 +292,25 @@ Comment: Cool! I wish I can go to Japan someday.
             log_text = QConvController.final_comment_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + self.temp_data['second_answer'] + "\nComment and Follow-up question:" + self.temp_data['second_followup'] + "\nAnswer: " + message + "\nComment: "
             response, safety =  self.create_response(log_text=log_text)
 
-            # generate next question.
-            question = random.choice(QConvController.questions)
-
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_question, type="AI",
                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
             logitem_ai.save()
 
             good_english = self.generate_correct_english()
 
-            logitem_ai2 = LogItem.objects.create(text=question, name=QConvController.ai_name_question, type="AI",
-                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
-            logitem_ai2.save()
-            log_items = [logitem_ai, logitem_ai2]
+            if self.conversation_is_done():
+                log_items = [logitem_ai]
+            else:
+                # if the conversation still continues generate next question
+                question = self.choose_qestion()
 
-            self.temp_data['question'] = question
-            self.temp_data['status'] = 2
+                logitem_ai2 = LogItem.objects.create(text=question, name=QConvController.ai_name_question, type="AI",
+                                                    log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
+                logitem_ai2.save()
+                log_items = [logitem_ai, logitem_ai2]
+
+                self.temp_data['question'] = question
+                self.temp_data['status'] = 2
 
         elif status == 2: #followup question
             log_text = QConvController.first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nComment and Follow-up question:"
@@ -333,14 +340,10 @@ Comment: Cool! I wish I can go to Japan someday.
             self.temp_data['second_followup'] = response
             self.temp_data['status'] = 1
 
-
-
-        logitem_ai.save()
-
         self.conversation.temp_for_conv_controller = json.dumps(self.temp_data)
         self.conversation.save()
 
-        return serialize(log_items), "Unavailabe", good_english
+        return serialize(log_items), "Unavailabe", good_english, self.conversation_is_done() # response, exmample response, correct english, conversation done?
 
     # create first question
     def initialise(self):
@@ -369,3 +372,14 @@ Comment: Cool! I wish I can go to Japan someday.
         print( serialize(first_log))
 
         return serialize([first_log])
+
+    def choose_qestion(self):
+        return random.choice(QConvController.questions)
+
+
+
+class ArticleQuestionConvController(ConvController):
+    pass
+
+class ArticleDiscussionConvConroller(QConvController):
+    pass

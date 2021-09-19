@@ -371,7 +371,7 @@ Comment: Cool! I wish I can go to Japan someday.
 
         return serialize([first_log])
 
-    def choose_qestion(self):
+    def choose_question(self):
         return random.choice(QConvController.questions)
 
 

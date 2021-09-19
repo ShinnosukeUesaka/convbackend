@@ -105,7 +105,7 @@ class ConvController:
    def generate_correct_english(self):
         def correction_insignificant(correction):
             for i in correction:
-                if i != '+ .' and i != '+ ?' and i != '+ ,' and and i != '+ !':
+                if i != '+ .' and i != '+ ?' and i != '+ ,' and i != '+ !':
                     return False
             return True
 

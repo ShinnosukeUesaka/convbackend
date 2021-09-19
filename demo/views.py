@@ -367,7 +367,7 @@ BrokenEnglish: I want to make reservation with doctor after one hour.
 GoodEnglish: I would like to make an appointment with the doctor in an hour.
 
 BrokenEnglish: I want to ticket on 5 clock.
-GoodEnglish: I would like to buy a ticket for 5 o'clock.
+GoodEnglish: I want to buy a ticket for 5 o'clock.
 
 BrokenEnglish: let's eat morning meal tomorrow to fun.
 GoodEnglish: Let's have breakfast together tomorrow.

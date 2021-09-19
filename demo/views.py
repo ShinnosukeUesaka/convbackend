@@ -328,7 +328,7 @@ Example: The population of India is 1.2 billion.
 Word: """
 
 
-    if not request.method == 'GET':
+    if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_get())
 
     data = json.loads(request.body)

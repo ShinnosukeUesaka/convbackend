@@ -28,7 +28,7 @@ class ConvController:
         except:
             self.temp_data = {}
         try:
-            self.scenario_option = json.loads(self.scenario.option)
+            self.scenario_option = json.loads(self.scenario.options)
         except:
             self.scenario_option = {}
 
@@ -159,7 +159,7 @@ GoodEnglish: I play soccer. I am good at it.
 
 How may I help you?
 BrokenEnglish: I want to make reservation with doctor after one hour.
-GoodEnglish: I would like to make an appointment with the doctor in an hour.
+GoodEnglish: I want to make an appointment with the doctor in an hour.
 
 What should we do tomorrow?
 BrokenEnglish: let's eat morning meal tomorrow.
@@ -302,7 +302,7 @@ Comment: Cool! I wish I can go to Japan someday.
                 log_items = [logitem_ai]
             else:
                 # if the conversation still continues generate next question
-                question = self.choose_qestion()
+                question = self.choose_question()
 
                 logitem_ai2 = LogItem.objects.create(text=question, name=QConvController.ai_name_question, type="AI",
                                                     log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
@@ -310,7 +310,7 @@ Comment: Cool! I wish I can go to Japan someday.
                 log_items = [logitem_ai, logitem_ai2]
 
                 self.temp_data['question'] = question
-                self.temp_data['status'] = 2
+
 
         elif status == 2: #followup question
             log_text = QConvController.first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nComment and Follow-up question:"
@@ -324,7 +324,6 @@ Comment: Cool! I wish I can go to Japan someday.
             log_items = [logitem_ai]
             self.temp_data['first_answer'] = message
             self.temp_data['followup'] = response
-            self.temp_data['status'] = 3
 
         elif status == 3: #followup question 2
             log_text = QConvController.second_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + message + "\nComment and Follow-up question:"
@@ -338,12 +337,26 @@ Comment: Cool! I wish I can go to Japan someday.
             log_items = [logitem_ai]
             self.temp_data['second_answer'] = message
             self.temp_data['second_followup'] = response
+
+        conv_done = self.conversation_is_done()
+
+
+
+        if self.temp_data['status'] == 1 or self.temp_data['status'] == 2:
+            self.temp_data['status'] = self.temp_data['status'] + 1
+        elif self.temp_data['status'] == 3:
             self.temp_data['status'] = 1
+        else:
+            print("status error")
+            self.temp_data['status'] = 1
+        print("-------status" + str(self.temp_data['status']))
 
         self.conversation.temp_for_conv_controller = json.dumps(self.temp_data)
         self.conversation.save()
 
-        return serialize(log_items), "Unavailabe", good_english, self.conversation_is_done() # response, exmample response, correct english, conversation done?
+        # don't add anything here. status already changed.
+
+        return serialize(log_items), "Unavailabe", good_english, conv_done # response, exmample response, correct english, conversation done?
 
     # create first question
     def initialise(self):
@@ -376,7 +389,7 @@ Comment: Cool! I wish I can go to Japan someday.
 
 
 
-class ArticleDiscussionConvController(ConvController):
+class ArticleDiscussionConvController(QConvController):
     # new temp data added: question_number
     def initialise(self):
         self.temp_data["question_number"] = 0
@@ -403,17 +416,18 @@ class ArticleDiscussionConvController(ConvController):
 
         return serialize([first_log])
 
-    def choose_qestion(self):
+    def choose_question(self):
         questions = self.scenario_option.get("questions")
+        print(self.temp_data["question_number"])
         question = questions[self.temp_data["question_number"]]
         self.temp_data["question_number"] = self.temp_data["question_number"] + 1
         return question
 
-    def conversation_is_done(self):
-        #return self.temp_data["status"] ==
-        pass
+    def conversation_is_done(self): # call after choose_question()
+        return self.temp_data["status"] == 1 and self.temp_data["question_number"] == len(self.scenario_option.get("questions"))
+        # disable the conversation
 
-class ArticleQuestionConvConroller(QConvController):
+class ArticleQuestionConvConroller(ConvController):
     pass
 
 #test commit

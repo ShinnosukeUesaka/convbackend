@@ -393,4 +393,6 @@ def instantiate_controller(type: str, conv: Conversation):
         return convcontrollers.QConvController(conv)
     elif conv.scenario.controller_type == "article_discussion":
         return convcontrollers.ArticleDiscussionConvController(conv)
+    elif conv.scenario.controller_type == "article_question":
+        return convcontrollers.ArticleQuestionConvConroller(conv)
     return

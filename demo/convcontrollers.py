@@ -3,6 +3,7 @@ from django.core import serializers
 from .models import Conversation, Scenario, LogItem
 from . import gpt3
 from .gpt3 import completion, content_filter_profanity, ContentSafetyPresets
+from . import gpthelpers
 import json
 from restless.models import serialize
 
@@ -19,7 +20,6 @@ def combine_lists(dictionary):
     return combined_list
 
 class ConvController:
-
    def __init__(self, conversation: Conversation):
         self.conversation = conversation
         self.scenario = conversation.scenario
@@ -418,16 +418,88 @@ class ArticleDiscussionConvController(QConvController):
 
     def choose_question(self):
         questions = self.scenario_option.get("questions")
-        print(self.temp_data["question_number"])
         question = questions[self.temp_data["question_number"]]
-        self.temp_data["question_number"] = self.temp_data["question_number"] + 1
+        self.temp_data["question_number"] = self.temp_data["question_number"] + 1 # refactor someday
         return question
 
     def conversation_is_done(self): # call after choose_question()
         return self.temp_data["status"] == 1 and self.temp_data["question_number"] == len(self.scenario_option.get("questions"))
         # disable the conversation
 
-class ArticleQuestionConvConroller(ConvController):
-    pass
 
-#test commit
+class ArticleQuestionConvConroller(ConvController):
+    def initialise(self):
+        self.temp_data["question_number"] = 0
+
+        first_question = self.choose_question()
+
+        first_log = LogItem.objects.create(
+            log_number = 1,
+            scenario = None,
+            conversation = self.conversation,
+            type = "AI",
+            name = "Question",
+            text = first_question,
+            visible = True,
+            editable = True,
+            send = True,
+            include_name = True
+        )
+
+        first_log.save()
+
+        self.conversation.temp_for_conv_controller = json.dumps({'question_number': 1})
+        self.conversation.save()
+
+        return serialize([first_log])
+
+    def choose_question(self):
+        questions = self.scenario_option.get("questions")
+        question = questions[self.temp_data["question_number"]]
+        return question
+
+    def conversation_is_done(self): # call after choose_question()
+        return self.temp_data["question_number"] == len(self.scenario_option.get("questions"))
+        # disable the conversation
+
+
+    def chat(self, message):
+         logitems_ai = []
+         logitem_human = LogItem.objects.create(text=message, name="Answer", type="User",
+                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation)
+         logitem_human.save()
+
+         questions = self.scenario_option.get("questions")
+         question = questions[self.temp_data["question_number"]-1]
+         answers = self.scenario_option.get("answers")
+         answer = answers[self.temp_data["question_number"]-1]
+
+         if gpthelpers.evaluate_answer(question, answer, message):
+             response = "Correct:" + answer
+         else:
+             response = "Wrong:" + answer
+
+         logitem_ai = LogItem.objects.create(text=response, name="Question", type="AI",
+                                             log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
+
+
+         logitem_ai.save()
+
+         conv_done = self.conversation_is_done()
+         logitems_ai = [logitem_ai]
+         if not conv_done:
+             next_question = questions[self.temp_data["question_number"]]
+
+             logitem_ai2 = LogItem.objects.create(text=next_question, name=self.scenario.ai_name, type="AI",
+                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
+             logitem_ai2.save()
+             logitems_ai = [logitem_ai, logitem_ai2]
+             
+         good_english = self.correct_english(message)
+
+
+         self.temp_data["question_number"] =  self.temp_data["question_number"] + 1
+         self.conversation.temp_for_conv_controller = json.dumps(self.temp_data)
+         self.conversation.save()
+
+         return serialize(logitems_ai), "Unavailabe", good_english, conv_done

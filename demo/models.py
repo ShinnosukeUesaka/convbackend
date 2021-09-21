@@ -63,7 +63,7 @@ class Scenario(models.Model):
     human_name = models.CharField(max_length=20, default='Human')
     article = models.TextField(max_length=10000, default='', blank=True, null=True)
 
-    options = models.CharField(max_length=200, default='{}') # Not used
+    options = models.TextField(max_length=10000, default='{}') # Not used
     # JSON (not dict converted to str) of options:
     # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
 

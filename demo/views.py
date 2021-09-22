@@ -25,6 +25,7 @@ from .models import Conversation, Scenario, LogItem
 from .types import LogText
 
 from . import convcontrollers
+from . import gpthelpers
 
 import re
 
@@ -272,7 +273,7 @@ def log_edit(request: HttpRequest) -> HttpResponse:
 
 
 @ratelimit(key='ip', rate='120/h')
-@csrf_exempt  # REST-like API anyway, who cares lol
+@csrf_exempt  # Not implemented
 def reload(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_post())
@@ -318,15 +319,6 @@ def reload(request: HttpRequest) -> HttpResponse:
 
 @csrf_exempt  # REST-like API anyway, who cares lol
 def dictionary(request: HttpRequest) -> HttpResponse:
-    # TODO:
-    PROMPT = """Define the word and use the word in a sentence.
-
-Word:  Population
-Definition: The number of people in a particular area
-Example: The population of India is 1.2 billion.
-
-Word: """
-
 
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_get())
@@ -336,22 +328,7 @@ Word: """
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
 
-    input = PROMPT + data['word'] + "\n" + "Definition:"
-
-    output =  completion(engine='davinci', prompt_=input,
-    temperature = 0,
-    max_tokens = 300,
-    top_p = 1,
-    frequency_penalty = 0,
-    presence_penalty = 0,
-    stop=["\n\n"])
-
-    output = output[1:]
-
-    try:
-        definition, example = re.split("\nExample: ", output)
-    except:
-        definition, example = "error", "error"
+    definition, example = gpthelpers(data['word'])
 
     return JsonResponse({'definition': definition,
         'example': example,

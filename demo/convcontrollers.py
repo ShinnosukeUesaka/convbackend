@@ -58,7 +58,7 @@ class ConvController:
         if response[0] == " ":
             response = response[1:]
         if "\n" in response:
-            response = response[:sentence.index("\n")]
+            response = response[:response.index("\n")]
 
         print(f'response: {response}')
         logitem_ai = LogItem.objects.create(text=response, name=self.scenario.ai_name, type="AI",

@@ -479,9 +479,9 @@ class ArticleQuestionConvConroller(ConvController):
          answer = answers[self.temp_data["question_number"]-1]
 
          if gpthelpers.evaluate_answer(question, answer, message):
-             response = "Correct:" + answer
+             response = "Correct::" + answer
          else:
-             response = "Wrong:" + answer
+             response = "Wrong::" + answer
 
          logitem_ai = LogItem.objects.create(text=response, name="Question", type="AI",
                                              log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)

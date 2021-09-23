@@ -40,7 +40,7 @@ class ConvController:
 
         log_text = self.conversation.prepare()
 
-        if self.scenario_options.get("example") == False or self.conversation_is_done() == True:
+        if self.scenario_options.get("example") == False:
             stop_sequence = "\n"
             response, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
             example_response = "Unavailable"
@@ -57,6 +57,8 @@ class ConvController:
 
         if response[0] == " ":
             response = response[1:]
+        if "\n" in response:
+            response = response[:sentence.index("\n")]
 
         print(f'response: {response}')
         logitem_ai = LogItem.objects.create(text=response, name=self.scenario.ai_name, type="AI",

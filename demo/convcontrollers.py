@@ -303,6 +303,7 @@ Comment: Cool! I wish I can go to Japan someday.
         print(status)
         if status == 1: #final comment and Question
             log_text = QConvController.final_comment_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + self.temp_data['second_answer'] + "\nComment and Follow-up question:" + self.temp_data['second_followup'] + "\nAnswer: " + message + "\nComment: "
+
             response, safety =  self.create_response(log_text=log_text)
 
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_question, type="AI",
@@ -401,29 +402,20 @@ Comment: Cool! I wish I can go to Japan someday.
         return random.choice(QConvController.questions)
 
 class AIbouConvController(QConvController):
-     AI_TEACHER_PROMPT= """I am a polite friendly intelligent AI English teacher.
+     AI_TEACHER_PROMPT= """The following is a conversation with an AI English Teacher. The AI English Teacher is helpful, creative, clever, knowledgeable and very friendly
 
-Question: What is your hobby?
-Answer: I like playing the piano.
-Comment and Follow-up question: Playing the piano seems very difficult. How long have you been practicing playing the piano?
---
-Question: What are your plans for the weekends?
-Answer: I will go to the gym.
-Comment and Follow-up question: You are so healthy and disciplined! How often do you go to the gym?
---
-Question: What is your favorite movie?
-Answer: My favorite movie is The Lord of the Rings.
-Comment and Follow-up question: My favorite character is Legolas. He is mischievous, has a sense of humour! What is your favorite character?
---
-"""
+Human: Hello, who are you?
+AI: I am an AI to help you practice speaking English. Let's have conversations together."""
 
-     temperature = 0.6
+     temperature = 0.8
      frequency_penalty = 0
-     presence_penalty = 0.5
+     presence_penalty = 0.6
+
+     MAX_REGENERATE = 2
 
      def chat(self, message):
 
-        logitem_human = LogItem.objects.create(text=message, name=QConvController.user_name, type="User",
+        logitem_human = LogItem.objects.create(text=message, name="Human", type="User",
                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation)
         logitem_human.save()
 
@@ -434,30 +426,45 @@ Comment and Follow-up question: My favorite character is Legolas. He is mischiev
 
         print(status)
         if status == 1: #final comment and Question
-            prompt = self.generate_prompt_for_aibou(2)
+            prompt = self.generate_prompt_for_aibou(8)
 
-            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_question, type="AI",
-                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
+            # Can't be a qeustion. 話題が次にうつる。
+            for i in range(AIbouConvController.MAX_REGENERATE):
+                response = completion(prompt_=prompt, temperature = AIbouConvController.temperature, presence_penalty = AIbouConvController.presence_penalty, frequency_penalty = AIbouConvController.frequency_penalty)
+                if '?' not in response:
+                    break
+
+            response = completion(prompt_=prompt, temperature = AIbouConvController.temperature, presence_penalty = AIbouConvController.presence_penalty, frequency_penalty = AIbouConvController.frequency_penalty)
+
+            logitem_ai = LogItem.objects.create(text=response, name="AI", type="AI",
+                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
             logitem_ai.save()
 
             good_english = self.generate_correct_english()
 
-            if self.conversation_is_done():
-                log_items = [logitem_ai]
-            else:
-                # if the conversation still continues generate next question
-                question = self.choose_question()
 
-                logitem_ai2 = LogItem.objects.create(text=question, name=QConvController.ai_name_question, type="AI",
-                                                    log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
-                logitem_ai2.save()
-                log_items = [logitem_ai, logitem_ai2]
+            question = self.choose_question()
 
-                self.temp_data['question'] = question
+            logitem_ai2 = LogItem.objects.create(text=question, name="AI", type="AI",
+                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
+            logitem_ai2.save()
+            log_items = [logitem_ai, logitem_ai2]
 
+            self.temp_data['question'] = question
 
-        elif 2 <= status and status <= 4: #followup question
-            prompt = AIbouConvController.AI_TEACHER_PROMPT
+        if status == 2:
+            prompt = QConvController.first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nComment and Follow-up question:"
+            response = completion(prompt_=prompt, temperature = AIbouConvController.temperature, presence_penalty = AIbouConvController.presence_penalty, frequency_penalty = AIbouConvController.frequency_penalty)
+
+            logitem_ai = LogItem.objects.create(text=response, name="AI", type="AI",
+                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
+            logitem_ai.save()
+
+            good_english = self.generate_correct_english()
+
+            log_items = [logitem_ai]
+
+        elif 3 <= status and status <= 4:
 
 
             number_of_messages_to_include = (status-1)*2
@@ -465,7 +472,7 @@ Comment and Follow-up question: My favorite character is Legolas. He is mischiev
 
             response = completion(prompt_=prompt, temperature = AIbouConvController.temperature, presence_penalty = AIbouConvController.presence_penalty, frequency_penalty = AIbouConvController.frequency_penalty)
 
-            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_followup, type="AI",
+            logitem_ai = LogItem.objects.create(text=response, name="AI", type="AI",
                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
             logitem_ai.save()
 
@@ -475,9 +482,12 @@ Comment and Follow-up question: My favorite character is Legolas. He is mischiev
             self.temp_data['first_answer'] = message
             self.temp_data['followup'] = response
 
+
+        conv_done = self.conversation_is_done()
+
         status = self.temp_data['status']
 
-        if self.temp_data['status'] == 1 or self.temp_data['status'] == 2 or self.temp_data['status'] == 3 or self.temp_data['status'] == 4:
+        if 1 <= self.temp_data['status'] == 2 or self.temp_data['status'] <= 3:
             self.temp_data['status'] = self.temp_data['status'] + 1
         elif self.temp_data['status'] == 4:
             self.temp_data['status'] = 1
@@ -493,15 +503,16 @@ Comment and Follow-up question: My favorite character is Legolas. He is mischiev
 
         return serialize(log_items), "Unavailabe", good_english, conv_done # response, exmample response, correct english, conversation done?
 
-     def generate_prompt_for_aibou(number_of_messages_to_include):
-
+     def generate_prompt_for_aibou(self, number_of_messages_to_include):
+        prompt = AIbouConvController.AI_TEACHER_PROMPT
         for i in range(number_of_messages_to_include):
             message_index = self.conversation.current_log_number() - number_of_messages_to_include + i + 1
             if self.conversation.logitem_set.get(log_number=message_index).type == "AI":
                 prompt += "\nAI: " + self.conversation.logitem_set.get(log_number=message_index).text
-            elif self.conversation.logitem_set.get(log_number=message_index).type == "HUMAN":
+            elif self.conversation.logitem_set.get(log_number=message_index).type == "User":
                 prompt += "\nHUMAN: " + self.conversation.logitem_set.get(log_number=message_index).text
-
+        prompt += "\nAI:"
+        print(prompt)
         return prompt
 
 class ArticleDiscussionConvController(QConvController):
@@ -542,7 +553,7 @@ class ArticleDiscussionConvController(QConvController):
         # disable the conversation
 
 
-class ArticleQuestionConvConroller(ConvController):
+class ArticleQuestionConvController(ConvController):
     def initialise(self):
         self.temp_data["question_number"] = 0
 

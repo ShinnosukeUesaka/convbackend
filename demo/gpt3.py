@@ -80,7 +80,13 @@ def completion(
         print(err_)
         return 'error'
     else:
-        return response['choices'][0]['text']
+        text = response['choices'][0]['text']
+
+        if text == "":
+            return ""
+        elif text[0] == " ":
+            text = text[1:]
+        return text
 
 
 # START content_filter

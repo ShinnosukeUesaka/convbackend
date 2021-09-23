@@ -184,11 +184,15 @@ GoodEnglish: Let's have breakfast together tomorrow.
             return good_english
 
    def conversation_is_done(self):
-       print(self.scenario_options)
+       end_sequence = self.scenario_options.get("end sequence")
+
+       if end_sequence == None:
+           return False
+
        for word in self.scenario_options['end sequence']:
            if word in self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text:
                return True
-        return False
+       return False
 
 
 

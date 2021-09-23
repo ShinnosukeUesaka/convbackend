@@ -28,9 +28,9 @@ class ConvController:
         except:
             self.temp_data = {}
         try:
-            self.scenario_option = json.loads(self.scenario.options)
+            self.scenario_options = json.loads(self.scenario.options)
         except:
-            self.scenario_option = {}
+            self.scenario_options = {}
 
 
    def chat(self, message):
@@ -40,7 +40,7 @@ class ConvController:
 
         log_text = self.conversation.prepare()
 
-        if self.scenario_option.get("example") == False:
+        if self.scenario_options.get("example") == False:
             stop_sequence = "\n"
             response, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
             example_response = "Unavailable"
@@ -111,7 +111,7 @@ class ConvController:
 
         broken_english = self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text
 
-        if self.scenario_option.get("context_for_correction") == False:
+        if self.scenario_options.get("context_for_correction") == False:
             correct_english = self.correct_english(broken_english)
 
         else: # 文脈判断オン
@@ -184,7 +184,11 @@ GoodEnglish: Let's have breakfast together tomorrow.
             return good_english
 
    def conversation_is_done(self):
-       return False
+        for word in self.scenario_options['end sequence']:
+           if word in self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text:
+               return True
+        return False
+
 
 
 class QConvController(ConvController):
@@ -417,13 +421,13 @@ class ArticleDiscussionConvController(QConvController):
         return serialize([first_log])
 
     def choose_question(self):
-        questions = self.scenario_option.get("questions")
+        questions = self.scenario_options.get("questions")
         question = questions[self.temp_data["question_number"]]
         self.temp_data["question_number"] = self.temp_data["question_number"] + 1 # refactor someday
         return question
 
     def conversation_is_done(self): # call after choose_question()
-        return self.temp_data["status"] == 1 and self.temp_data["question_number"] == len(self.scenario_option.get("questions"))
+        return self.temp_data["status"] == 1 and self.temp_data["question_number"] == len(self.scenario_options.get("questions"))
         # disable the conversation
 
 
@@ -454,12 +458,12 @@ class ArticleQuestionConvConroller(ConvController):
         return serialize([first_log])
 
     def choose_question(self):
-        questions = self.scenario_option.get("questions")
+        questions = self.scenario_options.get("questions")
         question = questions[self.temp_data["question_number"]]
         return question
 
     def conversation_is_done(self): # call after choose_question()
-        return self.temp_data["question_number"] == len(self.scenario_option.get("questions"))
+        return self.temp_data["question_number"] == len(self.scenario_options.get("questions"))
         # disable the conversation
 
 
@@ -469,9 +473,9 @@ class ArticleQuestionConvConroller(ConvController):
                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation)
          logitem_human.save()
 
-         questions = self.scenario_option.get("questions")
+         questions = self.scenario_options.get("questions")
          question = questions[self.temp_data["question_number"]-1]
-         answers = self.scenario_option.get("answers")
+         answers = self.scenario_options.get("answers")
          answer = answers[self.temp_data["question_number"]-1]
 
          if gpthelpers.evaluate_answer(question, answer, message):
@@ -494,7 +498,7 @@ class ArticleQuestionConvConroller(ConvController):
                                                  log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
              logitem_ai2.save()
              logitems_ai = [logitem_ai, logitem_ai2]
-             
+
          good_english = self.correct_english(message)
 
 

@@ -40,7 +40,7 @@ class ConvController:
 
         log_text = self.conversation.prepare()
 
-        if self.scenario_options.get("example") == False or conversation_is_done() == True:
+        if self.scenario_options.get("example") == False or self.conversation_is_done() == True:
             stop_sequence = "\n"
             response, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
             example_response = "Unavailable"

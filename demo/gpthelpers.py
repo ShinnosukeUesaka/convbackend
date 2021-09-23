@@ -1,5 +1,6 @@
 from . import gpt3
 from .gpt3 import completion
+import re
 
 def evaluate_answer(question, correct_answer, student_answer):
 
@@ -91,7 +92,7 @@ Word: """
     stop=["\n\n"])
 
     output = output[1:]
-
+    
     try:
         definition, example = re.split("\nExample: ", output)
     except:

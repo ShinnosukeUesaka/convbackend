@@ -40,7 +40,7 @@ class ConvController:
 
         log_text = self.conversation.prepare()
 
-        if self.scenario_options.get("example") == False:
+        if self.scenario_options.get("example") == False or conversation_is_done() == True:
             stop_sequence = "\n"
             response, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
             example_response = "Unavailable"
@@ -190,9 +190,11 @@ GoodEnglish: Let's have breakfast together tomorrow.
            return False
 
        for word in self.scenario_options['end sequence']:
-           if word in self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text:
+           if word in self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()).text:
                return True
        return False
+
+
 
 
 
@@ -396,7 +398,109 @@ Comment: Cool! I wish I can go to Japan someday.
     def choose_question(self):
         return random.choice(QConvController.questions)
 
+class AIbouConvController(QConvController):
+     AI_TEACHER_PROMPT= """I am a polite friendly intelligent AI English teacher.
 
+Question: What is your hobby?
+Answer: I like playing the piano.
+Comment and Follow-up question: Playing the piano seems very difficult. How long have you been practicing playing the piano?
+--
+Question: What are your plans for the weekends?
+Answer: I will go to the gym.
+Comment and Follow-up question: You are so healthy and disciplined! How often do you go to the gym?
+--
+Question: What is your favorite movie?
+Answer: My favorite movie is The Lord of the Rings.
+Comment and Follow-up question: My favorite character is Legolas. He is mischievous, has a sense of humour! What is your favorite character?
+--
+"""
+
+     temperature = 0.6
+     frequency_penalty = 0
+     presence_penalty = 0.5
+
+     def chat(self, message):
+
+        logitem_human = LogItem.objects.create(text=message, name=QConvController.user_name, type="User",
+                                               log_number=self.conversation.current_log_number() + 1, conversation=self.conversation)
+        logitem_human.save()
+
+
+        status = self.temp_data['status']
+
+        log_items = []
+
+        print(status)
+        if status == 1: #final comment and Question
+            prompt = self.generate_prompt_for_aibou(2)
+
+            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_question, type="AI",
+                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
+            logitem_ai.save()
+
+            good_english = self.generate_correct_english()
+
+            if self.conversation_is_done():
+                log_items = [logitem_ai]
+            else:
+                # if the conversation still continues generate next question
+                question = self.choose_question()
+
+                logitem_ai2 = LogItem.objects.create(text=question, name=QConvController.ai_name_question, type="AI",
+                                                    log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
+                logitem_ai2.save()
+                log_items = [logitem_ai, logitem_ai2]
+
+                self.temp_data['question'] = question
+
+
+        elif 2 <= status and status <= 4: #followup question
+            prompt = AIbouConvController.AI_TEACHER_PROMPT
+
+
+            number_of_messages_to_include = (status-1)*2
+            prompt = self.generate_prompt_for_aibou(number_of_messages_to_include)
+
+            response = completion(prompt_=prompt, temperature = AIbouConvController.temperature, presence_penalty = AIbouConvController.presence_penalty, frequency_penalty = AIbouConvController.frequency_penalty)
+
+            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_followup, type="AI",
+                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
+            logitem_ai.save()
+
+            good_english = self.generate_correct_english()
+
+            log_items = [logitem_ai]
+            self.temp_data['first_answer'] = message
+            self.temp_data['followup'] = response
+
+        status = self.temp_data['status']
+
+        if self.temp_data['status'] == 1 or self.temp_data['status'] == 2 or self.temp_data['status'] == 3 or self.temp_data['status'] == 4:
+            self.temp_data['status'] = self.temp_data['status'] + 1
+        elif self.temp_data['status'] == 4:
+            self.temp_data['status'] = 1
+        else:
+            print("status error")
+            self.temp_data['status'] = 1
+        print("-------status" + str(self.temp_data['status']))
+
+        self.conversation.temp_for_conv_controller = json.dumps(self.temp_data)
+        self.conversation.save()
+
+        # don't add anything here. status already changed.
+
+        return serialize(log_items), "Unavailabe", good_english, conv_done # response, exmample response, correct english, conversation done?
+
+     def generate_prompt_for_aibou(number_of_messages_to_include):
+
+        for i in range(number_of_messages_to_include):
+            message_index = self.conversation.current_log_number() - number_of_messages_to_include + i + 1
+            if self.conversation.logitem_set.get(log_number=message_index).type == "AI":
+                prompt += "\nAI: " + self.conversation.logitem_set.get(log_number=message_index).text
+            elif self.conversation.logitem_set.get(log_number=message_index).type == "HUMAN":
+                prompt += "\nHUMAN: " + self.conversation.logitem_set.get(log_number=message_index).text
+
+        return prompt
 
 class ArticleDiscussionConvController(QConvController):
     # new temp data added: question_number

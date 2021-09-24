@@ -92,7 +92,7 @@ Word: """
     stop=["\n\n"])
 
     output = output[1:]
-    
+
     try:
         definition, example = re.split("\nExample: ", output)
     except:
@@ -117,6 +117,36 @@ Full Question: Why did you decide to major in mathematics at your university?
     presence_penalty = 0,
     stop=["\n"])
 
-    output = output[1:]
+    if output[0] == " ":
+        return output[1:]
+    else:
+        return output
+
+    return output
+
+def conver_question_answer_to_full_sentence(question, answer) -> str:
+    PROMPT = """Why are you learning English?
+I want to make foreign friends.
+Full sentence: I am learning English, because I want to make foreign friends.
+
+What is your dream.
+I want to become a doctor.
+Full sentence: My dream is to become a doctor.
+
+"""
+    input = PROMPT + question + "\n" + answer + "\n" + "Full Sentence:"
+
+    output =  completion(engine='davinci', prompt_=input,
+    temperature = 0,
+    max_tokens = 300,
+    top_p = 1,
+    frequency_penalty = 0,
+    presence_penalty = 0,
+    stop=["\n"])
+
+    if output[0] == " ":
+        return output[1:]
+    else:
+        return output
 
     return output

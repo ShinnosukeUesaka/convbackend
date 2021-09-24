@@ -262,10 +262,10 @@ Comment: Cool! I wish I can go to Japan someday.
 """
 
     questions_dic = {
-        'what-if': ['If you could have lunch with anyone in the world, who would you choose?', 'If money was no problem, where would you like to travel on holiday?', 'If you could address the whole world, what would you say?', 'What would you do differently if there were 30 hours in a day?', 'Would you like to travel in space?', 'If an alien came to Earth, where would you show it around?'],
+        'what-if': ['If you could have lunch with anyone in the world, who would you choose?', 'If money was no problem, where would you like to travel on holiday?', 'What would you do differently if there were 30 hours in a day?', 'Would you like to travel in space?', 'If an alien came to Earth, where would you show it around?'],
         'learning-english': ['Do you enjoy speaking English?', 'What is the best way to improve your speaking?', 'What is the most difficult part of learning English?', 'How is English different from your language?', 'Why do you want to learn English?'],
-        'motivational': ['Which person in your life has motivated you the most?', 'Who do you admire the most?', 'What are your strengths?', 'What is your favorite saying?'],
-        'likes-dislikes': ['What phobias do you have?', 'What is your favorite song?', 'What is the best modern invention?', 'Which is more important: love, money or health?', 'Are you a pet lover?', 'Who is your favorite celebrity?', 'What was your favorite subject at school?', 'What is your favorite time of the day?', 'What gets you really angry?', 'What is your favorite food?'],
+        'motivational': ['Which person in your life has motivated you the most?', 'Who do you admire the most?', 'What are your strengths?'],
+        'likes-dislikes': ['What phobias do you have?', 'What is your favorite song?', 'Which is more important: love, money or health?', 'Are you a pet lover?', 'Who is your favorite celebrity?', 'What was your favorite subject at school?', 'What is your favorite time of the day?', 'What gets you really angry?', 'What is your favorite food?'],
         'other': ['What are your plans for the weekends?', 'What is your country famous for?', 'What are your plans for the weekends?', 'What did you do yesterday?', 'What are your plans for tomorrow?', 'What did you eat this morning?', 'What is your hobby?', 'What do you hate the most?', 'What is your dream?', 'How is the weather today?', 'Tell me something about you', 'What do you do in your free time?', 'What is the weather like?', 'What have you been up to lately?', 'How much sleep do you usually get?', 'Tell me about your friend'],
         'AI generated': ['Where do you live?', 'How many people live in your family?', 'How do you spend your free time?', 'How do you like your life?', 'What do you usually do on your days off?', 'What do you hate?', 'What do you like best about your job?', 'What do you do in your free time?', 'How do you spend your free time?', 'What is your dream?', 'Which country have you been to?',  'What makes you happy?', 'Describe your town', 'Which countries have you been to?', 'What do you plan to do today?', 'What do you plan to do tomorrow?', 'What do you do on your days off?', 'Are you happy?', 'What is your favorite food?', 'What is your favorite movie?', 'What is your favorite song?', 'What is your favorite colour?', 'What is your favorite sport?', 'What is your favorite show?', 'What is your favorite song?', 'What is your favorite movie?', 'What is your favorite book?', "What's your favorite toy as a child?", 'Which celebrity would you like to meet?', 'What do you like the most about winter?', 'What do you think is the best season?']
     }
@@ -299,6 +299,31 @@ Comment: Cool! I wish I can go to Japan someday.
         status = self.temp_data['status']
 
         log_items = []
+
+        def initialise(self):
+            first_question = self.choose_question()
+
+
+
+            first_log = LogItem.objects.create(
+                log_number = 1,
+                scenario = None,
+                conversation = self.conversation,
+                type = "AI",
+                name = "Question",
+                text = first_question,
+                visible = True,
+                editable = True,
+                send = True,
+                include_name = True
+            )
+
+            first_log.save()
+
+            self.conversation.temp_for_conv_controller = json.dumps({'status': 2, 'question': first_question, 'first_answer': "", 'followup': "", 'second_answer': "", 'second_followup': ""})
+            self.conversation.save()
+
+            return serialize([first_log])
 
         print(status)
         if status == 1: #final comment and Question
@@ -372,40 +397,16 @@ Comment: Cool! I wish I can go to Japan someday.
 
         return serialize(log_items), "Unavailabe", good_english, conv_done # response, exmample response, correct english, conversation done?
 
-    # create first question
-    def initialise(self):
-        first_question = self.choose_question()
-
-
-
-        first_log = LogItem.objects.create(
-            log_number = 1,
-            scenario = None,
-            conversation = self.conversation,
-            type = "AI",
-            name = "Question",
-            text = first_question,
-            visible = True,
-            editable = True,
-            send = True,
-            include_name = True
-        )
-
-        first_log.save()
-
-        self.conversation.temp_for_conv_controller = json.dumps({'status': 2, 'question': first_question, 'first_answer': "", 'followup': "", 'second_answer': "", 'second_followup': ""})
-        self.conversation.save()
-
-        return serialize([first_log])
 
     def choose_question(self):
         return random.choice(QConvController.questions)
 
 class AIbouConvController(QConvController):
-     AI_TEACHER_PROMPT= """The following is a conversation with an AI English Teacher. The AI English Teacher is helpful, creative, clever, knowledgeable and very friendly
+     AI_TEACHER_PROMPT= """The following is a conversation with an AI assistant. The AI assistant is helpful, creative, clever, talkative, and very friendly.
 
 Human: Hello, who are you?
-AI: I am an AI to help you practice speaking English. Let's have conversations together."""
+AI: I am an AI. Let's talk!
+Human: """
 
      temperature = 0.8
      frequency_penalty = 0
@@ -413,26 +414,50 @@ AI: I am an AI to help you practice speaking English. Let's have conversations t
 
      MAX_REGENERATE = 2
 
+     def initialise(self):
+         first_question = self.choose_question()
+
+
+
+         first_log = LogItem.objects.create(
+             log_number = 1,
+             scenario = None,
+             conversation = self.conversation,
+             type = "AI",
+             name = "Question",
+             text = first_question,
+             visible = True,
+             editable = True,
+             send = True,
+             include_name = True
+         )
+
+         first_log.save()
+
+         self.conversation.temp_for_conv_controller = json.dumps({'status': 2, 'question': first_question, 'first_user_answer_modified': ""})
+         self.conversation.save()
+
+         return serialize([first_log])
+
      def chat(self, message):
 
         logitem_human = LogItem.objects.create(text=message, name="Human", type="User",
                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation)
         logitem_human.save()
 
+        log_items = [] # put response from AI here.
 
         status = self.temp_data['status']
-
-        log_items = []
-
-        print(status)
         if status == 1: #final comment and Question
-            prompt = self.generate_prompt_for_aibou(8)
+            prompt = self.generate_prompt_for_aibou(7)
 
-            # Can't be a qeustion. 話題が次にうつる。
+            # Can't be a qeustion. 話題が次にうつるので質問はNG
             for i in range(AIbouConvController.MAX_REGENERATE):
                 response = completion(prompt_=prompt, temperature = AIbouConvController.temperature, presence_penalty = AIbouConvController.presence_penalty, frequency_penalty = AIbouConvController.frequency_penalty)
                 if '?' not in response:
                     break
+                if i == AIbouConvController.MAX_REGENERATE - 1:
+                    response = "Interesting"
 
             response = completion(prompt_=prompt, temperature = AIbouConvController.temperature, presence_penalty = AIbouConvController.presence_penalty, frequency_penalty = AIbouConvController.frequency_penalty)
 
@@ -453,12 +478,15 @@ AI: I am an AI to help you practice speaking English. Let's have conversations t
             self.temp_data['question'] = question
 
         if status == 2:
-            prompt = QConvController.first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nComment and Follow-up question:"
-            response = completion(prompt_=prompt, temperature = AIbouConvController.temperature, presence_penalty = AIbouConvController.presence_penalty, frequency_penalty = AIbouConvController.frequency_penalty)
 
+            prompt = QConvController.first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nComment and Follow-up question:"
+
+            response = completion(prompt_=prompt, temperature = AIbouConvController.temperature, presence_penalty = AIbouConvController.presence_penalty, frequency_penalty = AIbouConvController.frequency_penalty)
             logitem_ai = LogItem.objects.create(text=response, name="AI", type="AI",
                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
             logitem_ai.save()
+
+            self.temp_data['first_user_answer_modified'] = gpthelpers.conver_question_answer_to_full_sentence(self.temp_data['question'], message)
 
             good_english = self.generate_correct_english()
 
@@ -467,7 +495,7 @@ AI: I am an AI to help you practice speaking English. Let's have conversations t
         elif 3 <= status and status <= 4:
 
 
-            number_of_messages_to_include = (status-1)*2
+            number_of_messages_to_include = (status-1)*2 - 1
             prompt = self.generate_prompt_for_aibou(number_of_messages_to_include)
 
             response = completion(prompt_=prompt, temperature = AIbouConvController.temperature, presence_penalty = AIbouConvController.presence_penalty, frequency_penalty = AIbouConvController.frequency_penalty)
@@ -504,7 +532,10 @@ AI: I am an AI to help you practice speaking English. Let's have conversations t
         return serialize(log_items), "Unavailabe", good_english, conv_done # response, exmample response, correct english, conversation done?
 
      def generate_prompt_for_aibou(self, number_of_messages_to_include):
+
         prompt = AIbouConvController.AI_TEACHER_PROMPT
+        prompt += self.temp_data['first_user_answer_modified']
+        number_of_messages_to_include = number_of_messages_to_include - 1
         for i in range(number_of_messages_to_include):
             message_index = self.conversation.current_log_number() - number_of_messages_to_include + i + 1
             if self.conversation.logitem_set.get(log_number=message_index).type == "AI":

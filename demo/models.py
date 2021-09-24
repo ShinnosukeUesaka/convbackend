@@ -43,7 +43,7 @@ class Scenario(models.Model):
     information_ru = models.CharField(max_length=1000, default='Russian info')
 
 
-    category = models.CharField(max_length=100, default='Roll Play')
+    category = models.CharField(max_length=100, default='Role Play')
     """
         Exercise: エクササイズ
         Chat: 雑談
@@ -67,7 +67,7 @@ class Scenario(models.Model):
     # JSON (not dict converted to str) of options:
     # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
 
-    expressions = models.TextField(max_length=10000, default="")
+    expressions = models.TextField(max_length=10000, default="", blank=True, null=True)
 
     # GPT-3 Settings
     response_length = models.IntegerField(default=150)  # ai response length

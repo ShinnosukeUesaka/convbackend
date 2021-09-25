@@ -59,7 +59,7 @@ class ConvController:
                     response = output
                     example_response = "Unavailabe"
 
-            if self.conversation.logitem_set.get(log_number=self.conversation.current_log_number - 1).text not in response:
+            if self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text not in response:
                 break
 
 

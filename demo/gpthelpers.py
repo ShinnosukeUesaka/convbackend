@@ -92,9 +92,7 @@ Word: """
     stop=["\n\n"])
 
     if output[0] == " ":
-        return output[1:]
-    else:
-        return output
+        output =  output[1:]
 
     try:
         definition, example = re.split("\nExample: ", output)

@@ -198,6 +198,7 @@ class LogItem(models.Model):
             models.UniqueConstraint(fields=['log_number', 'conversation'], name='Conversation contraint'),
             models.UniqueConstraint(fields=['log_number', 'scenario'], name='Scenario contraint')
         ]
+        ordering = ['log_number']
 
     def __str__(self) -> str:
         if self.include_name == True:

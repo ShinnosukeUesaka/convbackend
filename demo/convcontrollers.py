@@ -80,7 +80,7 @@ class ConvController:
 
    def create_response(self, log_text, retry: int = 3, allow_max: int = 0, stop: List[str] = None) -> str:
         #print(f"GPT3 request: \n {log_text}")
-        re = completion(prompt_=log_text, stop=stop, temperature = float(self.scenario.temperature), presence_penalty = float(self.scenario.presence_penalty), frequency_penalty = float(self.scenario.frequency_penalty))
+        re = completion(prompt_=log_text, stop=stop, temperature = float(self.scenario.temperature), presence_penalty = float(self.scenario.presence_penalty), frequency_penalty = float(self.scenario.frequency_penalty), top_p = float(self.scenario.top_p))
         safety = int(gpt3.content_filter(re))
         ok = safety <= allow_max
         if not ok and retry <= 0:

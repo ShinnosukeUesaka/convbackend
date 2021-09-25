@@ -48,7 +48,7 @@ def completion(
         presence_penalty: float = 0.6,
         stop: List[str] = None
 ) -> str:
-    print("Prompt----" + prompt_  + "----prompt end")
+    print("Prompt----\n" + prompt_  + "\n----prompt end")
     # hardcode options
     """
     r = requests.post(

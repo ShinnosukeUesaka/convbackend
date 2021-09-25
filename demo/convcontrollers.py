@@ -20,6 +20,8 @@ def combine_lists(dictionary):
     return combined_list
 
 class ConvController:
+   MAX_REGENERATE = 2
+
    def __init__(self, conversation: Conversation):
         self.conversation = conversation
         self.scenario = conversation.scenario
@@ -40,20 +42,27 @@ class ConvController:
 
         log_text = self.conversation.prepare()
 
-        if self.scenario_options.get("example") == False:
-            stop_sequence = "\n"
-            response, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
-            example_response = "Unavailable"
 
-        else:
-            stop_sequence = "\n" + self.scenario.ai_name
-            output, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
-            print(f'the pure response from gpt3: {output}')
-            try:
-                response, example_response = re.split("\n" + self.scenario.human_name + ": ", output)
-            except:
-                response = output
-                example_response = "Unavailabe"
+        for i in range(ConvController.MAX_REGENERATE):
+            if self.scenario_options.get("example") == False:
+                stop_sequence = "\n"
+                response, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
+                example_response = "Unavailable"
+
+            else:
+                stop_sequence = "\n" + self.scenario.ai_name
+                output, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
+                print(f'the pure response from gpt3: {output}')
+                try:
+                    response, example_response = re.split("\n" + self.scenario.human_name + ": ", output)
+                except:
+                    response = output
+                    example_response = "Unavailabe"
+
+            if self.conversation.logitem_set.get(log_number=self.conversation.current_log_number - 1).text not in response:
+                break
+
+
 
         if response[0] == " ":
             response = response[1:]

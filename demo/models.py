@@ -65,6 +65,9 @@ class Scenario(models.Model):
 
     options = models.TextField(max_length=10000, default='{}') # Not used
 
+    first_example_response = models.CharField(max_length=100, default='Unavailable')
+
+
     # JSON (not dict converted to str) of options:
     # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
 
@@ -74,10 +77,10 @@ class Scenario(models.Model):
 
     # GPT-3 Settings
     response_length = models.IntegerField(default=150)  # ai response length
-    temperature = models.DecimalField(max_digits=4, decimal_places=3, default=0.4)
+    temperature = models.DecimalField(max_digits=4, decimal_places=3, default=0.5)
     top_p = models.DecimalField(max_digits=4, decimal_places=3, default=1)
-    frequency_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0.5)
-    presence_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0)
+    frequency_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0)
+    presence_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0.6)
 
 
 

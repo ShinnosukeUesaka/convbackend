@@ -69,7 +69,6 @@ class ConvController:
         if "\n" in response:
             response = response[:response.index("\n")]
 
-        print(f'response: {response}')
         logitem_ai = LogItem.objects.create(text=response, name=self.scenario.ai_name, type="AI",
                                             log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
 
@@ -101,7 +100,6 @@ class ConvController:
         for initial_prompt in initial_prompts:
 
             initial_prompt.log_number = self.conversation.current_log_number() + 1
-            print(self.conversation.current_log_number())
             initial_prompt.pk = None
             initial_prompt.scenario = None
             initial_prompt.conversation = self.conversation
@@ -308,7 +306,6 @@ Comment: Cool! I wish I can go to Japan someday.
     def create_response(self, log_text, retry: int = 1, check_question = False) -> str:
         #print(f"GPT3 request: \n {log_text}")
 
-        print("HI!!!")
         re = completion(prompt_=log_text, temperature = QConvController.temperature, presence_penalty = QConvController.presence_penalty, frequency_penalty = QConvController.frequency_penalty)
         #safety = int(gpt3.content_filter(re))
         safety = 0
@@ -335,7 +332,6 @@ Comment: Cool! I wish I can go to Japan someday.
 
 
 
-        print(status)
         if status == 1: #final comment and Question
             log_text = QConvController.final_comment_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + self.temp_data['second_answer'] + "\nComment and Follow-up question:" + self.temp_data['second_followup'] + "\nAnswer: " + message + "\nComment: "
 
@@ -552,7 +548,6 @@ Human: """
             elif self.conversation.logitem_set.get(log_number=message_index).type == "User":
                 prompt += "\nHUMAN: " + self.conversation.logitem_set.get(log_number=message_index).text
         prompt += "\nAI:"
-        print(prompt)
         return prompt
 
 class ArticleDiscussionConvController(QConvController):

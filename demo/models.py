@@ -64,10 +64,13 @@ class Scenario(models.Model):
     article = models.TextField(max_length=10000, default='', blank=True, null=True)
 
     options = models.TextField(max_length=10000, default='{}') # Not used
+
     # JSON (not dict converted to str) of options:
     # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
 
-    expressions = models.TextField(max_length=10000, default="", blank=True, null=True)
+    phrases = models.TextField(max_length=10000, default="", blank=True, null=True)
+
+    message_limit = models.IntegerField(default='10')
 
     # GPT-3 Settings
     response_length = models.IntegerField(default=150)  # ai response length
@@ -125,11 +128,6 @@ class Scenario(models.Model):
             'summarize_token': self.summarize_token,
             #'info': self.info,
             'description': self.description,
-            'response_length': self.response_length,
-            'temperature': self.temperature,
-            'top_p': self.top_p,
-            'frequency_penalty': self.frequency_penalty,
-            'presence_penalty': self.presence_penalty,
             'duration': self.duration,
             'level': self.level,
             'article': self.article

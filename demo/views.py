@@ -105,6 +105,8 @@ def chat(request: HttpRequest) -> HttpResponse:
 
     if user_input[0] == " ":
         user_input = user_input[1:]
+    if user_input[-1] == ' ':
+        user_input = user_input[:-1]
 
     response, example_response, good_english, end_conversation = controller.chat(user_input)
 

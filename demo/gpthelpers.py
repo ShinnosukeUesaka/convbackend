@@ -91,7 +91,10 @@ Word: """
     presence_penalty = 0,
     stop=["\n\n"])
 
-    output = output[1:]
+    if output[0] == " ":
+        return output[1:]
+    else:
+        return output
 
     try:
         definition, example = re.split("\nExample: ", output)

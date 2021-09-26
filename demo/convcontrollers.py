@@ -410,8 +410,7 @@ Comment: Cool! I wish I can go to Japan someday.
 class AIbouConvController(QConvController):
      AI_TEACHER_PROMPT= """The following is a conversation with an AI assistant. The AI assistant is helpful, creative, clever, talkative, and very friendly.
 
-Human: Hello, who are you?
-AI: I am AI. I will be your friend. Let's chat!
+AI: I will be your friend. Let's chat!
 Human: """
 
 

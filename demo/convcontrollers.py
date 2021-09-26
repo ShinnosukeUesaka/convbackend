@@ -408,10 +408,14 @@ Comment: Cool! I wish I can go to Japan someday.
         return random.choice(QConvController.questions)
 
 class AIbouConvController(QConvController):
-     AI_TEACHER_PROMPT= """The following is a conversation with an AI assistant. The AI assistant is helpful, creative, clever, talkative, and very friendly.
+#      AI_TEACHER_PROMPT= """The following is a conversation with an AI assistant. The AI assistant is helpful, creative, clever, talkative, and very friendly.
+#
+# Human: Hello, who are you?
+# AI: I am an AI. Let's chat!
+# Human: """
 
-Human: Hello, who are you?
-AI: I am an AI. Let's talk!
+    AI_TEACHER_PROMPT= """The following is a conversation with an AI assistant. The AI assistant is helpful, creative, clever, talkative, and very friendly.
+
 Human: """
 
      temperature = 0.4

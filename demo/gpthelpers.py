@@ -131,8 +131,12 @@ def conver_question_answer_to_full_sentence(question, answer) -> str:
 I want to make foreign friends.
 Full sentence: I am learning English, because I want to make foreign friends.
 
-What is your dream.
-I want to become a doctor.
+Are you a pet lover?
+Yes. I have two dogs.
+Full sentence: I am a pet lover. I have two dogs.
+
+What is your dream?
+I want to become a doctor
 Full sentence: My dream is to become a doctor.
 
 """

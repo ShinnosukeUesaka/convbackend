@@ -546,7 +546,7 @@ Human: """
             if self.conversation.logitem_set.get(log_number=message_index).type == "AI":
                 prompt += "\nAI: " + self.conversation.logitem_set.get(log_number=message_index).text
             elif self.conversation.logitem_set.get(log_number=message_index).type == "User":
-                prompt += "\nHUMAN: " + self.conversation.logitem_set.get(log_number=message_index).text
+                prompt += "\nHuman: " + self.conversation.logitem_set.get(log_number=message_index).text
         prompt += "\nAI:"
         return prompt
 

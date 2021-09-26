@@ -413,6 +413,7 @@ class AIbouConvController(QConvController):
 
     AI_TEACHER_PROMPT= """The following is a conversation with an AI assistant. The AI assistant is helpful, creative, clever, talkative, and very friendly.
 """
+    MAX_REGENERATE = 3
 
     def chat(self, message):
 
@@ -431,7 +432,12 @@ class AIbouConvController(QConvController):
         if status == 1: #final comment and Question
             prompt = self.generate_prompt_for_aibou(8)
 
-            response = completion(prompt_ = prompt)
+            for i in range(AIbouConvController.MAX_REGENERATE):
+                response = completion(prompt_=prompt)
+                if '?' not in response:
+                    break
+                if i == AIbouConvController.MAX_REGENERATE - 1:
+                    response = "Interesting"
 
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_question, type="AI",
                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)

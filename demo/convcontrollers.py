@@ -414,7 +414,7 @@ class AIbouConvController(QConvController):
 # AI: I am an AI. Let's chat!
 # Human: """
 
-    AI_TEACHER_PROMPT= """The following is a conversation with an AI assistant. The AI assistant is helpful, creative, clever, talkative, and very friendly.
+     AI_TEACHER_PROMPT= """The following is a conversation with an AI assistant. The AI assistant is helpful, creative, clever, talkative, and very friendly.
 
 Human: """
 

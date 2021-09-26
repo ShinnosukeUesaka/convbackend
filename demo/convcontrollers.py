@@ -274,7 +274,7 @@ Comment: Cool! I wish I can go to Japan someday.
         'learning-english': ['Do you enjoy speaking English?', 'What is the best way to improve your speaking?', 'What is the most difficult part of learning English?', 'Why do you want to learn English?'],
         'motivational': ['Which person in your life has motivated you the most?', 'Who do you admire the most?', 'What is your favorite saying?'],
         'likes-dislikes': ['What phobias do you have?', 'What is your favorite song?', 'What is the best modern invention?', 'Which is more important: love, money, or health?', 'Are you a pet lover?', 'Who is your favorite celebrity?', 'What is your favorite time of the day?', 'What makes you angry?', 'What is your favorite food?'],
-        'other': ['What are your plans for the weekends?', 'What is your country famous for?', 'What did you do yesterday?', 'What are your plans for tomorrow?', 'What did you eat this morning?', 'What is your hobby?', 'What do you hate the most?', 'What is your dream?', 'How is the weather today?', 'Tell me something about you', 'What do you do in your free time?', 'What have you been up to lately?', 'How much sleep do you usually get?', 'Tell me about your best friend'],
+        'other': ['What are your plans for the weekends?', 'What is your country famous for?', 'What did you do yesterday?', 'What are your plans for tomorrow?', 'What is your hobby?', 'What do you hate the most?', 'What is your dream?', 'How is the weather today?', 'Tell me something about you', 'What do you do in your free time?', 'What have you been up to lately?', 'How much sleep do you usually get?', 'Tell me about your best friend'],
         'AI generated': ['Where do you live?', 'How many people live in your family?', 'What do you usually do on your days off?', 'What do you do in your free time?', 'How do you spend your free time?', 'What is your dream?', 'Which country have you been to?',  'What makes you happy?', 'Describe where you live', 'What do you plan to do today?',  'What is your favorite movie?', 'What is your favorite sport?', 'What is your favorite show?', 'What is your favorite song?', 'What is your favorite movie?', 'What is your favorite book?', "What's your favorite toy as a child?", 'Which celebrity would you like to meet?', 'What do you like the most about winter?', 'What do you think is the best season?']
     }
     #http://www.roadtogrammar.com/dl/warmers.pdf
@@ -412,8 +412,7 @@ Comment: Cool! I wish I can go to Japan someday.
 class AIbouConvController(QConvController):
 
     AI_TEACHER_PROMPT= """The following is a conversation with an AI assistant. The AI assistant is helpful, creative, clever, talkative, and very friendly.
-
-AI: I will be your friend. Let's chat!"""
+"""
 
     def chat(self, message):
 

@@ -414,7 +414,7 @@ Human: Hello, who are you?
 AI: I am an AI. Let's talk!
 Human: """
 
-     temperature = 0.8
+     temperature = 0.4
      frequency_penalty = 0
      presence_penalty = 0.6
 

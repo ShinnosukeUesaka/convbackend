@@ -258,13 +258,13 @@ Question: What sport do you play?
 Answer: I like playing soccer!
 Comment and Follow-up question: Soccer is pretty hard. Why do you like soccer?
 Answer: I used to watch soccer players on TV. I admired them so much. I wanted to be like them one day.
-Comment: Yes you can be like them!
+Comment: I am sure you can be like them!
 --
 Question: What did you do last month?
 Answer: I went to Japan last month.
 Comment and Follow-up question: Sounds fun! What did you do there?
 Answer: I saw a lot of temples.
-Comment: Cool! I wish I can go to Japan someday.
+Comment: Cool! Japanese temples are unique and beautiful. I wish I can go to Japan someday.
 --
 """
 

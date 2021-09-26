@@ -81,7 +81,7 @@ def completion(
         return 'error'
     else:
         text = response['choices'][0]['text']
-
+        print(text)
         if text == "":
             return ""
         elif text[0] == " ":

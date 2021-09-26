@@ -75,11 +75,12 @@ def define_word(word):
 
     PROMPT = """Define the word and use the word in a sentence.
 
-Word:  Population
-Definition: The number of people in a particular area
-Example: The population of India is 1.2 billion.
+Word: Predict
+Definition: Say or estimate that a specified thing will happen in the future
+Example: It is too early to predict a result
+Synonym: Forecast, Guess
 
-Word: """
+Word:  """
 
     input = PROMPT + word + "\n" + "Definition:"
 
@@ -95,11 +96,11 @@ Word: """
         output =  output[1:]
 
     try:
-        definition, example = re.split("\nExample: ", output)
+        definition, example, synonym = re.split("\nExample: |\nSynonym: ", output)
     except:
-        definition, example = "error", "error"
+        definition, example, synonym = "error", "error", "error"
 
-    return definition, example
+    return definition, example, synonym
 
 def convert_questions_to_full_question(question, context) -> str:
 

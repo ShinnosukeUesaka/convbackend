@@ -330,10 +330,11 @@ def dictionary(request: HttpRequest) -> HttpResponse:
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
 
-    definition, example = gpthelpers.define_word(data['word'])
+    definition, example, synonym = gpthelpers.define_word(data['word'])
 
     return JsonResponse({'definition': definition,
         'example': example,
+        'synonym': synonym
     })
 
 

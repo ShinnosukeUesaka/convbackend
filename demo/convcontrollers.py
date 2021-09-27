@@ -121,16 +121,16 @@ class ConvController:
         broken_english = self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text
 
         if self.scenario_options.get("context_for_correction") == False:
-            correct_english = self.correct_english(broken_english)
+            correct_english = gpthelpers.correct_english(broken_english)
 
         else: # 文脈判断オン
             if len(broken_english.split()) <= 2:
                 return broken_english
             elif '?' in broken_english:
-                correct_english = self.correct_english(broken_english)
+                correct_english = gpthelpers.correct_english(broken_english)
             else:
                 context = self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-2).text
-                correct_english =  self.correct_english(broken_english, context)
+                correct_english =  gpthelpers.correct_english(broken_english, context)
 
                 if correct_english == context: #バグが発生した場合
                     return broken_english
@@ -638,7 +638,7 @@ class ArticleQuestionConvController(ConvController):
              logitem_ai2.save()
              logitems_ai = [logitem_ai, logitem_ai2]
 
-         good_english = self.correct_english(message)
+         good_english = gpthelpers.correct_english(message)
 
 
          self.temp_data["question_number"] =  self.temp_data["question_number"] + 1

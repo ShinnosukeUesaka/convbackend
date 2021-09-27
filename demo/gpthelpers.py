@@ -24,8 +24,8 @@ Correct or Incorrect:"""
 
 def correct_english(broken_english, context=None) -> str:
     # move the examples to somewhere easily editable.　#https://www.eibunkousei.net/%E6%97%A5%E6%9C%AC%E4%BA%BA%E3%81%AE%E8%8B%B1%E8%AA%9E%E3%81%AB%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E9%96%93%E9%81%95%E3%81%84/
-    examples =  """BrokenEnglish: Its like that i'm chat with a really person not robot.
-GoodEnglish: It feels like chatting with a real person, and not a robot.
+    examples =  """BrokenEnglish: Its like that i'm chat with a really person not robot!
+GoodEnglish: It feels like chatting with a real person, and not a robot!
 
 BrokenEnglish: I want to make reservation with doctor after one hour.
 GoodEnglish: I want to make an appointment with the doctor in an hour.
@@ -50,8 +50,8 @@ BrokenEnglish: I want to make reservation with doctor after one hour.
 GoodEnglish: I want to make an appointment with the doctor in an hour.
 
 What should we do tomorrow?
-BrokenEnglish: let's eat morning meal tomorrow.
-GoodEnglish: Let's have breakfast together tomorrow.
+BrokenEnglish: let's eat morning meal tomorrow!
+GoodEnglish: Let's have breakfast together tomorrow!
 
 """
     if context == None or "":

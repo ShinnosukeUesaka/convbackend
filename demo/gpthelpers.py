@@ -28,10 +28,10 @@ def correct_english(broken_english, context=None) -> str:
 GoodEnglish: It feels like chatting with a real person, and not a robot.
 
 BrokenEnglish: I want to make reservation with doctor after one hour.
-GoodEnglish: I would like to make an appointment with the doctor in an hour.
+GoodEnglish: I want to make an appointment with the doctor in an hour.
 
-BrokenEnglish: I'm interesting math. because it's fun.
-GoodEnglish: I'm interested in math, because it's fun.
+BrokenEnglish: I'm interesting math.
+GoodEnglish: I'm interested in math.
 
 BrokenEnglish: let's eat morning meal tomorrow to fun.
 GoodEnglish: Let's have breakfast together tomorrow.
@@ -41,9 +41,9 @@ BrokenEnglish: """
 BrokenEnglish: Blue. It color of sky.
 GoodEnglish: Blue. It is the color of the sky.
 
-Do you play any sports?
-BrokenEnglish: Soccer. I am good at it.
-GoodEnglish: I play soccer. I am good at it.
+My favorite movie is Harry Potter.
+BrokenEnglish: I like Harry Potter too. What you favorite character?
+GoodEnglish: I like Harry Potter too. What is your favorite character?
 
 How may I help you?
 BrokenEnglish: I want to make reservation with doctor after one hour.

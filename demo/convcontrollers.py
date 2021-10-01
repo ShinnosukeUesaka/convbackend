@@ -236,35 +236,36 @@ Comment and Follow-up question: My favorite character is Legolas. He is mischiev
 --
 """
 
-    second_followup_prompt = """I am a polite friendly intelligent AI English teacher.
+#     second_followup_prompt = """I am a polite friendly intelligent AI English teacher.
+#
+# Question: What sport do you play?
+# Answer: I like playing soccer!
+# Comment and Follow-up question: Soccer is pretty hard. Why do you like soccer?
+# Answer: I used to watch soccer players on TV. I admired them so much. I wanted to be like them one day.
+# Comment and Follow-up question: Yes you can be like them! Who is your favorite soccer player?
+# --
+# Question: What is your hobby?
+# Answer: I like playing the piano.
+# Comment and Follow-up question: Playing piano seems very difficult. How long have you been practicing playing the piano?
+# Answer: More than an hour everyday!
+# Comment and Follow-up question: You are very hard working! Which piano song are you practicing right now?
+# --
+# """
+    second_followup_prompt = first_followup_prompt
 
-Question: What sport do you play?
-Answer: I like playing soccer!
-Comment and Follow-up question: Soccer is pretty hard. Why do you like soccer?
-Answer: I used to watch soccer players on TV. I admired them so much. I wanted to be like them one day.
-Comment and Follow-up question: Yes you can be like them! Who is your favorite soccer player?
---
+    final_comment_prompt = """I am a polite friendly intelligent AI English teacher.
+
 Question: What is your hobby?
 Answer: I like playing the piano.
 Comment and Follow-up question: Playing piano seems very difficult. How long have you been practicing playing the piano?
 Answer: More than an hour everyday!
-Comment and Follow-up question: You are very hard working! Which piano song are you practicing right now?
---
-"""
-
-    final_comment_prompt = """I am a polite friendly intelligent AI English teacher.
-
-Question: What sport do you play?
-Answer: I like playing soccer!
-Comment and Follow-up question: Soccer is pretty hard. Why do you like soccer?
-Answer: I used to watch soccer players on TV. I admired them so much. I wanted to be like them one day.
-Comment: I am sure you can be like them!
+Comment and Follow-up question: You are hard working! It's important to make a constant effort.
 --
 Question: What did you do last month?
 Answer: I went to Japan last month.
 Comment and Follow-up question: Sounds fun! What did you do there?
-Answer: I saw a lot of temples.
-Comment: Cool! Japanese temples are unique and beautiful. I wish I can go to Japan someday.
+Answer:I went to sure Itsukushima Shrine
+Comment: Cool! I heard that Torii gate appears to almost float on the water during high tide like a mystical island. I want to go to Japan someday.
 --
 """
 

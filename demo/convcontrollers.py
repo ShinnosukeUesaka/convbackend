@@ -236,22 +236,21 @@ Comment and Follow-up question: My favorite character is Legolas. He is mischiev
 --
 """
 
-#     second_followup_prompt = """I am a polite friendly intelligent AI English teacher.
-#
-# Question: What sport do you play?
-# Answer: I like playing soccer!
-# Comment and Follow-up question: Soccer is pretty hard. Why do you like soccer?
-# Answer: I used to watch soccer players on TV. I admired them so much. I wanted to be like them one day.
-# Comment and Follow-up question: Yes you can be like them! Who is your favorite soccer player?
-# --
-# Question: What is your hobby?
-# Answer: I like playing the piano.
-# Comment and Follow-up question: Playing piano seems very difficult. How long have you been practicing playing the piano?
-# Answer: More than an hour everyday!
-# Comment and Follow-up question: You are very hard working! Which piano song are you practicing right now?
-# --
-# """
-    second_followup_prompt = first_followup_prompt
+    second_followup_prompt = """I am a polite friendly intelligent AI English teacher.
+
+Question: What sport do you play?
+Answer: I like playing soccer!
+Comment and Follow-up question: Soccer is pretty hard. Why do you like soccer?
+Answer: I used to watch soccer players on TV. I admired them so much. I wanted to be like them one day.
+Comment and Follow-up question: Yes you can be like them! Who is your favorite soccer player?
+--
+Question: What is your hobby?
+Answer: I like playing the piano.
+Comment and Follow-up question: Playing piano seems very difficult. How long have you been practicing playing the piano?
+Answer: More than an hour everyday!
+Comment and Follow-up question: You are very hard working! Which piano song are you practicing right now?
+--
+"""
 
     final_comment_prompt = """I am a polite friendly intelligent AI English teacher.
 

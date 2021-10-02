@@ -1,6 +1,8 @@
 from . import gpt3
 from .gpt3 import completion
+
 import re
+import difflib
 
 def evaluate_answer(question, correct_answer, student_answer):
 
@@ -54,22 +56,37 @@ BrokenEnglish: let's eat morning meal tomorrow!
 GoodEnglish: Let's have breakfast together tomorrow!
 
 """
+    def correction_insignificant(broken_english, correct_english):
+        corrections = [li for li in difflib.ndiff(broken_english, correct_english) if li[0] != ' ']
+
+        for i in corrections:
+            if i != '+ .' and i != '+ ?' and i != '+ ,' and i != '+ !' and i != '- .' and i != '- ?' and i != '- ,' and i != '- !':
+                return False
+        return True
+
     if context == None or "":
         prompt = examples + broken_english + '\nGoodEnglish:'
     else:
         prompt = examples_context + context + "\nBrokenEnglish: " + broken_english + '\nGoodEnglish:'
 
-    good_english = completion(engine='curie', prompt_=prompt,
+    correct_english = completion(engine='curie', prompt_=prompt,
     temperature = 0,
     max_tokens = 172,
     top_p = 1,
     frequency_penalty = 0,
     presence_penalty = 0)
 
-    if good_english[0] == " ":
-        return good_english[1:]
+
+    if correct_english[0] == " ":
+        correct_english = correct_english[1:]
+
+    if correct_english == context:
+        correct_english = broken_english
+
+    if correction_insignificant(broken_english, correct_english):
+        return broken_english
     else:
-        return good_english
+        return correct_english
 
 def define_word(word):
 

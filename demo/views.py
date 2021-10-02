@@ -8,6 +8,7 @@ from typing import Dict, Tuple
 
 # Responses
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import connection
 from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest, HttpResponse, HttpResponseForbidden
 # CSRF Workaround (API, no tUI)
 from django.views.decorators.csrf import csrf_exempt
@@ -27,7 +28,6 @@ from .types import LogText
 from . import convcontrollers
 from . import gpthelpers
 
-import re
 
 def make_error(id_: str, msg: str, **kwargs) -> Dict:
     return {
@@ -65,6 +65,76 @@ def assert_keys(data: Dict, keys: Dict[str, type]) -> Tuple[JsonResponse, bool]:
         if not isinstance(scope, type_):
             return JsonResponse(make_error('error.body.typing', f'must be {type_}, not {type(scope)}')), False
     return JsonResponse({}), True
+
+
+
+def instantiate_controller(type: str, conv: Conversation):
+    if conv.scenario.controller_type == "simple":
+        return convcontrollers.ConvController(conv)
+    elif conv.scenario.controller_type == "q_exercise":
+        return convcontrollers.QConvController(conv)
+    elif conv.scenario.controller_type == "article_discussion":
+        return convcontrollers.ArticleDiscussionConvController(conv)
+    elif conv.scenario.controller_type == "article_question":
+        return convcontrollers.ArticleQuestionConvController(conv)
+    elif conv.scenario.controller_type == "aibou":
+        return convcontrollers.AIbouConvController(conv)
+    return
+
+
+
+
+
+
+
+
+@csrf_exempt  # REST-like API anyway, who cares lol
+def scenarios(request: HttpRequest) -> HttpResponse:
+    # if not request.method == 'GET':
+    #     return HttpResponseBadRequest(make_must_get())
+
+    data = json.loads(request.body)
+    err, ok = assert_keys(data, {
+        'password': str,
+    })
+    if not ok:
+        return HttpResponseBadRequest(err)
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
+
+
+    return JsonResponse(serialize(Scenario.objects.all()), safe=False)
+
+
+# doesn't work
+@ratelimit(key='ip', rate='60/h')
+@csrf_exempt  # REST-like API anyway, who cares lol
+def scenario(request: HttpRequest) -> HttpResponse:
+    if not request.method == 'GET':
+        return HttpResponseBadRequest(make_must_get())
+
+    data = json.loads(request.body)
+    err, ok = assert_keys(data, {
+        'scenario_id': int,
+        'password': str,
+    })
+    if not ok:
+        return HttpResponseBadRequest(err)
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
+
+    scenario_id: int = data['scenario_id']
+    if scenario_id == -1:
+        return JsonResponse(
+            {'scenarios': list((s.to_dict() if s is not None else None) for s in Scenario.objects.all()), 'db_queries': len(connection.queries)})
+    else:
+        try:
+            s = Scenario.objects.filter(pk=scenario_id).first()
+        except ObjectDoesNotExist:
+            return JsonResponse(make_error('error.db.not_found', 'Conversation with id not found.'))
+        else:
+            return JsonResponse({'scenario': s.to_dict(), 'db_queries': len(connection.queries)})
+
 
 
 #@ratelimit(key='ip', rate='60/h')
@@ -111,13 +181,32 @@ def chat(request: HttpRequest) -> HttpResponse:
     response, example_response, good_english, end_conversation = controller.chat(user_input)
 
     # correct user english
-    #good_english = correct_english(data['user_input'])
     return JsonResponse({'response': response,
         'example_response': example_response,
         'english_correction': good_english,
         'end_conversation': end_conversation
     })
 
+@csrf_exempt  # REST-like API anyway, who cares lol
+def dictionary(request: HttpRequest) -> HttpResponse:
+
+    if not request.method == 'POST':
+        return HttpResponseBadRequest(make_must_get())
+
+    data = json.loads(request.body)
+
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
+
+    definition, example, synonym = gpthelpers.define_word(data['word'])
+
+    return JsonResponse({'definition': definition,
+        'example': example,
+        'synonym': synonym
+    })
+
+
+# Below not used.
 
 @ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
@@ -156,7 +245,7 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
 
 
 @ratelimit(key='ip', rate='60/h')
-@csrf_exempt  # REST-like API anyway, who cares lol
+@csrf_exempt  # Might not be working
 def log_view(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_post())
@@ -173,56 +262,6 @@ def log_view(request: HttpRequest) -> HttpResponse:
     conversation_id = data['conversation_id']
     log_items = LogItem.objects.filter(conversation=Conversation.objects.get(pk=conversation_id)).filter(visible=True)
     return JsonResponse(serialize(log_items), safe=False)
-
-
-from django.db import connection
-
-
-# doesn't work
-@ratelimit(key='ip', rate='60/h')
-@csrf_exempt  # REST-like API anyway, who cares lol
-def scenario(request: HttpRequest) -> HttpResponse:
-    if not request.method == 'GET':
-        return HttpResponseBadRequest(make_must_get())
-
-    data = json.loads(request.body)
-    err, ok = assert_keys(data, {
-        'scenario_id': int,
-        'password': str,
-    })
-    if not ok:
-        return HttpResponseBadRequest(err)
-    if not check_pass(data['password']):
-        return HttpResponseForbidden('incorrect password')
-
-    scenario_id: int = data['scenario_id']
-    if scenario_id == -1:
-        return JsonResponse(
-            {'scenarios': list((s.to_dict() if s is not None else None) for s in Scenario.objects.all()), 'db_queries': len(connection.queries)})
-    else:
-        try:
-            s = Scenario.objects.filter(pk=scenario_id).first()
-        except ObjectDoesNotExist:
-            return JsonResponse(make_error('error.db.not_found', 'Conversation with id not found.'))
-        else:
-            return JsonResponse({'scenario': s.to_dict(), 'db_queries': len(connection.queries)})
-
-@csrf_exempt  # REST-like API anyway, who cares lol
-def scenarios(request: HttpRequest) -> HttpResponse:
-    # if not request.method == 'GET':
-    #     return HttpResponseBadRequest(make_must_get())
-
-    data = json.loads(request.body)
-    err, ok = assert_keys(data, {
-        'password': str,
-    })
-    if not ok:
-        return HttpResponseBadRequest(err)
-    if not check_pass(data['password']):
-        return HttpResponseForbidden('incorrect password')
-
-
-    return JsonResponse(serialize(Scenario.objects.all()), safe=False)
 
 
 @ratelimit(key='ip', rate='60/h')
@@ -316,65 +355,3 @@ def reload(request: HttpRequest) -> HttpResponse:
     logitem_ai.save()
 
     return JsonResponse({'response': serialize(logitem_ai)})
-
-
-
-@csrf_exempt  # REST-like API anyway, who cares lol
-def dictionary(request: HttpRequest) -> HttpResponse:
-
-    if not request.method == 'POST':
-        return HttpResponseBadRequest(make_must_get())
-
-    data = json.loads(request.body)
-
-    if not check_pass(data['password']):
-        return HttpResponseForbidden('incorrect password')
-
-    definition, example, synonym = gpthelpers.define_word(data['word'])
-
-    return JsonResponse({'definition': definition,
-        'example': example,
-        'synonym': synonym
-    })
-
-
-def correct_english(broken_english) -> str:
-    # move the examples to somewhere easily editable.　#https://www.eibunkousei.net/%E6%97%A5%E6%9C%AC%E4%BA%BA%E3%81%AE%E8%8B%B1%E8%AA%9E%E3%81%AB%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E9%96%93%E9%81%95%E3%81%84/
-    examples =  """BrokenEnglish: Its like that i'm chat with a really person not robot.
-GoodEnglish: It feels like chatting with a real person not a robot.
-
-BrokenEnglish: I want to make reservation with doctor after one hour.
-GoodEnglish: I would like to make an appointment with the doctor in an hour.
-
-BrokenEnglish: I want to ticket on 5 clock.
-GoodEnglish: I want to buy a ticket for 5 o'clock.
-
-BrokenEnglish: let's eat morning meal tomorrow to fun.
-GoodEnglish: Let's have breakfast together tomorrow.
-
-BrokenEnglish:"""
-    prompt = examples + broken_english + '\nGoodEnglish:'
-    return completion(engine='curie', prompt_=prompt,
-    temperature = 0,
-    max_tokens = 172,
-    top_p = 1,
-    frequency_penalty = 0,
-    presence_penalty = 0)
-
-
-def gpt_check_safety(text: str, allow_max: int = 0) -> bool:
-    safety = int(gpt3.content_filter(text))
-    return safety <= allow_max
-
-def instantiate_controller(type: str, conv: Conversation):
-    if conv.scenario.controller_type == "simple":
-        return convcontrollers.ConvController(conv)
-    elif conv.scenario.controller_type == "q_exercise":
-        return convcontrollers.QConvController(conv)
-    elif conv.scenario.controller_type == "article_discussion":
-        return convcontrollers.ArticleDiscussionConvController(conv)
-    elif conv.scenario.controller_type == "article_question":
-        return convcontrollers.ArticleQuestionConvController(conv)
-    elif conv.scenario.controller_type == "aibou":
-        return convcontrollers.AIbouConvController(conv)
-    return

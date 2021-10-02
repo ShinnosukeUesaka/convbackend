@@ -215,7 +215,7 @@ Comment: Cool! I heard that Torii gate appears to almost float on the water duri
     #http://www.roadtogrammar.com/dl/warmers.pdf
     questions = combine_lists(questions_dic)
 
-    questions = random.shuffle(questions)
+    random.shuffle(questions)
 
     def initialise(self):
         first_question = self.choose_question()

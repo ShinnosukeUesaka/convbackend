@@ -12,6 +12,9 @@ import re
 import random
 
 
+# Todo: change the gpt parameters from Class Variables to instance variables and make it editable from the database (admin)
+
+
 
 def combine_lists(dictionary):
     combined_list = []
@@ -636,7 +639,8 @@ class ArticleQuestionConvController(ConvController):
 
 
 
-class AIbouConvControllerOLD(QConvController):
+
+class AIbouConvControllerOLD(QConvController): # Not used. (Not stable.)
      AI_TEACHER_PROMPT= """The following is a conversation with an AI assistant. The AI assistant is helpful, creative, clever, talkative, and very friendly.
 
 AI: I will be your friend. Let's chat!

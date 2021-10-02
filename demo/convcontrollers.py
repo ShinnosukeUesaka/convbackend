@@ -425,6 +425,11 @@ class AIbouConvController(QConvController):
 
             log_text = QConvController.final_comment_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + self.temp_data['second_answer'] + "\nComment and Follow-up question:" + self.temp_data['second_followup'] + "\nAnswer: " + message + "\nComment:"
 
+            for i in range(AIbouConvController.MAX_REGENERATE):
+                response = completion(prompt_=log_text, temperature = self.scenario.temperature, presence_penalty = self.scenario.presence_penalty, frequency_penalty = self.scenario.frequency_penalty, top_p = self.scenario.top_p)
+                if '?' not in response:
+                    break
+
             response, safety =  self.create_response(log_text=log_text)
 
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_question, type="AI",

@@ -44,18 +44,8 @@ class Scenario(models.Model):
 
 
     category = models.CharField(max_length=100, default='Role Play')
-    """
-        Exercise: エクササイズ
-        Chat: 雑談
-        Discussion: ディスカッション
-        Roll Play: ロールプレイ
-    """
 
     controller_type = models.CharField(max_length=100, default='simple')
-    """
-    simple: default controlleer
-    q_exercise: question exercise controller
-    """
 
     # Initial prompt, similar to narration:
     # The following is a conversation of two {poeple}  talking about {Proper noun}, {category}. They {feeling} {Proper noun}.

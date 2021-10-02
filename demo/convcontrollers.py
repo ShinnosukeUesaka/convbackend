@@ -60,7 +60,7 @@ class ConvController:
                     response, example_response = re.split("\n" + self.scenario.human_name + ": ", output)
                 except:
                     response = output
-                    example_response = "Unavailabe"
+                    example_response = "Unavailable"
 
             if self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text not in response:
                 break
@@ -336,7 +336,7 @@ Comment: Cool! I heard that Torii gate appears to almost float on the water duri
 
         # don't add anything here. status already changed.
 
-        return serialize(log_items), "Unavailabe", good_english, conv_done # response, exmample response, correct english, conversation done?
+        return serialize(log_items), "Unavailable", good_english, conv_done # response, exmample response, correct english, conversation done?
 
 
     def choose_question(self):
@@ -454,7 +454,7 @@ class AIbouConvController(QConvController):
 
         # don't add anything here. status already changed.
 
-        return serialize(log_items), "Unavailabe", good_english, conv_done # response, exmample response, correct english, conversation done?
+        return serialize(log_items), "Unavailable", good_english, conv_done # response, exmample response, correct english, conversation done?
 
     def generate_prompt_for_aibou(self, number_of_messages_to_include):
 
@@ -581,7 +581,7 @@ class ArticleQuestionConvController(ConvController):
          self.conversation.temp_for_conv_controller = json.dumps(self.temp_data)
          self.conversation.save()
 
-         return serialize(logitems_ai), "Unavailabe", good_english, conv_done
+         return serialize(logitems_ai), "Unavailable", good_english, conv_done
 
 
 
@@ -593,7 +593,7 @@ AI: I will be your friend. Let's chat!
 Human: """
 
 
-    
+
 
      MAX_REGENERATE = 2
 
@@ -711,7 +711,7 @@ Human: """
 
         # don't add anything here. status already changed.
 
-        return serialize(log_items), "Unavailabe", good_english, conv_done # response, exmample response, correct english, conversation done?
+        return serialize(log_items), "Unavailable", good_english, conv_done # response, exmample response, correct english, conversation done?
 
      def generate_prompt_for_aibou(self, number_of_messages_to_include):
 

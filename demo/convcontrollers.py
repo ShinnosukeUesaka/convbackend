@@ -155,7 +155,7 @@ class QConvController(ConvController):
     ai_name_last_comment = "Comment"
 
     #https://beta.openai.com/playground/p/PfMXPerz7HVSvNv19xm6tLiD?model=davinci
-    first_followup_prompt = """I am a polite friendly intelligent and knowledgeable AI English teacher.
+    first_followup_prompt = """I am a polite friendly intelligent knowledgeable AI English teacher.
 
 Question: What is your hobby?
 Answer: I like playing the piano.
@@ -171,7 +171,7 @@ Comment and Follow-up question: I love the movie too. My favorite character is L
 --
 """
 
-    second_followup_prompt = """I am a polite friendly intelligent and knowledgeable AI English teacher.
+    second_followup_prompt = """I am a polite friendly intelligent knowledgeable AI English teacher.
 
 Question: What sport do you play?
 Answer: I like playing soccer!
@@ -187,7 +187,7 @@ Comment and Follow-up question: You are very hard working! Which piano song are 
 --
 """
 
-    final_comment_prompt = """I am a polite friendly intelligent and knowledgeable AI English teacher.
+    final_comment_prompt = """I am a polite friendly intelligent knowledgeable AI English teacher.
 
 Question: What is your hobby?
 Answer: I like playing the piano.

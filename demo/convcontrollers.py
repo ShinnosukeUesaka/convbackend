@@ -374,8 +374,10 @@ class AIbouConvController(QConvController):
                 if '?' not in response:
                     break
                 if i == AIbouConvController.MAX_REGENERATE - 1:
-                    prompt = self.generate_prompt_for_aibou(2)
+                    prompt = self.generate_prompt_for_aibou(4)
                     response = completion(prompt_=prompt, temperature = self.scenario.temperature, presence_penalty = 0.6, frequency_penalty = 0.6, top_p = self.scenario.top_p)
+                    if '?' in response:
+                        response = "Interesting"
 
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_question, type="AI",
                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)

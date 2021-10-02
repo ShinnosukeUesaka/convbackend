@@ -77,10 +77,10 @@ class Scenario(models.Model):
 
     # GPT-3 Settings
     response_length = models.IntegerField(default=150)  # ai response length
-    temperature = models.DecimalField(max_digits=4, decimal_places=3, default=0.5)
-    top_p = models.DecimalField(max_digits=4, decimal_places=3, default=1)
-    frequency_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0)
-    presence_penalty = models.DecimalField(max_digits=4, decimal_places=3, default=0.6)
+    temperature = models.FloatField(default=0.5)
+    top_p = models.FloatField(default=1)
+    frequency_penalty = models.FloatField(default=0)
+    presence_penalty = models.FloatField(default=0.6)
 
 
 
@@ -164,7 +164,7 @@ class Conversation(models.Model):
         return self.scenario.title
 
     def create_json(self):
-        ## implement
+        # implement
         return
 
 

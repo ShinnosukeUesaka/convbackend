@@ -83,7 +83,7 @@ class ConvController:
 
    def create_response(self, log_text, retry: int = 3, allow_max: int = 0, stop: List[str] = None) -> str:
         #print(f"GPT3 request: \n {log_text}")
-        re = completion(prompt_=log_text, stop=stop, temperature = float(self.scenario.temperature), presence_penalty = float(self.scenario.presence_penalty), frequency_penalty = float(self.scenario.frequency_penalty), top_p = float(self.scenario.top_p))
+        re = completion(prompt_=log_text, stop=stop, temperature = self.scenario.temperature, presence_penalty = self.scenario.presence_penalty, frequency_penalty = self.scenario.frequency_penalty, top_p = self.scenario.top_p)
         safety = int(gpt3.content_filter(re))
         ok = safety <= allow_max
         if not ok and retry <= 0:
@@ -131,57 +131,6 @@ class ConvController:
 
         return correct_english
 
-
-   def correct_english(self, broken_english, context=None) -> str:
-        # move the examples to somewhere easily editable.　#https://www.eibunkousei.net/%E6%97%A5%E6%9C%AC%E4%BA%BA%E3%81%AE%E8%8B%B1%E8%AA%9E%E3%81%AB%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E9%96%93%E9%81%95%E3%81%84/
-        examples =  """BrokenEnglish: Its like that i'm chat with a really person not robot.
-GoodEnglish: It feels like chatting with a real person, and not a robot.
-
-BrokenEnglish: I want to make reservation with doctor after one hour.
-GoodEnglish: I would like to make an appointment with the doctor in an hour.
-
-BrokenEnglish: I'm interesting math. because it's fun.
-GoodEnglish: I'm interested in math, because it's fun.
-
-BrokenEnglish: let's eat morning meal tomorrow to fun.
-GoodEnglish: Let's have breakfast together tomorrow.
-
-BrokenEnglish: """
-
-        examples_context = """What is your favorite color?
-BrokenEnglish: Blue. It color of sky.
-GoodEnglish: Blue. It is the color of the sky.
-
-What did you do yesterday?
-BrokenEnglish: I go to a movie theater seeing movie of action.
-GoodEnglish: I went to a movie theater to see a action movie.
-
-How may I help you?
-BrokenEnglish: I want to make reservation with doctor after one hour.
-GoodEnglish: I want to make an appointment with the doctor in an hour.
-
-What should we do tomorrow?
-BrokenEnglish: let's eat morning meal tomorrow.
-GoodEnglish: Let's have breakfast together tomorrow.
-
-"""
-        if context == None or "":
-            prompt = examples + broken_english + '\nGoodEnglish:'
-        else:
-            prompt = examples_context + context + "\nBrokenEnglish: " + broken_english + '\nGoodEnglish:'
-
-        good_english = completion(engine='curie', prompt_=prompt,
-        temperature = 0,
-        max_tokens = 172,
-        top_p = 1,
-        frequency_penalty = 0,
-        presence_penalty = 0)
-
-        if good_english[0] == " ":
-            return good_english[1:]
-        else:
-            return good_english
-
    def conversation_is_done(self):
        end_sequence = self.scenario_options.get("end sequence")
 
@@ -204,10 +153,6 @@ class QConvController(ConvController):
     ai_name_followup = "Question"
     ai_name_second_followup = "Question"
     ai_name_last_comment = "Comment"
-
-    temperature = 0.3
-    frequency_penalty = 0.5
-    presence_penalty = 0.5
 
     #https://beta.openai.com/playground/p/PfMXPerz7HVSvNv19xm6tLiD?model=davinci
     first_followup_prompt = """I am a polite friendly intelligent AI English teacher.
@@ -296,7 +241,7 @@ Comment: Cool! I heard that Torii gate appears to almost float on the water duri
     def create_response(self, log_text, retry: int = 1, check_question = False) -> str:
         #print(f"GPT3 request: \n {log_text}")
 
-        re = completion(prompt_=log_text, temperature = QConvController.temperature, presence_penalty = QConvController.presence_penalty, frequency_penalty = QConvController.frequency_penalty)
+        re = completion(prompt_=log_text, temperature = self.scenario.temperature, presence_penalty = self.scenario.presence_penalty, frequency_penalty = self.scenario.frequency_penalty, top_p = self.scenario.top_p)
         #safety = int(gpt3.content_filter(re))
         safety = 0
         if check_question == True:
@@ -423,12 +368,12 @@ class AIbouConvController(QConvController):
             prompt = self.generate_prompt_for_aibou(8)
 
             for i in range(AIbouConvController.MAX_REGENERATE):
-                response = completion(prompt_=prompt)
+                response = completion(prompt_=prompt, temperature = self.scenario.temperature, presence_penalty = self.scenario.presence_penalty, frequency_penalty = self.scenario.frequency_penalty, top_p = self.scenario.top_p)
                 if '?' not in response:
                     break
                 if i == AIbouConvController.MAX_REGENERATE - 1:
-                    prompt = self.generate_prompt_for_aibou(1)
-                    response = completion(prompt_=prompt)
+                    prompt = self.generate_prompt_for_aibou(2)
+                    response = completion(prompt_=prompt, temperature = self.scenario.temperature, presence_penalty = self.scenario.presence_penalty, frequency_penalty = self.scenario.frequency_penalty, top_p = self.scenario.top_p)
 
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_question, type="AI",
                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
@@ -648,10 +593,7 @@ AI: I will be your friend. Let's chat!
 Human: """
 
 
-
-     temperature = 0.4
-     frequency_penalty = 0
-     presence_penalty = 0.6
+    
 
      MAX_REGENERATE = 2
 
@@ -694,7 +636,7 @@ Human: """
 
             # Can't be a qeustion. 話題が次にうつるので質問はNG
             for i in range(AIbouConvController.MAX_REGENERATE):
-                response = completion(prompt_=prompt, temperature = AIbouConvController.temperature, presence_penalty = AIbouConvController.presence_penalty, frequency_penalty = AIbouConvController.frequency_penalty)
+                response = completion(prompt_=prompt, temperature = self.scenario.temperature, presence_penalty = self.scenario.presence_penalty, frequency_penalty = self.scenario.frequency_penalty, top_p = self.scenario.top_p)
                 if '?' not in response:
                     break
                 if i == AIbouConvController.MAX_REGENERATE - 1:
@@ -721,7 +663,7 @@ Human: """
 
             prompt = QConvController.first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nComment and Follow-up question:"
 
-            response = completion(prompt_=prompt, temperature = AIbouConvController.temperature, presence_penalty = AIbouConvController.presence_penalty, frequency_penalty = AIbouConvController.frequency_penalty)
+            response = completion(prompt_=prompt, temperature = self.scenario.temperature, presence_penalty = self.scenario.presence_penalty, frequency_penalty = self.scenario.frequency_penalty, top_p = self.scenario.top_p)
             logitem_ai = LogItem.objects.create(text=response, name="AI", type="AI",
                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
             logitem_ai.save()
@@ -738,7 +680,7 @@ Human: """
             number_of_messages_to_include = (status-1)*2 - 1
             prompt = self.generate_prompt_for_aibou(number_of_messages_to_include)
 
-            response = completion(prompt_=prompt, temperature = AIbouConvController.temperature, presence_penalty = AIbouConvController.presence_penalty, frequency_penalty = AIbouConvController.frequency_penalty)
+            response = completion(prompt_=prompt, temperature = self.scenario.temperature, presence_penalty = self.scenario.presence_penalty, frequency_penalty = self.scenario.frequency_penalty, top_p = self.scenario.top_p)
 
             logitem_ai = LogItem.objects.create(text=response, name="AI", type="AI",
                                                 log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)

@@ -147,13 +147,14 @@ BrokenEnglish: let's eat morning meal tomorrow to fun.
 GoodEnglish: Let's have breakfast together tomorrow.
 
 BrokenEnglish: """
+
         examples_context = """What is your favorite color?
 BrokenEnglish: Blue. It color of sky.
 GoodEnglish: Blue. It is the color of the sky.
 
-Do you play any sports?
-BrokenEnglish: Soccer. I am good at it.
-GoodEnglish: I play soccer. I am good at it.
+What did you do yesterday?
+BrokenEnglish: I go to a movie theater seeing movie of action.
+GoodEnglish: I went to a movie theater to see a action movie.
 
 How may I help you?
 BrokenEnglish: I want to make reservation with doctor after one hour.

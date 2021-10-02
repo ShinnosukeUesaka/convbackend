@@ -454,7 +454,7 @@ class AIbouConvController(QConvController):
 
         # don't add anything here. status already changed.
 
-        return serialize(log_items), "Unavailable", good_english, conv_done # response, exmample response, correct english, conversation done?
+        return serialize(log_items), "Unavailable of this scenario", good_english, conv_done # response, exmample response, correct english, conversation done?
 
     def generate_prompt_for_aibou(self, number_of_messages_to_include):
 

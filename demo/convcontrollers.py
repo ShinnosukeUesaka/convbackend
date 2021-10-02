@@ -218,7 +218,7 @@ Comment and Follow-up question: Playing the piano seems very difficult. How long
 --
 Question: What are your plans for the weekends?
 Answer: I will go to the gym.
-Comment and Follow-up question: You are so healthy and disciplined! How often do you go to the gym?
+Comment and Follow-up question: That is a great habit! How often do you go to the gym?
 --
 Question: What is your favorite movie?
 Answer: My favorite movie is The Lord of the Rings.

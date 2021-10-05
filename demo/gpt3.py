@@ -15,18 +15,6 @@ Human: Hello, who are you?
 AI: I am an AI created by OpenAI. How can I help you today?
 Human: '''
 
-# try:
-#     from local_gpt3 import api_key as api_key_
-#     from local_gpt3 import organization as organization_
-#
-#     print('local')
-#     organization = organization_
-#     api_key = api_key_
-# except ImportError as err:
-#     api_key_, organization_ = '', ''  # workaround for lint
-#     print(err)
-#     print('non local')
-
 openai.organization = organization
 openai.api_key = api_key
 

@@ -48,12 +48,12 @@ class Scenario(models.Model):
     controller_type = models.CharField(max_length=100, default='simple')
 
     # Initial prompt, similar to narration:
-    # The following is a conversation of two {poeple}  talking about {Proper noun}, {category}. They {feeling} {Proper noun}.
     ai_name = models.CharField(max_length=20, default='AI')
     human_name = models.CharField(max_length=20, default='Human')
-    article = models.TextField(max_length=10000, default='', blank=True, null=True)
 
-    options = models.TextField(max_length=10000, default='{}') # Not used
+    article = models.TextField(max_length=10000, default='', blank=True, null=True) # only used for discussion question
+
+    options = models.TextField(max_length=10000, default='{}')
 
     first_example_response = models.CharField(max_length=100, default='Unavailable')
 
@@ -61,7 +61,8 @@ class Scenario(models.Model):
     # JSON (not dict converted to str) of options:
     # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
 
-    phrases = models.TextField(max_length=10000, default="", blank=True, null=True)
+    phrases = models.TextField(max_length=10000, default="[]", blank=True, null=True)
+    # [["I like you", "あなたが好き"], ["I hate you", "あなたが嫌い"]]
 
     message_limit = models.IntegerField(default='10')
 

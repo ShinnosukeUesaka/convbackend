@@ -93,11 +93,11 @@ def define_word(word):
     PROMPT = """Define the word and use the word in a sentence.
 
 Word: Predict
-Definition: Say or estimate that a specified thing will happen in the future
-Example: It is too early to predict a result
+Definition: Say or estimate that a specified thing will happen in the future.
+Example: The scientists predicted that there would be an earthquake.
 Synonym: Forecast, Guess
 
-Word:  """
+Word: """
 
     input = PROMPT + word + "\n" + "Definition:"
 

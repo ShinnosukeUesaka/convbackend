@@ -12,9 +12,6 @@ import re
 import random
 
 
-# Todo: change the gpt parameters from Class Variables to instance variables and make it editable from the database (admin)
-
-
 
 def combine_lists(dictionary):
     combined_list = []
@@ -28,6 +25,9 @@ class ConvController:
    def __init__(self, conversation: Conversation):
         self.conversation = conversation
         self.scenario = conversation.scenario
+
+        self.gpt_parameters = {"temperature": self.scenario.temperature, "presence_penalty": self.scenario.presence_penalty, "frequency_penalty": self.scenario.frequency_penalty, "top_p": self.scenario.top_p, "max_tokens": self.scenario.max_tokens, }
+
         try:
             self.temp_data = json.loads(conversation.temp_for_conv_controller)
         except:
@@ -43,26 +43,20 @@ class ConvController:
                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation)
         logitem_human.save()
 
-        log_text = self.conversation.prepare()
+        prompt = self.conversation.prepare()
 
 
         for i in range(ConvController.MAX_REGENERATE):
-            if self.scenario_options.get("example") == False:
+
+            if self.scenario_options.get("example") == False: # 回答例機能　off の場合
                 stop_sequence = "\n"
-                response, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
+                response, safety = self.create_response(log_text=prompt, stop=[stop_sequence])
                 example_response = "Unavailable"
 
             else:
-                stop_sequence = "\n" + self.scenario.ai_name
-                output, safety = self.create_response(log_text=log_text, stop=[stop_sequence])
-                print(f'the pure response from gpt3: {output}')
-                try:
-                    response, example_response = re.split("\n" + self.scenario.human_name + ": ", output)
-                except:
-                    response = output
-                    example_response = "Unavailable"
+                response, example_response = gpthelpers.generate_response_and_example_response(prompt=prompt, gpt_parameters = self.gpt_parameters, ai_name = self.scenario.ai_name, user_name = self.scenario.human_name)
 
-            if self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text not in response:
+            if self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text not in response: # 直前のリスポンスと同じだったら、生成し直し
                 break
 
 
@@ -73,7 +67,7 @@ class ConvController:
             response = response[:response.index("\n")]
 
         logitem_ai = LogItem.objects.create(text=response, name=self.scenario.ai_name, type="AI",
-                                            log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
+                                            log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
 
 
         logitem_ai.save()

@@ -67,7 +67,7 @@ class Scenario(models.Model):
     message_limit = models.IntegerField(default='10')
 
     # GPT-3 Settings
-    response_length = models.IntegerField(default=150)  # ai response length
+    max_tokens = models.IntegerField(default=150)  # ai response length
     temperature = models.FloatField(default=0.5)
     top_p = models.FloatField(default=1)
     frequency_penalty = models.FloatField(default=0)

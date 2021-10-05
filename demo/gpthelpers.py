@@ -101,7 +101,8 @@ Word: """
 
     input = PROMPT + word + "\n" + "Definition:"
 
-    output =  completion(engine='davinci', prompt_=input,
+    output =  completion(engine='davinci',
+    prompt_=input,
     temperature = 0,
     max_tokens = 300,
     top_p = 1,
@@ -118,6 +119,29 @@ Word: """
         definition, example, synonym = "error", "error", "error"
 
     return definition, example, synonym
+
+
+
+def generate_response_and_example_response(prompt, gpt_parameters, ai_name, user_name):
+    # メッセージ生成。回答例も一緒に生成。
+
+    stop_sequence = "\n" + ai_name
+    output = completion(engine='davinci',
+                                temperature = gpt_parameters["temperature"],
+                                max_tokens = gpt_parameters["max_tokens"],
+                                top_p = gpt_parameters["top_p"],
+                                frequency_penalty = gpt_parameters["frequency_penalty"],
+                                presence_penalty = gpt_parameters["presence_penalty"],
+                                stop=[stop_sequence],
+                                prompt_=prompt)
+    try:
+        response, example_response = re.split("\n" + user_name + ": ", output)
+    except:
+        response = output
+        example_response = "Unavailable"
+
+    return response, example_response
+
 
 def convert_questions_to_full_question(question, context) -> str:
 

@@ -106,7 +106,6 @@ def scenarios(request: HttpRequest) -> HttpResponse:
     return JsonResponse(serialize(Scenario.objects.all()), safe=False)
 
 
-# doesn't work
 @ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
 def scenario(request: HttpRequest) -> HttpResponse:

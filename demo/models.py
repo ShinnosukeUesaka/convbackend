@@ -57,6 +57,8 @@ class Scenario(models.Model):
 
     first_example_response = models.CharField(max_length=100, default='Unavailable')
 
+    last_message = models.CharField(max_length=100, blank=True, null=True)
+
 
     # JSON (not dict converted to str) of options:
     # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
@@ -199,3 +201,14 @@ class LogItem(models.Model):
             return f'{self.name}: {self.text}'
         else:
             return f'{self.text}'
+
+class Session(models.Model):
+    message = models.CharField(max_length=50, blank=True)
+    # the first question
+    example_response = models.CharField(max_length=1000)
+    number_of_ai_response = models.IntegerField(default=2)
+    # 2 Question, Comment
+    # 3 Question, follow-up, Comment
+    # 4 Question, follow-up, second follow-up, Comment
+    allow_user_comment = models.BooleanField(default=True)
+    # Make it true if you want to allow user to say something after AI comments at the end.

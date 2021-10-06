@@ -26,7 +26,7 @@ class ConvController:
         self.conversation = conversation
         self.scenario = conversation.scenario
 
-        self.gpt_parameters = {"temperature": self.scenario.temperature, "presence_penalty": self.scenario.presence_penalty, "frequency_penalty": self.scenario.frequency_penalty, "top_p": self.scenario.top_p, "max_tokens": self.scenario.max_tokens, }
+        self.gpt_parameters = {"temperature": self.scenario.temperature, "presence_penalty": self.scenario.presence_penalty, "frequency_penalty": self.scenario.frequency_penalty, "top_p": self.scenario.top_p, "max_tokens": self.scenario.max_tokens}
 
         try:
             self.temp_data = json.loads(conversation.temp_for_conv_controller)
@@ -49,8 +49,7 @@ class ConvController:
         for i in range(ConvController.MAX_REGENERATE):
 
             if self.scenario_options.get("example") == False: # 回答例機能　off の場合
-                stop_sequence = "\n"
-                response, safety = self.create_response(log_text=prompt, stop=[stop_sequence])
+                response = gpthelpers.generate_response_and_example_response(prompt=prompt, gpt_parameters = self.gpt_parameters)
                 example_response = "Unavailable"
 
             else:
@@ -59,13 +58,6 @@ class ConvController:
             if self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text not in response: # 直前のリスポンスと同じだったら、生成し直し
                 break
 
-
-
-        if response[0] == " ":
-            response = response[1:]
-        if "\n" in response:
-            response = response[:response.index("\n")]
-
         logitem_ai = LogItem.objects.create(text=response, name=self.scenario.ai_name, type="AI",
                                             log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
 
@@ -73,10 +65,14 @@ class ConvController:
         logitem_ai.save()
         good_english = self.generate_correct_english()
 
+        conversation_is_done = self.conversation_is_done()
+
+
         return serialize([logitem_ai]), example_response, good_english, self.conversation_is_done()
 
+
    def create_response(self, log_text, retry: int = 3, allow_max: int = 0, stop: List[str] = None) -> str:
-        #print(f"GPT3 request: \n {log_text}")
+        # Delete this function some day.
         re = completion(prompt_=log_text, stop=stop, temperature = self.scenario.temperature, presence_penalty = self.scenario.presence_penalty, frequency_penalty = self.scenario.frequency_penalty, top_p = self.scenario.top_p)
         safety = int(gpt3.content_filter(re))
         ok = safety <= allow_max
@@ -88,6 +84,7 @@ class ConvController:
         return re, safety
 
    def initialise(self):
+       #TODO: message 生成　と　variable 生成を関数分ける
         initial_prompts = self.scenario.logitem_set.all()
 
         messages = []
@@ -107,7 +104,6 @@ class ConvController:
 
         return serialize(messages)
 
-    #json.dumps(self.temp_data)
    def generate_correct_english(self):
 
         broken_english = self.conversation.logitem_set.get(log_number=self.conversation.current_log_number()-1).text
@@ -125,7 +121,8 @@ class ConvController:
 
         return correct_english
 
-   def conversation_is_done(self):
+
+   def conversation_is_done(self): # 会話終了判定
        end_sequence = self.scenario_options.get("end sequence")
 
        if end_sequence == None:
@@ -262,14 +259,13 @@ Comment: Cool! I heard that Torii gate appears to almost float on the water duri
         log_items = []
 
 
-
         if status == 1: #final comment and Question
             log_text = QConvController.final_comment_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + self.temp_data['second_answer'] + "\nComment and Follow-up question:" + self.temp_data['second_followup'] + "\nAnswer: " + message + "\nComment:"
 
-            response, safety =  self.create_response(log_text=log_text)
+            response =  gpthelpers.generate_response(log_text=log_text, gpt_parameters = self.gpt_parameters)
 
             logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_question, type="AI",
-                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
+                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
             logitem_ai.save()
 
             good_english = self.generate_correct_english()

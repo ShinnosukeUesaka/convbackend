@@ -196,13 +196,11 @@ def dictionary(request: HttpRequest) -> HttpResponse:
 
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
+    
+    dictionary = gpthelpers.define_word(data['word'])
 
-    definition, example, synonym = gpthelpers.define_word(data['word'])
 
-    return JsonResponse({'definition': definition,
-        'example': example,
-        'synonym': synonym
-    })
+    return JsonResponse(dictionary)
 
 
 # Below not used.
@@ -261,96 +259,3 @@ def log_view(request: HttpRequest) -> HttpResponse:
     conversation_id = data['conversation_id']
     log_items = LogItem.objects.filter(conversation=Conversation.objects.get(pk=conversation_id)).filter(visible=True)
     return JsonResponse(serialize(log_items), safe=False)
-
-
-@ratelimit(key='ip', rate='60/h')
-@csrf_exempt  # REST-like API anyway, who cares lol
-def log_edit(request: HttpRequest) -> HttpResponse:
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        err, ok = assert_keys(data, {
-            'conversation_id': int,
-            'log_number': int,
-
-            #'name': str,
-            'text': str,
-            'password': str,
-        })
-        if not ok:
-            return HttpResponseBadRequest(err)
-        if not check_pass(data['password']):
-            return HttpResponseForbidden('incorrect password')
-
-        item: LogItem = LogItem.objects.filter(conversation=data['conversation_id']).get(log_number=data['log_number'])
-        if item.editable:
-            item.text = data['text']
-            item.save()
-            return JsonResponse(serialize(item))
-        else:
-            return JsonResponse(make_error('error.log.not_editable', 'log is not editable'))
-
-    elif request.method == 'DELETE':
-        data = json.loads(request.body)
-        err, ok = assert_keys(data, {
-            'conversation_id': int,
-            'log_number': int,
-            'password': str,
-        })
-        if not ok:
-            return HttpResponseBadRequest(err)
-        if not check_pass(data['password']):
-            return HttpResponseForbidden('incorrect password')
-
-        item: LogItem = LogItem.objects.filter(conversation=data['conversation_id']).get(log_number=data['log_number'])
-        if item.editable:
-            item.delete()
-            return JsonResponse({"msg": "success"})
-        else:
-            return JsonResponse(make_error('error.log.not_editable', 'log is not editable'))
-    else:
-        return HttpResponseBadRequest()
-
-
-
-@ratelimit(key='ip', rate='120/h')
-@csrf_exempt  # Not implemented
-def reload(request: HttpRequest) -> HttpResponse:
-    if not request.method == 'POST':
-        return HttpResponseBadRequest(make_must_post())
-
-    data = json.loads(request.body)
-
-    err, ok = assert_keys(data, {
-        'conversation_id': int,
-        'password': str,
-        'log_number': int,
-    })
-
-    if not ok:
-        return HttpResponseBadRequest(err)
-    if not check_pass(data['password']):
-        return HttpResponseForbidden('incorrect password')
-
-    try:
-        conversation = Conversation.objects.get(pk=data['conversation_id'])
-    except ObjectDoesNotExist:
-        return JsonResponse(make_error('error.scenario.nonexistent', 'scenario with given scenario ID is nonexistent.'))
-
-    item: LogItem = LogItem.objects.filter(conversation=data['conversation_id']).get(log_number=conversation.current_log_number())
-
-
-    if item.editable:
-        item.delete()
-    else:
-        return JsonResponse(make_error('error.log.not_editable', 'log is not editable'))
-
-    print("test3")
-
-    log_text = conversation.prepare()
-    response, safety = gpt(log_text=log_text)
-    print(f'response: {response}')
-    logitem_ai = LogItem.objects.create(text=response, name=conversation.scenario.ai_name, type="AI",
-                                        log_number=conversation.current_log_number() + 1, conversation=conversation, safety=safety)
-    logitem_ai.save()
-
-    return JsonResponse({'response': serialize(logitem_ai)})

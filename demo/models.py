@@ -147,6 +147,16 @@ class Conversation(models.Model):
 
         return LogText(logtext)
 
+    def get_recent_logitem(self, log_number_from_recent = 1):
+        return self.logitem_set.get(log_number=self.current_log_number() - log_number_from_recent + 1)
+
+    def get_recent_logitems(self, number_of_logitems):
+        log_items = []
+        for i in range(number_of_messages_to_include):
+            message_index = self.conversation.current_log_number() - number_of_messages_to_include + i + 1
+            log_items.append(self.conversation.logitem_set.get(log_number=message_index))
+        return log_items
+
     def current_log_number(self) -> int:
         if self.logitem_set.exists() == False:
             return 0
@@ -159,6 +169,7 @@ class Conversation(models.Model):
     def create_json(self):
         # implement
         return
+
 
 
 class LogItem(models.Model):

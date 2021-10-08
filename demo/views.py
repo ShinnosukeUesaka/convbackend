@@ -236,7 +236,7 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
 
 
 @ratelimit(key='ip', rate='60/h')
-@csrf_exempt  # Might not be working
+@csrf_exempt 
 def log_view(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_post())

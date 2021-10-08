@@ -106,7 +106,7 @@ def scenarios(request: HttpRequest) -> HttpResponse:
     return JsonResponse(serialize(Scenario.objects.all()), safe=False)
 
 
-@ratelimit(key='ip', rate='60/h')
+
 @csrf_exempt  # REST-like API anyway, who cares lol
 def scenario(request: HttpRequest) -> HttpResponse:
     if not request.method == 'GET':
@@ -157,14 +157,8 @@ def chat(request: HttpRequest) -> HttpResponse:
     if content_filter_profanity(data['user_input']) == ContentSafetyPresets.unsafe or content_filter_profanity(data['user_input']) ==  ContentSafetyPresets.sensitive:
         return JsonResponse(make_error('error.safety.user_input_unsafe', 'User input contains unsafe words'))
 
-    conv: Conversation = Conversation()
 
-    #ConvController()
-
-    if data['conversation_id'] == -1:
-        conv = Conversation.objects.create(scenario=Scenario.objects.get(pk=1))  # for testing
-    else:
-        conv = Conversation.objects.get(pk=data['conversation_id'])
+    conv = Conversation.objects.get(pk=data['conversation_id'])
 
     scenario = conv.scenario
 
@@ -174,7 +168,7 @@ def chat(request: HttpRequest) -> HttpResponse:
 
     if user_input[0] == " ":
         user_input = user_input[1:]
-    if user_input[-1] == ' ':
+    if user_input[-1] == " ":
         user_input = user_input[:-1]
 
     response, example_response, good_english, end_conversation = controller.chat(user_input)
@@ -196,7 +190,7 @@ def dictionary(request: HttpRequest) -> HttpResponse:
 
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
-    
+
     dictionary = gpthelpers.define_word(data['word'])
 
 

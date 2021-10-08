@@ -12,6 +12,13 @@ class ScenarioAdmin(admin.ModelAdmin):
     inlines = [
         LogitemInline,
     ]
+    list_display = (
+        'title_en',
+        'category',
+    )
+    list_filter = (
+        'category',
+    )
 
 
 class LogItemAdmin(admin.ModelAdmin):

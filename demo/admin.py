@@ -12,6 +12,8 @@ class ScenarioAdmin(admin.ModelAdmin):
     inlines = [
         LogitemInline,
     ]
+
+    #https://qiita.com/maisuto/items/e160bb17ef594f3c4d50
     list_display = (
         'title_en',
         'category',

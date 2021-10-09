@@ -180,9 +180,8 @@ def chat(request: HttpRequest) -> HttpResponse:
         'end_conversation': end_conversation
     })
 
-@csrf_exempt  # REST-like API anyway, who cares lol
+@csrf_exempt
 def dictionary(request: HttpRequest) -> HttpResponse:
-
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_get())
 
@@ -199,6 +198,19 @@ def dictionary(request: HttpRequest) -> HttpResponse:
 
     return JsonResponse(dictionary)
 
+@csrf_exempt
+def rephrase(request: HttpRequest) -> HttpResponse:
+    if not request.method == 'POST':
+        return HttpResponseBadRequest(make_must_get())
+
+    data = json.loads(request.body)
+
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
+
+    sentences = gpthelpers.rephrase(data['sentence'])
+
+    return JsonResponse(sentences, safe=False)
 
 # Below not used.
 

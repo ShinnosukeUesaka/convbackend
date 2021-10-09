@@ -257,6 +257,53 @@ Example: Just trust yourself, then you will know how to live.
         'synonym': synonym
     }
 
+def rephrase(phrase):
+    PROMPT = """Rephrase the sentence in a natural way.
+
+- The sushi I ate at the restaurant was ok.
+- The sushi I had at the restaurant was mediocre.
+- I didn't like the sushi I ate at the restaurant.
+- The sushi from that restaurant was not very good.
+
+- I need to get my homework done by tomorrow.
+- I need to finish my homework by tomorrow.
+- I have lots of homework to complete by tomorrow.
+- There's a lot of homework to do by tomorrow.
+
+- My hobby is watching movies.
+- Watching films is my hobby.
+- My favorite pastime is watching movies.
+- I'm into movies.
+- I'm a movie buff.
+
+- I went to museum with my friends, and saw the art of picasso.
+- There was a Picasso exhibit at the museum, and I went with my friends to see it.
+- My friends and I visited the Picasso exhibit at the museum.
+- We saw a Picasso exhibit at the museum.
+
+"""
+
+    if len(re.split("", phrase)) <= 2:
+        return []
+
+    prompt = PROMPT + "- " + phrase + "\n-"
+
+    output =  completion(engine='curie',
+    prompt_=prompt,
+    temperature = 0.33,
+    max_tokens = 50,
+    top_p = 1,
+    frequency_penalty = 0.8,
+    presence_penalty = 0.8,
+    stop=["\n\n"])
+
+    sentences = re.split("\n-", output)
+
+    sentences = list(set(sentences)) # remove duplicates
+    print(sentences)
+
+    return sentences
+
 
 def generate_response(prompt: str, gpt_parameters):
     # メッセージ生成

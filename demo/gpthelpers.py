@@ -82,10 +82,6 @@ GoodEnglish: Let's have breakfast together tomorrow!
     frequency_penalty = 0,
     presence_penalty = 0)
 
-
-    if correct_english[0] == " ":
-        correct_english = correct_english[1:]
-
     if correct_english == context: # AIがバグった場合
         prompt = examples + broken_english + '\nGoodEnglish:'
         correct_english = completion(engine='curie', prompt_=prompt,
@@ -291,7 +287,7 @@ def rephrase(phrase):
     output =  completion(engine='curie',
     prompt_=prompt,
     temperature = 0.33,
-    max_tokens = 50,
+    max_tokens = 75,
     top_p = 1,
     frequency_penalty = 0.8,
     presence_penalty = 0.8,
@@ -299,11 +295,12 @@ def rephrase(phrase):
 
     sentences = re.split("\n-", output)
 
-    sentences = list(set(sentences)) # remove duplicates
-    print(sentences)
+    sentences = list(set(sentences))  # remove duplicates
+
+    if phrase in sentences:
+        sentences.remove(phrase)
 
     return sentences
-
 
 def generate_response(prompt: str, gpt_parameters):
     # メッセージ生成
@@ -321,7 +318,6 @@ def generate_response(prompt: str, gpt_parameters):
     if response[0] == " ":
         response = response[1:]
     return response
-
 
 def generate_response_and_example_response(prompt, gpt_parameters, ai_name, user_name):
     # メッセージ生成。回答例も一緒に生成。
@@ -349,7 +345,7 @@ def generate_response_and_example_response(prompt, gpt_parameters, ai_name, user
     return response, example_response
 
 
-
+# below not used.
 def convert_questions_to_full_question(question, context) -> str:
 
     PROMPT = """I am studying mathematics at a university.

@@ -102,7 +102,29 @@ GoodEnglish: Let's have breakfast together tomorrow!
         return correct_english
 
 def define_word(word, context=None):
-    
+
+    def convert_verb_to_infinitive(verb):
+        PROMPT_INFINITIVE = """word: were
+    Infinitive: Be
+
+    word: has
+    Infinitive: Have
+
+    word: """
+        prompt = PROMPT_INFINITIVE + verb  + "\n" + "Infinitive:"
+
+        output =  completion(engine='curie',
+        prompt_=prompt,
+        temperature = 0,
+        max_tokens = 50,
+        top_p = 1,
+        frequency_penalty = 0,
+        presence_penalty = 0,
+        stop=["\n"])
+
+        return output
+
+
     PROMPT_CLASSIFY = """Classify words in to Noun, Verb, Adjective, Adverb or Other.
 
 Word: Sneaked
@@ -234,46 +256,6 @@ Example: Just trust yourself, then you will know how to live.
         'example': example,
         'synonym': synonym
     }
-
-
-def define_word_context(word, context):
-
-
-
-
-
-    return {
-        'word': word,
-        'type': type,
-        'definition': definition,
-        'example': example,
-        'synonym': synonym
-    }
-
-
-
-
-
-def convert_verb_to_infinitive(verb):
-    PROMPT = """word: were
-Infinitive: Be
-
-word: has
-Infinitive: Have
-
-word: """
-    prompt = PROMPT + verb  + "\n" + "Infinitive:"
-
-    output =  completion(engine='curie',
-    prompt_=prompt,
-    temperature = 0,
-    max_tokens = 50,
-    top_p = 1,
-    frequency_penalty = 0,
-    presence_penalty = 0,
-    stop=["\n"])
-
-    return output
 
 
 def generate_response(prompt: str, gpt_parameters):

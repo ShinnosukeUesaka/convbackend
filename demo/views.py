@@ -191,7 +191,10 @@ def dictionary(request: HttpRequest) -> HttpResponse:
     if not check_pass(data['password']):
         return HttpResponseForbidden('incorrect password')
 
-    dictionary = gpthelpers.define_word(data['word'])
+    if "sentence" in data: # 文脈判断
+        dictionary = gpthelpers.define_word(data['word'], data['sentence'])
+    else:
+        dictionary = gpthelpers.define_word(data['word'])
 
 
     return JsonResponse(dictionary)
@@ -236,7 +239,7 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
 
 
 @ratelimit(key='ip', rate='60/h')
-@csrf_exempt 
+@csrf_exempt
 def log_view(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_post())

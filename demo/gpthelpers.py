@@ -65,10 +65,15 @@ GoodEnglish: Let's have breakfast together tomorrow!
                 return False
         return True
 
-    if context == None or "":
+
+    if len(broken_english.split()) <= 2: # Do not fix English if it is less than two words.
+        return broken_english
+
+    if context == None or context == "" or '?' in broken_english: # 文脈判断オフ（文章が質問形だとAIが混乱しやすいので、文脈判断をオフにする）
         prompt = examples + broken_english + '\nGoodEnglish:'
-    else:
+    else:# 文脈判断オン
         prompt = examples_context + context + "\nBrokenEnglish: " + broken_english + '\nGoodEnglish:'
+
 
     correct_english = completion(engine='curie', prompt_=prompt,
     temperature = 0,
@@ -81,24 +86,23 @@ GoodEnglish: Let's have breakfast together tomorrow!
     if correct_english[0] == " ":
         correct_english = correct_english[1:]
 
-    if correct_english == context:
-        correct_english = broken_english
+    if correct_english == context: # AIがバグった場合
+        prompt = examples + broken_english + '\nGoodEnglish:'
+        correct_english = completion(engine='curie', prompt_=prompt,
+        temperature = 0,
+        max_tokens = 172,
+        top_p = 1,
+        frequency_penalty = 0,
+        presence_penalty = 0)
+
 
     if correction_insignificant(broken_english, correct_english):
         return broken_english
     else:
         return correct_english
 
-def define_word(word):
-
-    PROMPT_CONVERT_TO_ORIGINAL_FORM = """word: were
-Infinitive: Be
-
-word: has
-Infinitive: Have
-
-word: """
-
+def define_word(word, context=None):
+    
     PROMPT_CLASSIFY = """Classify words in to Noun, Verb, Adjective, Adverb or Other.
 
 Word: Sneaked
@@ -111,6 +115,7 @@ Word: tries
 Class: Verb
 
 Word: """
+
 
     PROMPT = """Give Definition, Example Sentence, Synonyms of the word.
 
@@ -131,32 +136,34 @@ Synonyms: Bias, Favor
 
 Word: """
 
+    PROMPT_CONTEXT = """This beef is seasoned with ginger. seasoned
+Class: Verb
+Definition: To give a special taste to food by adding a spice or seasoning.
+Synonyms: Flavor, Spice
+Example: The chef seasoned the soup with salt and pepper.
+
+There was a mistake in the news article
+mistake
+Class: Noun
+Definition: An error in judgment or fact.
+Synonyms: Error, Fault
+Example: Anyone who has never made a mistake has never tried anything new.
+
+I don't trust the government
+trust
+Class: Verb
+Definition: Belief in the honesty, integrity, reliability, or ability of a person or thing.
+Synonyms: Confidence, Faith
+Example: Just trust yourself, then you will know how to live.
+
+"""
 
     if word[0] == " ":
         word = word[1:]
 
-    word = word.capitalize()
-
-    # 品詞チェック
-    prompt = PROMPT_CLASSIFY + word  + "\n" + "Class:"
-
-    output =  completion(engine='curie',
-    prompt_=prompt,
-    temperature = 0,
-    max_tokens = 50,
-    top_p = 1,
-    frequency_penalty = 0,
-    presence_penalty = 0,
-    stop=["\n"])
-
-    if output == "Noun" or output == "Verb" or output == "Adjective" or output == "Adverb":
-        type = output
-    else:
-        type = "Other"
-
-    # 品詞が動詞であれば、原型に変換
-    if type == "Verb":
-        prompt = PROMPT_CONVERT_TO_ORIGINAL_FORM + word  + "\n" + "Infinitive:"
+    if context == None:
+        # 品詞チェック
+        prompt = PROMPT_CLASSIFY + word  + "\n" + "Class:"
 
         output =  completion(engine='curie',
         prompt_=prompt,
@@ -167,30 +174,72 @@ Word: """
         presence_penalty = 0,
         stop=["\n"])
 
-        word = output
+        if output == "Noun" or output == "Verb" or output == "Adjective" or output == "Adverb":
+            type = output
+        else:
+            type = "Other"
 
-    #　意味、例文、類義語　生成
-    prompt = PROMPT + word + "\n" + "Definition:"
+        # 品詞が動詞であれば、原型に変換
+        if type == "Verb":
+            word = convert_verb_to_infinitive(word)
 
-    output =  completion(engine='curie',
-    prompt_=prompt,
-    temperature = 0,
-    max_tokens = 120,
-    top_p = 1,
-    frequency_penalty = 0,
-    presence_penalty = 0,
-    stop=["\n\n"])
+        #　意味、例文、類義語　生成
+        prompt = PROMPT + word + "\n" + "Definition:"
 
-    if output[0] == " ":
-        output =  output[1:]
+        output =  completion(engine='curie',
+        prompt_=prompt,
+        temperature = 0,
+        max_tokens = 120,
+        top_p = 1,
+        frequency_penalty = 0,
+        presence_penalty = 0,
+        stop=["\n\n"])
 
-    try:
-        definition, example, synonym = re.split("\nExample Sentence: |\nSynonyms: ", output)
-    except:
-        definition, example, synonym = "error", "error", "error"
+        if output[0] == " ":
+            output =  output[1:]
 
-    if 3 <= len(synonym.split()):
-        synonym = synonym.split()[0] + " "  + synonym.split()[1][:-1]
+        try:
+            definition, example, synonym = re.split("\nExample Sentence: |\nSynonyms: ", output)
+        except:
+            definition, example, synonym = "error", "error", "error"
+
+        if 3 <= len(synonym.split()):
+            synonym = synonym.split()[0] + " "  + synonym.split()[1][:-1]
+
+    else: # 文脈判断 on
+        prompt = PROMPT_CONTEXT + context + "\n" + word + "\nClass:"
+
+        output =  completion(engine='davinci',
+        prompt_=prompt,
+        temperature = 0,
+        max_tokens = 50,
+        top_p = 1,
+        frequency_penalty = 0,
+        presence_penalty = 0,
+        stop=["\n\n"])
+
+        try:
+            type, definition, synonym, example = re.split("\nDefinition: |\nSynonyms: |\nExample: ", output)
+        except:
+            type, definition, synonym, example = "error", "error", "error", "error"
+
+        if type == "Verb":
+            word = convert_verb_to_infinitive(word)
+
+    word = word.capitalize()
+    return {
+        'word': word,
+        'type': type,
+        'definition': definition,
+        'example': example,
+        'synonym': synonym
+    }
+
+
+def define_word_context(word, context):
+
+
+
 
 
     return {
@@ -200,6 +249,31 @@ Word: """
         'example': example,
         'synonym': synonym
     }
+
+
+
+
+
+def convert_verb_to_infinitive(verb):
+    PROMPT = """word: were
+Infinitive: Be
+
+word: has
+Infinitive: Have
+
+word: """
+    prompt = PROMPT + verb  + "\n" + "Infinitive:"
+
+    output =  completion(engine='curie',
+    prompt_=prompt,
+    temperature = 0,
+    max_tokens = 50,
+    top_p = 1,
+    frequency_penalty = 0,
+    presence_penalty = 0,
+    stop=["\n"])
+
+    return output
 
 
 def generate_response(prompt: str, gpt_parameters):

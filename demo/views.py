@@ -185,7 +185,7 @@ def rephrase(request: HttpRequest) -> HttpResponse:
 
 
 @ratelimit(key='ip', rate='60/h')
-@csrf_exempt  # REST-like API anyway, who cares lol
+@csrf_exempt
 def conversations_view(request: HttpRequest) -> HttpResponse:
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_post())
@@ -220,8 +220,19 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
         return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario), 'initial_messages': initial_messages})
 
 
+@csrf_exempt
+def tts_api(request: HttpRequest):
+    data = json.loads(request.body)
 
+    if not ok:
+        return HttpResponseBadRequest(err)
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
 
+    key = os.environ.get('TTS_API_KEY', None)
+    url = os.environ.get('TTS_URL', None)
+
+    return JsonResponse({"key": key, "url": url})
 
 
 

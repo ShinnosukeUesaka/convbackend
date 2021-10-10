@@ -6,6 +6,7 @@ urlpatterns = [
     path('conversation/chat/', views.chat, name='chat'),
     path('dictionary', views.dictionary, name='dictionary'),
     path('rephrase', views.rephrase, name='rephrase'),
+    path('tts_api', views.tts_api, name='tts_api'),
 
 
     path('conversation/log/view', views.log_view, name='log_view'), # Not used

@@ -284,16 +284,19 @@ def rephrase(phrase):
 
     prompt = PROMPT + "- " + phrase + "\n-"
 
-    output =  completion(engine='curie',
+    output =  completion(engine='davinci',
     prompt_=prompt,
-    temperature = 0.33,
+    temperature = 0.3,
     max_tokens = 75,
     top_p = 1,
-    frequency_penalty = 0.8,
-    presence_penalty = 0.8,
+    frequency_penalty = 0.5,
+    presence_penalty = 0.5,
     stop=["\n\n"])
 
-    sentences = re.split("\n-", output)
+    if output[-1] == '\n':
+        output = output[:-1]
+
+    sentences = re.split("\n- ", output)
 
     sentences = list(set(sentences))  # remove duplicates
 

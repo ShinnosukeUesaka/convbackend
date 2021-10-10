@@ -14,16 +14,6 @@ import random
 from . import sessions
 
 
-
-def combine_lists(dictionary):
-    combined_list = []
-    for key in dictionary:
-        combined_list += dictionary[key]
-    return combined_list
-
-
-# list <--> query set conversion
-
 class Controller:
     def __init__(self, conversation: Conversation):
         self.conversation = conversation
@@ -278,6 +268,8 @@ class Question(Controller):
 
 
 class Aibou(Question):
+    def choose_question(self):
+        pass
     def choose_question(self):
         return random.choice(self.scenario_settings["questions"])
 

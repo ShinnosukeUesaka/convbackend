@@ -70,7 +70,7 @@ questions_dic = {
 }
 
 
-def create_logitem_dictionary(text, name, type, corrected_text=None, visible = False, send=True, include_name=True, safety=0):
+def create_logitem_dictionary(text, name, type, corrected_text=None, visible = True, send=True, include_name=True, safety=0):
     return {"text": text,
             "corrected_text": corrected_text,
             "name": name,

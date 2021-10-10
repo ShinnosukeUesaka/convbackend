@@ -125,7 +125,7 @@ class SimpleChat(Session):
     def chat(self, message):
         self.session_status["session_chat_sent"] += 1
 
-        if self.logitems.latest().type == "AI":
+        if self.logitems[len(self.logitems)-1].type == "AI":
             corrected_text = gpthelpers.correct_english(message, self.logitems.latest().text)
         else:
             corrected_text = gpthelpers.correct_english(message)
@@ -145,7 +145,7 @@ class SimpleChat(Session):
         for i in range(MAX_RETRY):
             response, example_response = gpthelpers.generate_response_and_example_response(prompt=prompt, gpt_parameters = self.gpt_parameters, ai_name = self.ai_name, user_name = self.human_name)
 
-            if self.logitems.latest().text not in response: # 前の（AIの）リスポンスと同じだったら、生成し直し
+            if self.logitems[len(self.logitems)-1].text not in response: # 前の（AIの）リスポンスと同じだったら、生成し直し
                 break
 
         logitem_ai = create_logitem_dictionary(text=response, name=self.ai_name, type="AI")

@@ -261,7 +261,7 @@ class Welcome(Session):
             logitem = create_logitem_dictionary(text=text, name="AI", type="AI")
             self.new_logitems.append(logitem)
 
-            logitem = create_logitem_dictionary(text="Have Fun!", name="Narration", type="Narration")
+            logitem = create_logitem_dictionary(text="Click the upper right button to go to dash board. You can also continue to talk with AIbou here!", name="Narration", type="Narration")
             self.new_logitems.append(logitem)
 
 

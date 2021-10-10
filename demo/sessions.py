@@ -258,8 +258,13 @@ class Welcome(Session):
         if self.session_status["session_chat_sent"] == 1:
             first_name = gpthelpers.extract_first_name(message)
             text = "Nice to meet you, " + first_name + "! I will help you speak English!"
+
             logitem = create_logitem_dictionary(text=text, name="AI", type="AI")
             self.new_logitems.append(logitem)
+
+            logitem = create_logitem_dictionary(text="Have Fun!", name="Narration", type="Narration")
+            self.new_logitems.append(logitem)
+
 
             self.session_status["session_is_done"] = True
 

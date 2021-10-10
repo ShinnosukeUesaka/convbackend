@@ -331,6 +331,8 @@ class Aibou(Question):
     def assess_conversation_is_done(self):
         return False
 
+
+
 class ConvController:
    MAX_REGENERATE = 2
 
@@ -457,7 +459,6 @@ class ArticleQuestionConvController(ConvController):
 
         first_log = LogItem.objects.create(
             log_number = 1,
-            scenario = None,
             conversation = self.conversation,
             type = "AI",
             name = "Question",

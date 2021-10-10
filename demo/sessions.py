@@ -241,7 +241,6 @@ class AskingQuestions(Session):
         self.session_status["status_number"] == 3
 
 class Welcome(Session):
-
     def start_session(self):
         super().start_session()
         logitem = create_logitem_dictionary(text="Hello! My name is AIbou. What is your name?", name="AI", type="AI")
@@ -257,7 +256,7 @@ class Welcome(Session):
 
         if self.session_status["session_chat_sent"] == 1:
             first_name = gpthelpers.extract_first_name(message)
-            text = "Nice to meet you, " + first_name + "! I will help you speak English!"
+            text = "Nice to meet you, " + first_name + "I will do my best to help you practice English!"
 
             logitem = create_logitem_dictionary(text=text, name="AI", type="AI")
             self.new_logitems.append(logitem)

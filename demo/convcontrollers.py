@@ -126,7 +126,7 @@ class Controller:
         logitems = []
 
         if self.scenario.last_logitems.all().count() != 0:
-            last_logitems = self.scenario.last_logitems.all().order_by('-log_number')
+            last_logitems = self.scenario.last_logitems.all().order_by('log_number')
 
             for last_logitem in last_logitems:
                 last_logitem.log_number = self.conversation.current_log_number() + 1

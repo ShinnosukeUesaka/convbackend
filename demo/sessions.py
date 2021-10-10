@@ -170,8 +170,7 @@ class AskingQuestions(Session):
 
     def start_session(self, question):
         # generate promp from user message
-        self.session_status["session_is_done"] = False
-        self.session_status["session_chat_sent"] = 0
+        super().start_session()
 
         self.session_status["status_number"] = 1
         self.session_status["question"] = question
@@ -185,8 +184,6 @@ class AskingQuestions(Session):
     def chat(self, message):
 
         self.session_status["session_chat_sent"] += 1
-        print("here")
-        print(self.logitems)
 
         if self.logitems[len(self.logitems)-1].type == "AI":
             corrected_text = gpthelpers.correct_english(message, self.logitems[len(self.logitems)-1].text)
@@ -242,3 +239,29 @@ class AskingQuestions(Session):
 
     def assess_session_is_done(self):
         self.session_status["status_number"] == 3
+
+class Welcome(Session):
+
+    def start_session(self):
+        super().start_session()
+        logitem = create_logitem_dictionary(text="Hello! My name is AIbou. What is your name?", name="AI", type="AI")
+        self.new_logitems.append(logitem)
+        print(self.new_logitems)
+
+    def chat(self, message):
+
+        logitem_human = create_logitem_dictionary(text=message, corrected_text = message, name="Answer", type="User")
+        self.new_logitems.append(logitem_human)
+
+        self.session_status["session_chat_sent"] += 1
+
+        if self.session_status["session_chat_sent"] == 1:
+            first_name = gpthelpers.extract_first_name(message)
+            text = "Nice to meet you," + first_name + "! I will help you speak English!"
+            logitem = create_logitem_dictionary(text=text, name="AI", type="AI")
+            self.new_logitems.append(logitem)
+
+            self.session_status["session_is_done"] = True
+
+
+            return "Yes!", message

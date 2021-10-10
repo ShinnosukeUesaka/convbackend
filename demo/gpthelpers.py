@@ -348,6 +348,37 @@ def generate_response_and_example_response(prompt, gpt_parameters, ai_name, user
     return response, example_response
 
 
+def extract_first_name(sentence):
+    PROMPT = """--
+message: I am Mototada Furuta. I am from Tokyo
+first name: Mototada
+--
+message: shinnnosuke uesaka is my name.
+first name: Shinnosuke
+--
+message: I love Kenya. It is Wdaciwncuaze.
+first name: Wdaciwncuaze
+--
+message: """
+
+    prompt = PROMPT + sentence + "\nfirst name:"
+
+    output =  completion(engine='curie', prompt_=prompt,
+    temperature = 0,
+    max_tokens = 30,
+    top_p = 1,
+    frequency_penalty = 0,
+    presence_penalty = 0,
+    stop=["\n"])
+
+    if output[0] == " ":
+        return output[1:]
+    else:
+        return output
+
+    return output
+
+
 # below not used.
 def convert_questions_to_full_question(question, context) -> str:
 

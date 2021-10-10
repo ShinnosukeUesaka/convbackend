@@ -52,6 +52,7 @@ class Controller:
 
         self.save_conversation_status()
 
+        print(self.responses)
 
         return serialize(self.responses)
 
@@ -268,10 +269,64 @@ class Question(Controller):
 
 
 class Aibou(Question):
+    def initialise(self):
+        self.conversation_status["current_session"] = "Welcome"
+        return super().initialise()
+
     def choose_question(self):
-        pass
-    def choose_question(self):
-        return random.choice(self.scenario_settings["questions"])
+        question_index = self.conversation_status["chat_sent"] % len(self.scenario_settings["questions"])
+        return self.scenario_settings["questions"][question_index]
+
+    def choose_session(self):
+        session_logitems = self.conversation.logitem_set.all()[self.conversation_status["session_start_log_number"]-1:]
+
+
+        if self.conversation_status["current_session"] == "AskingQuestions":
+
+            self.session = sessions.AskingQuestions(logitems=session_logitems,
+                                          session_status=self.conversation_status["session_status"],
+                                          gpt_parameters=self.gpt_parameters)
+
+        elif self.conversation_status["current_session"] == "Welcome":
+            self.session = sessions.Welcome(logitems=session_logitems,
+                                          session_status=self.conversation_status["session_status"],
+                                          gpt_parameters=self.gpt_parameters)
+        else:
+            print("error session not found")
+
+        print(self.session.session_status)
+        return self.session
+
+    def start_new_session(self):
+        self.conversation_status["session_number"] += 1
+
+        self.conversation_status["session_start_log_number"] = self.conversation.current_log_number() + 1
+
+        # reset session_status
+        self.conversation_status["session_status"] = {}
+
+        if self.conversation_status["session_number"] == 1:
+            self.conversation_status["current_session"] = "Welcome"
+            self.session = sessions.Welcome(logitems=[],
+                                          session_status=self.conversation_status["session_status"],
+                                          gpt_parameters=self.gpt_parameters)
+            self.session.start_session()
+            print(self.session.new_logitems)
+            self.responses += self.save_session_logitems()
+            print(self.responses)
+        else:
+            self.conversation_status["current_session"] = "AskingQuestions"
+            self.session = sessions.AskingQuestions(logitems=[],
+                                          session_status=self.conversation_status["session_status"],
+                                          gpt_parameters=self.gpt_parameters)
+
+            question = self.choose_question() # list of questions such as "What is your favorite food?"
+            self.session.start_session(question)
+            self.responses += self.save_session_logitems()
+
+
+        return self.session
+
 
     def assess_conversation_is_done(self):
         return False

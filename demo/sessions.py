@@ -70,7 +70,7 @@ questions_dic = {
 }
 
 
-def create_logitem_dictionary(text, name, type, corrected_text=None, visible = True, send=True, include_name=True, safety=0):
+def create_logitem_dictionary(text, type, name="", corrected_text=None, visible = True, send=True, include_name=True, safety=0):
     return {"text": text,
             "corrected_text": corrected_text,
             "name": name,
@@ -109,7 +109,7 @@ class SimpleChat(Session):
     def __init__(self,
                  ai_name,
                  human_name,
-                 off_topic_keywords,
+                 end_sequence,
                  session_message_limit,
                  logitems,
                  gpt_parameters,
@@ -117,7 +117,7 @@ class SimpleChat(Session):
 
         self.ai_name = ai_name
         self.human_name = human_name
-        self.off_topic_keywords = off_topic_keywords
+        self.end_sequence = end_sequence
         self.session_message_limit = session_message_limit
 
         super().__init__(session_status=session_status, logitems=logitems, gpt_parameters=gpt_parameters)
@@ -156,8 +156,8 @@ class SimpleChat(Session):
         return example_response, corrected_text
 
     def assess_session_is_done(self):
-        if self.off_topic_keywords:
-            return any(keyword in self.new_logitems[-1]["text"] for keyword in self.off_topic_keywords)
+        if self.end_sequence:
+            return any(keyword in self.new_logitems[-1]["text"] for keyword in self.end_sequence)
         else:
             return False
 
@@ -256,7 +256,7 @@ class Welcome(Session):
 
         if self.session_status["session_chat_sent"] == 1:
             first_name = gpthelpers.extract_first_name(message)
-            text = "Nice to meet you, " + first_name + "I will do my best to help you practice English!"
+            text = "Nice to meet you, " + first_name + ". I will do my best to help you practice English!"
 
             logitem = create_logitem_dictionary(text=text, name="AI", type="AI")
             self.new_logitems.append(logitem)

@@ -57,6 +57,7 @@ class Controller:
         return serialize(self.responses)
 
     def chat(self, message):
+        self.message = message
 
         self.conversation_status["chat_sent"] += 1
 
@@ -185,7 +186,7 @@ class Simple(Controller):
                                       gpt_parameters=self.gpt_parameters,
                                       ai_name=self.scenario.ai_name,
                                       human_name=self.scenario.human_name,
-                                      off_topic_keywords=self.scenario_settings["end sequence"] if "end sequence" in self.scenario_settings else [],
+                                      end_sequence=self.scenario_settings["end sequence"] if "end sequence" in self.scenario_settings else [],
                                       session_message_limit=self.scenario.message_limit)
         return session
 
@@ -201,7 +202,7 @@ class Simple(Controller):
                                       gpt_parameters=self.gpt_parameters,
                                       ai_name=self.scenario.ai_name,
                                       human_name=self.scenario.human_name,
-                                      off_topic_keywords=self.scenario_settings["end sequence"] if "end sequence" in self.scenario_settings else [],
+                                      end_sequence=self.scenario_settings["end sequence"] if "end sequence" in self.scenario_settings else [],
                                       session_message_limit=self.scenario.message_limit)
 
         self.session.start_session()
@@ -278,14 +279,18 @@ class Aibou(Question):
         return self.scenario_settings["questions"][question_index]
 
     def choose_session(self):
+
+        if "let's talk about" in self.message or "Let's talk about" in self.message or "Let‘s talk about" in self.message or "let‘s talk about" in self.message:
+            return self.start_chat_session()
+
         session_logitems = self.conversation.logitem_set.all()[self.conversation_status["session_start_log_number"]-1:]
 
 
         if self.conversation_status["current_session"] == "AskingQuestions":
-
             self.session = sessions.AskingQuestions(logitems=session_logitems,
                                           session_status=self.conversation_status["session_status"],
                                           gpt_parameters=self.gpt_parameters)
+
 
         elif self.conversation_status["current_session"] == "Welcome":
             self.session = sessions.Welcome(logitems=session_logitems,
@@ -330,6 +335,34 @@ class Aibou(Question):
 
     def assess_conversation_is_done(self):
         return False
+
+    def start_chat_session(self):
+        self.conversation_status["session_number"] += 1
+
+        contextm question = gpthelpers.generate_context_and_question_from_user_suggestion(self.message)
+
+        logitem = Conversation.objects.create(text=context, type="Initial prompt", visible=False, include_name=False)
+        logitem.save()
+        self.response += logitem
+
+        question = "Sure. " + question
+        logitem = Conversation.objects.create(text=question, type="AI", visible=True, include_name=False)
+        logitem.save()
+        self.response += logitem
+
+
+        self.conversation_status["session_start_log_number"] = self.conversation.current_log_number() + 1
+        session_logitems = self.conversation.logitem_set.all()[self.conversation_status["session_start_log_number"]-1:]
+
+        self.session = sessions.SimpleChat(logitems=session_logitems,
+                                      session_status=self.conversation_status["session_status"],
+                                      gpt_parameters=self.gpt_parameters,
+
+                                      ai_name="Friend"
+                                      human_name="You",
+                                      end_sequence=["Let's not get off topic"])
+        
+        return self.session
 
 class ConvController:
    MAX_REGENERATE = 2
@@ -448,7 +481,7 @@ class ConvController:
 
 
 
-
+# TODO: session controller に移行する。
 class ArticleQuestionConvController(ConvController):
     def initialise(self):
         self.temp_data["question_number"] = 0

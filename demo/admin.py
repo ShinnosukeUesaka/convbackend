@@ -4,13 +4,26 @@ from django.contrib import admin
 from .models import Scenario, Conversation, LogItem
 
 
+class FirstLogitemInline(admin.TabularInline):
+    model = LogItem
+    fk_name = "scenario_first"
+    verbose_name = "First message"
+    verbose_name_plural = "First messages"
+
+class LastLogitemInline(admin.TabularInline):
+    model = LogItem
+    fk_name = "scenario_last"
+    verbose_name = "Last message"
+    verbose_name_plural = "Last messages"
+
 class LogitemInline(admin.TabularInline):
     model = LogItem
 
 class ScenarioAdmin(admin.ModelAdmin):
     readonly_fields = ('id', )
     inlines = [
-        LogitemInline,
+        FirstLogitemInline,
+        LastLogitemInline,
     ]
 
     #https://qiita.com/maisuto/items/e160bb17ef594f3c4d50

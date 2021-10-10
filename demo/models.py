@@ -23,10 +23,11 @@ class Scenario(models.Model):
     title_ru = models.CharField(max_length=50, default='Russian Title')
 
 
-    # scenario description
-    duration = models.IntegerField(default='3')
+
+    duration = models.IntegerField(default='3') # Not implemented in the frontend
     # duration of the conversation in min
-    level = models.IntegerField(default='2')
+
+    level = models.IntegerField(default='2') # Not implemented in the frontend
     """
     1 初心者
     2 中級者
@@ -42,31 +43,31 @@ class Scenario(models.Model):
     information_es = models.CharField(max_length=1000, default='Spanish info')
     information_ru = models.CharField(max_length=1000, default='Russian info')
 
+    phrases = models.TextField(max_length=10000, default="[]", blank=True, null=True)
+    # [["I like you", "あなたが好き"], ["I hate you", "あなたが嫌い"]]
+
+    article = models.TextField(max_length=10000, default='', blank=True, null=True) # only used for discussion question
+
 
     category = models.CharField(max_length=100, default='Role Play')
 
     controller_type = models.CharField(max_length=100, default='simple')
 
-    # Initial prompt, similar to narration:
+
     ai_name = models.CharField(max_length=20, default='AI')
     human_name = models.CharField(max_length=20, default='Human')
 
-    article = models.TextField(max_length=10000, default='', blank=True, null=True) # only used for discussion question
 
     options = models.TextField(max_length=10000, default='{}')
 
     first_example_response = models.CharField(max_length=100, default='Unavailable')
+    
 
-    last_message = models.CharField(max_length=100, blank=True, null=True)
 
 
-    # JSON (not dict converted to str) of options:
-    # {"people": ["highschool studnets", "university students", "adults"], "feeling": ["like", "hate"] ...}
 
-    phrases = models.TextField(max_length=10000, default="[]", blank=True, null=True)
-    # [["I like you", "あなたが好き"], ["I hate you", "あなたが嫌い"]]
 
-    message_limit = models.IntegerField(default='10')
+    message_limit = models.IntegerField(default='10', blank=True, null=True)
 
     # GPT-3 Settings
     max_tokens = models.IntegerField(default=150)  # ai response length
@@ -131,13 +132,22 @@ class Scenario(models.Model):
 
 
 class Conversation(models.Model):
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
-    scenario_options = models.CharField(max_length=100)
-    active = models.BooleanField(default=True)
-    temp_for_conv_controller = models.TextField(blank=True, null=True, default="{}")
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def prepare(self) -> LogText:
+    active = models.BooleanField(default=True)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+
+    context_for_correction = models.BooleanField(default=True) # 英文修正の際に文脈判断を行うかどうか
+    example_response = models.BooleanField(default=True) #回答例機能
+
+    scenario_options = models.CharField(max_length=100) #　将来的には消す Json
+    temp_for_conv_controller = models.TextField(blank=True, null=True, default="{}") #　キャッシュ Json
+
+
+
+
+
+    def prepare(self) -> LogText: # shoudn't be used anymore
         logtext = ''
         for log_item in self.logitem_set.all():
             if log_item.send == True:
@@ -147,21 +157,20 @@ class Conversation(models.Model):
 
         return LogText(logtext)
 
-    def get_recent_logitem(self, log_number_from_recent = 1):
-        return self.logitem_set.get(log_number=self.current_log_number() - log_number_from_recent + 1)
+    def most_recent_logitem(self, log_number_from_recent = 1):
+        return self.logitem_set.order_by('log_number').last()
 
-    def get_recent_logitems(self, number_of_logitems):
-        log_items = []
-        for i in range(number_of_messages_to_include):
-            message_index = self.conversation.current_log_number() - number_of_messages_to_include + i + 1
-            log_items.append(self.conversation.logitem_set.get(log_number=message_index))
-        return log_items
+    def recent_logitems(self, number_of_logitems):
+        return self.logitem_set.all().order_by('log_number')[-number_of_logitems:]
 
     def current_log_number(self) -> int:
         if self.logitem_set.exists() == False:
             return 0
         else:
             return self.logitem_set.all().order_by('log_number').last().log_number
+
+
+
 
     def __str__(self) -> str:
         return self.scenario.title
@@ -173,39 +182,47 @@ class Conversation(models.Model):
 
 
 class LogItem(models.Model):
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, blank=True, null=True)
+    scenario_first = models.ForeignKey(Scenario, on_delete=models.CASCADE, blank=True, null=True, related_name = "first_logitems")
+    scenario_last = models.ForeignKey(Scenario, on_delete=models.CASCADE, blank=True, null=True, related_name = "last_logitems")
+
+    type = models.CharField(max_length=40)
+    #Initial prompt ... AIに読み込ませるテキスト。基本的にAIに読み込ませる
+    #Narration      ... ユーザーに表示するメッセージ。基本的にAIには読み込ませない。
+    #AI             ... AIからのリスポンス
+    #User           ... ユーザーが送ったメッセージ。
+
     # class Type(models.IntegerChoices):
     #     # https://docs.djangoproject.com/en/3.0/ref/models/fields/#enumeration-types
     #     INITIAL_PROMPT = 1
     #     NARRATION = 2
     #     AI = 3
     #     HUMAN = 4
-    created_at = models.DateTimeField(auto_now_add=True)
 
-    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, blank=True, null=True)
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, blank=True, null=True)
 
-    type = models.CharField(max_length=40)
-    #Initial prompt
-    #Narration
-    #AI
-    #User
     name = models.CharField(max_length=50, blank=True)
-    text = models.CharField(max_length=1000)
+    text = models.CharField(max_length=1000) # メッセージの内容
+    corrected_text = models.CharField(max_length=1000, blank=True, null=True) # 文法修正後のメッセージ
     visible = models.BooleanField(default=True)
     editable = models.BooleanField(default=True)
     send = models.BooleanField(default=True)
     include_name = models.BooleanField(default=True)
 
-    log_number = models.IntegerField()
-    safety = models.IntegerField(default=0)
+    log_number = models.IntegerField() # メッセージの順番を管理。 Minus number if it is not decided yet.
+    safety = models.IntegerField(default=0) # メッセージに不適切な単語などが含まれているか
     # 0 safe 1 sensitive 2 unsafe
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['log_number', 'conversation'], name='Conversation contraint'),
-            models.UniqueConstraint(fields=['log_number', 'scenario'], name='Scenario contraint')
+            models.UniqueConstraint(fields=['log_number', 'scenario_first'], name='Scenario(first) contraint'),
+            models.UniqueConstraint(fields=['log_number', 'scenario_last'], name='Scenario(last) contraint')
         ]
         ordering = ['log_number']
+        get_latest_by = 'log_number'
 
     def __str__(self) -> str:
         if self.include_name == True:

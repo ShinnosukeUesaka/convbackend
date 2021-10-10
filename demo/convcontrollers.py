@@ -11,6 +11,8 @@ from typing import List
 import re
 import random
 
+from . import sessions
+
 
 
 def combine_lists(dictionary):
@@ -18,6 +20,269 @@ def combine_lists(dictionary):
     for key in dictionary:
         combined_list += dictionary[key]
     return combined_list
+
+
+# list <--> query set conversion
+
+class Controller:
+    def __init__(self, conversation: Conversation):
+        self.conversation = conversation
+        self.scenario = conversation.scenario
+
+        try:
+            self.conversation_status = json.loads(conversation.temp_for_conv_controller)
+        except:
+            self.conversation_status = {}
+
+        # settings shouldn't be edited from conversation controller.
+        try:
+
+            self.scenario_settings = json.loads(self.scenario.options)
+        except:
+            self.scenario_settings = {}
+        print(json.loads(self.scenario.options))
+
+        self.responses = [] # ここにAIからのリスポンスを入れる
+        self.example_response = "Unavailable"
+        self.good_english = "Unavailable" # 文法修正
+
+        # AI用のパラメーター
+        self.gpt_parameters = {"temperature": self.scenario.temperature, "presence_penalty": self.scenario.presence_penalty, "frequency_penalty": self.scenario.frequency_penalty, "top_p": self.scenario.top_p, "max_tokens": self.scenario.max_tokens}
+
+
+    def initialise(self):
+        self.conversation_status["chat_sent"] = 0
+        self.conversation_status["session_number"] = 0
+        self.conversation_status["session_start_log_number"] = 0
+        self.conversation_status["conversation_is_done"] = False
+
+        self.create_first_messages()
+
+        self.start_new_session()
+
+        self.save_conversation_status()
+
+
+        return serialize(self.responses)
+
+    def chat(self, message):
+
+        self.conversation_status["chat_sent"] += 1
+
+        self.session = self.choose_session()
+        print(self.session.session_status)
+
+        self.example_response, self.good_english = self.session.chat(message)
+        self.responses += self.save_session_logitems()
+
+        if self.session.session_status["session_is_done"] == True:
+            self.end_session()
+
+        # save everything into database
+
+
+        self.conversation_status["conversation_is_done"] = self.assess_conversation_is_done()
+
+        if self.conversation_status["conversation_is_done"]:
+            self.end_conversation()
+
+
+
+
+        self.responses = self.responses[1:] # omit user message
+
+        self.save_conversation_status()
+
+        print(self.conversation_status)
+        output = serialize(self.responses), self.example_response, self.good_english, self.conversation_status["conversation_is_done"]
+        return output
+
+    def choose_session(self):
+        # must be implemented with child class
+        pass
+
+    def start_new_session(self):
+        # must be implemented with child class
+        pass
+
+    def end_conversation(self):
+        self.conversation.active = False
+        self.create_last_messages()
+
+    def end_session(self):
+        pass
+
+    def create_first_messages(self):
+        logitems = []
+        if self.scenario.first_logitems.all().count() != 0:
+            first_logitems = self.scenario.first_logitems.all().order_by('log_number')
+            for first_logitems in first_logitems:
+
+                first_logitems.log_number = self.conversation.current_log_number() + 1
+                first_logitems.pk = None
+                first_logitems.scenario_first = None
+                first_logitems.scenario_last = None
+                first_logitems.conversation = self.conversation
+                first_logitems.save()
+
+                if first_logitems.visible == True:
+                    logitems.append(first_logitems)
+
+        self.responses += logitems
+
+        return logitems
+
+    def create_last_messages(self):
+        logitems = []
+
+        if self.scenario.last_logitems.all().count() != 0:
+            last_logitems = self.scenario.last_logitems.all().order_by('-log_number')
+
+            for last_logitem in last_logitems:
+                last_logitem.log_number = self.conversation.current_log_number() + 1
+                last_logitem.pk = None
+                last_logitem.scenario_first = None
+                last_logitem.scenario_last = None
+                last_logitem.conversation = self.conversation
+                last_logitem.save()
+
+                if last_logitem.visible == True:
+                    logitems.append(last_logitem)
+
+        self.responses += logitems
+
+        return logitems
+
+    def assess_conversation_is_done(self):
+        if self.scenario.message_limit:
+            if self.scenario.message_limit <= self.conversation_status["chat_sent"]:
+                return True
+        return False
+
+    def save_conversation_status(self):
+        # 会話のステータスデータをデータベースに保存
+        self.conversation_status["session_status"] = self.session.session_status
+
+        self.conversation.temp_for_conv_controller = json.dumps(self.conversation_status)
+        self.conversation.save()
+
+    def save_session_logitems(self):
+        logitems = []
+        for logitem in self.session.new_logitems:
+            logitem = LogItem.objects.create(text=logitem["text"], corrected_text=logitem["corrected_text"], name=logitem["name"], type=logitem["type"], log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, visible=logitem["visible"], send=logitem["send"], include_name=logitem["include_name"], safety=logitem["safety"])
+            logitem.save()
+            logitems.append(logitem)
+        return logitems
+
+
+    def save_list_of_logitems(self, logitems_list):
+        logitems = []
+        for logitem_list in logitems_list:
+            logitem = LogItem.objects.create(text=logitem_list["text"], corrected_text=logitem_list["corrected_text"], name=logitem_list["name"], type=logitem_list["type"], log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, visible=logitem_list["visible"], send=logitem_list["send"], include_name=logitem_list["include_name"], safety=logitem_list["safety"])
+            logitem.save()
+            logitems.append(logitem)
+        return logitems
+
+
+class Simple(Controller):
+
+    def choose_session(self):
+        logitems = self.conversation.logitem_set.all()[self.conversation_status["session_start_log_number"]:]
+
+        session = sessions.SimpleChat(logitems=logitems,
+                                      session_status=self.conversation_status["session_status"],
+                                      gpt_parameters=self.gpt_parameters,
+                                      ai_name=self.scenario.ai_name,
+                                      human_name=self.scenario.human_name,
+                                      off_topic_keywords=self.scenario_settings["end sequence"] if "end sequence" in self.scenario_settings else [],
+                                      session_message_limit=self.scenario.message_limit)
+        return session
+
+    def start_new_session(self):
+        self.conversation_status["session_number"] += 1
+
+        session_logitems = self.conversation.logitem_set.all()[self.conversation_status["session_start_log_number"]:]
+
+        self.conversation_status["session_status"] = {}
+
+        self.session = sessions.SimpleChat(logitems=session_logitems,
+                                      session_status=self.conversation_status["session_status"],
+                                      gpt_parameters=self.gpt_parameters,
+                                      ai_name=self.scenario.ai_name,
+                                      human_name=self.scenario.human_name,
+                                      off_topic_keywords=self.scenario_settings["end sequence"] if "end sequence" in self.scenario_settings else [],
+                                      session_message_limit=self.scenario.message_limit)
+
+        self.session.start_session()
+        self.responses += self.save_session_logitems()
+
+        return self.session
+
+
+    def assess_conversation_is_done(self):
+        if super().assess_conversation_is_done():
+            return True
+        if self.session.session_status["session_is_done"] == True:#session が一つしかない場合、sessionが終わり次第conversationも終わる。
+            return True
+        return False
+
+class Question(Controller):
+    def choose_session(self):
+        session_logitems = self.conversation.logitem_set.all()[self.conversation_status["session_start_log_number"]-1:]
+
+        self.session = sessions.AskingQuestions(logitems=session_logitems,
+                                      session_status=self.conversation_status["session_status"],
+                                      gpt_parameters=self.gpt_parameters)
+
+        print(self.session.session_status)
+        return self.session
+
+    def start_new_session(self):
+        self.conversation_status["session_number"] += 1
+
+        self.conversation_status["session_start_log_number"] = self.conversation.current_log_number() + 1
+
+        session_logitems = []
+
+        # reset session_status
+        self.conversation_status["session_status"] = {}
+
+        self.session = sessions.AskingQuestions(logitems=session_logitems,
+                                      session_status=self.conversation_status["session_status"],
+                                      gpt_parameters=self.gpt_parameters)
+        print(self.scenario_settings)
+        print(self.scenario.options)
+
+        question = self.choose_question() # list of questions such as "What is your favorite food?"
+        self.session.start_session(question)
+        self.responses += self.save_session_logitems()
+
+        return self.session
+
+    def end_session(self):
+        if not self.assess_conversation_is_done():
+            self.start_new_session()
+
+    def choose_question(self):
+        question_index = self.conversation_status["session_number"] - 1
+        return self.scenario_settings["questions"][question_index]
+
+    def assess_conversation_is_done(self):
+        if super().assess_conversation_is_done():
+            return True
+        if self.session.session_status["session_is_done"] and self.conversation_status["session_number"] == len(self.scenario_settings["questions"]):
+            return True
+        else:
+            return False
+
+
+
+class Aibou(Question):
+    def choose_question(self):
+        return random.choice(self.scenario_settings["questions"])
+
+    def assess_conversation_is_done(self):
+        return False
 
 class ConvController:
    MAX_REGENERATE = 2
@@ -85,17 +350,18 @@ class ConvController:
 
    def initialise(self):
        #TODO: message 生成　と　variable 生成を関数分ける
-        initial_prompts = self.scenario.logitem_set.all()
+        initial_prompts = self.scenario.first_logitems.all()
 
         messages = []
 
-        initial_prompts = self.scenario.logitem_set.all()
+        initial_prompts = self.scenario.first_logitems.all()
 
         for initial_prompt in initial_prompts:
 
             initial_prompt.log_number = self.conversation.current_log_number() + 1
+
             initial_prompt.pk = None
-            initial_prompt.scenario = None
+            initial_prompt.scenario_first = None
             initial_prompt.conversation = self.conversation
             initial_prompt.save()
 
@@ -134,375 +400,6 @@ class ConvController:
        return False
 
 
-
-
-
-class QConvController(ConvController):
-    MAX_REGENERATE = 2
-    ai_name_question = "Question"
-    user_name = "Answer"
-    ai_name_followup = "Question"
-    ai_name_second_followup = "Question"
-    ai_name_last_comment = "Comment"
-
-    #https://beta.openai.com/playground/p/PfMXPerz7HVSvNv19xm6tLiD?model=davinci
-    first_followup_prompt = """I am a polite friendly intelligent knowledgeable AI English teacher.
-
-Question: What is your hobby?
-Answer: I like playing the piano.
-Comment and Follow-up question: Playing the piano seems very difficult. How long have you been practicing playing the piano?
---
-Question: What are your plans for the weekends?
-Answer: I will go to the gym.
-Comment and Follow-up question: That is a great habit! How often do you go to the gym?
---
-Question: What is your favorite movie?
-Answer: My favorite movie is The Lord of the Rings.
-Comment and Follow-up question: I love the movie too. My favorite character is Legolas. He is mischievous, has a sense of humour! What is your favorite character?
---
-"""
-
-    second_followup_prompt = """I am a polite friendly intelligent knowledgeable AI English teacher.
-
-Question: What sport do you play?
-Answer: I like playing soccer!
-Comment and Follow-up question: Soccer is pretty hard. Why do you like soccer?
-Answer: I used to watch soccer players on TV. I admired them so much. I wanted to be like them one day.
-Comment and Follow-up question: You can one day be like Messi! Who is your favorite soccer player?
---
-Question: What is your hobby?
-Answer: I like playing the piano.
-Comment and Follow-up question: Playing piano seems very difficult. How long have you been practicing playing the piano?
-Answer: More than an hour everyday!
-Comment and Follow-up question: You are very hard working! Which piano song are you practicing right now?
---
-"""
-
-    final_comment_prompt = """I am a polite friendly intelligent knowledgeable AI English teacher.
-
-Question: What is your hobby?
-Answer: I like playing the piano.
-Comment and Follow-up question: Playing piano seems very difficult. How long have you been practicing playing the piano?
-Answer: More than an hour everyday!
-Comment and Follow-up question: You are hard working! It's important to make a constant effort.
---
-Question: What did you do last month?
-Answer: I went to Japan last month.
-Comment and Follow-up question: Sounds fun! What did you do there?
-Answer:I went to sure Itsukushima Shrine
-Comment: Cool! I heard that Torii gate appears to almost float on the water during high tide like a mystical island. I want to go to Japan someday.
---
-"""
-
-
-    questions_dic = {
-        'what-if': ['If you could have lunch with anyone in the world, who would you choose?', 'If money was not a problem, where would you like to travel?', 'What would you do differently if there were 30 hours in a day?', 'Would you like to travel in space?'],
-        'learning-english': ['What is the most difficult part of learning English?', 'Why do you want to learn English?'],
-        'motivational': ['Which person in your life has motivated you the most?', 'Who do you admire the most?'],
-        'likes-dislikes': ['What is your favorite song?', 'What is the best modern invention?', 'Which is more important: love, money, or health?', 'Are you a pet lover?', 'Who is your favorite celebrity?', 'What makes you angry?', 'What is your favorite food?'],
-        'other': ['What are your plans for the weekends?', 'What is your country famous for?', 'What did you do yesterday?', 'What are your plans for tomorrow?', 'What is your hobby?', 'What do you hate the most?', 'What is your dream?', 'How is the weather today?', 'Tell me something about you', 'What do you do in your free time?', 'What have you been up to lately?', 'How much sleep do you usually get?', 'Tell me about your best friend'],
-        'AI generated': ['Where do you live?', 'What do you usually do on your days off?', 'What do you do in your free time?', 'How do you spend your free time?', 'What is your dream?', 'Which country have you been to?',  'What makes you happy?', 'Describe where you live', 'What do you plan to do today?',  'What is your favorite movie?', 'What is your favorite sport?', 'What is your favorite show?', 'What is your favorite song?', 'What is your favorite movie?', 'What is your favorite book?', 'What is your favorite season?', 'What do you think is the best season?', 'What is your favorite place to go on the weekends', 'What do you buy if you had a lot of money?', 'What is your favorite food?', 'Do you like travelling?', 'Do you play any instruments?', 'What are your favorite summer activities?', 'What are your favorite winter activities?', 'What are you going to do tomorrow?']
-    }
-    #http://www.roadtogrammar.com/dl/warmers.pdf
-    questions = combine_lists(questions_dic)
-
-    random.shuffle(questions)
-
-    def initialise(self):
-        first_question = self.choose_question()
-
-        first_log = LogItem.objects.create(
-            log_number = 1,
-            scenario = None,
-            conversation = self.conversation,
-            type = "AI",
-            name = "Question",
-            text = first_question,
-            visible = True,
-            editable = True,
-            send = True,
-            include_name = True
-        )
-
-        first_log.save()
-
-        self.conversation.temp_for_conv_controller = json.dumps({'status': 2, 'question': first_question, 'first_answer': "", 'followup': "", 'second_answer': "", 'second_followup': ""})
-        self.conversation.save()
-
-        return serialize([first_log])
-
-    def create_response(self, log_text, retry: int = 1, check_question = False) -> str:
-        #print(f"GPT3 request: \n {log_text}")
-
-        re = completion(prompt_=log_text, temperature = self.scenario.temperature, presence_penalty = self.scenario.presence_penalty, frequency_penalty = self.scenario.frequency_penalty, top_p = self.scenario.top_p)
-        #safety = int(gpt3.content_filter(re))
-        safety = 0
-        if check_question == True:
-            if not re.endswith('?'):
-                if retry <= 0:
-                    return re, safety
-                else:
-                    return self.create_response(log_text, retry - 1)
-
-        return re, safety
-
-    def chat(self, message):
-
-
-        logitem_human = LogItem.objects.create(text=message, name=QConvController.user_name, type="User",
-                                               log_number=self.conversation.current_log_number() + 1, conversation=self.conversation)
-        logitem_human.save()
-
-
-        status = self.temp_data['status']
-
-        log_items = []
-
-
-        if status == 1: #final comment and Question
-            log_text = QConvController.final_comment_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + self.temp_data['second_answer'] + "\nComment and Follow-up question:" + self.temp_data['second_followup'] + "\nAnswer: " + message + "\nComment:"
-
-            response =  gpthelpers.generate_response(log_text=log_text, gpt_parameters = self.gpt_parameters)
-
-            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_question, type="AI",
-                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
-            logitem_ai.save()
-
-            good_english = self.generate_correct_english()
-
-            if self.conversation_is_done():
-                log_items = [logitem_ai]
-            else:
-                # if the conversation still continues generate next question
-                question = self.choose_question()
-
-                logitem_ai2 = LogItem.objects.create(text=question, name=QConvController.ai_name_question, type="AI",
-                                                    log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
-                logitem_ai2.save()
-                log_items = [logitem_ai, logitem_ai2]
-
-                self.temp_data['question'] = question
-
-
-        elif status == 2: #followup question
-            log_text = QConvController.first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nComment and Follow-up question:"
-            response, safety =  self.create_response(log_text=log_text, check_question=True)
-            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_followup, type="AI",
-                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
-            logitem_ai.save()
-
-            good_english = self.generate_correct_english()
-
-            log_items = [logitem_ai]
-            self.temp_data['first_answer'] = message
-            self.temp_data['followup'] = response
-
-        elif status == 3: #followup question 2
-            log_text = QConvController.second_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + message + "\nComment and Follow-up question:"
-            response, safety =  self.create_response(log_text=log_text, check_question=True)
-            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_second_followup, type="AI",
-                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
-            logitem_ai.save()
-
-            good_english = self.generate_correct_english()
-
-            log_items = [logitem_ai]
-            self.temp_data['second_answer'] = message
-            self.temp_data['second_followup'] = response
-
-        conv_done = self.conversation_is_done()
-
-
-
-        if self.temp_data['status'] == 1 or self.temp_data['status'] == 2:
-            self.temp_data['status'] = self.temp_data['status'] + 1
-        elif self.temp_data['status'] == 3:
-            self.temp_data['status'] = 1
-        else:
-            print("status error")
-            self.temp_data['status'] = 1
-        print("-------status" + str(self.temp_data['status']))
-
-        self.conversation.temp_for_conv_controller = json.dumps(self.temp_data)
-        self.conversation.save()
-
-        # don't add anything here. status already changed.
-
-        return serialize(log_items), "Unavailable", good_english, conv_done # response, exmample response, correct english, conversation done?
-
-
-    def choose_question(self):
-        return random.choice(QConvController.questions)
-
-
-
-class AIbouConvController(QConvController):
-
-    AI_TEACHER_PROMPT= """The following is a conversation with an AI assistant. The AI assistant is helpful, creative, clever, talkative, and very friendly.
-"""
-    MAX_REGENERATE = 3
-
-    def chat(self, message):
-
-
-        logitem_human = LogItem.objects.create(text=message, name=QConvController.user_name, type="User",
-                                               log_number=self.conversation.current_log_number() + 1, conversation=self.conversation)
-        logitem_human.save()
-
-
-        status = self.temp_data['status']
-
-        log_items = []
-
-
-
-        if status == 1: #final comment and Question
-            prompt = self.generate_prompt_for_aibou(8)
-
-            for i in range(AIbouConvController.MAX_REGENERATE):
-                response = completion(prompt_=prompt, temperature = self.scenario.temperature, presence_penalty = self.scenario.presence_penalty, frequency_penalty = self.scenario.frequency_penalty, top_p = self.scenario.top_p)
-                if '?' not in response:
-                    break
-                if i == AIbouConvController.MAX_REGENERATE - 1:
-                    prompt = self.generate_prompt_for_aibou(4)
-                    response = completion(prompt_=prompt, temperature = self.scenario.temperature, presence_penalty = 0.6, frequency_penalty = 0.6, top_p = self.scenario.top_p)
-                    if '?' in response:
-                        response = "Interesting"
-
-            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_question, type="AI",
-                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
-            logitem_ai.save()
-
-            good_english = self.generate_correct_english()
-
-            if self.conversation_is_done():
-                log_items = [logitem_ai]
-            else:
-                # if the conversation still continues generate next question
-                question = self.choose_question()
-
-                logitem_ai2 = LogItem.objects.create(text=question, name=QConvController.ai_name_question, type="AI",
-                                                    log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
-                logitem_ai2.save()
-                log_items = [logitem_ai, logitem_ai2]
-
-                self.temp_data['question'] = question
-
-
-        elif status == 2: #followup question
-            log_text = QConvController.first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nComment and Follow-up question:"
-            response, safety =  self.create_response(log_text=log_text, check_question=True)
-            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_followup, type="AI",
-                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
-            logitem_ai.save()
-
-            good_english = self.generate_correct_english()
-
-            log_items = [logitem_ai]
-            self.temp_data['first_answer'] = message
-            self.temp_data['followup'] = response
-
-        elif status == 3: #followup question 2
-            log_text = QConvController.second_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + message + "\nComment and Follow-up question:"
-            response, safety =  self.create_response(log_text=log_text, check_question=True)
-            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_second_followup, type="AI",
-                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
-            logitem_ai.save()
-
-            good_english = self.generate_correct_english()
-
-            log_items = [logitem_ai]
-            self.temp_data['second_answer'] = message
-            self.temp_data['second_followup'] = response
-
-        elif status == 4:
-
-            log_text = QConvController.final_comment_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + self.temp_data['first_answer']  + "\nComment and Follow-up question: " + self.temp_data['followup'] + "\nAnswer: " + self.temp_data['second_answer'] + "\nComment and Follow-up question:" + self.temp_data['second_followup'] + "\nAnswer: " + message + "\nComment:"
-
-            for i in range(AIbouConvController.MAX_REGENERATE):
-                response = completion(prompt_=log_text, temperature = self.scenario.temperature, presence_penalty = self.scenario.presence_penalty, frequency_penalty = self.scenario.frequency_penalty, top_p = self.scenario.top_p)
-                if '?' not in response:
-                    break
-
-            response, safety =  self.create_response(log_text=log_text)
-
-            logitem_ai = LogItem.objects.create(text=response, name=QConvController.ai_name_question, type="AI",
-                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=safety)
-            logitem_ai.save()
-
-            good_english = self.generate_correct_english()
-
-            log_items = [logitem_ai]
-
-
-        conv_done = self.conversation_is_done()
-
-
-
-        if self.temp_data['status'] == 1 or self.temp_data['status'] == 2 or self.temp_data['status'] == 3:
-            self.temp_data['status'] = self.temp_data['status'] + 1
-        elif self.temp_data['status'] == 4:
-            self.temp_data['status'] = 1
-        else:
-            print("status error")
-            self.temp_data['status'] = 1
-        print("-------status" + str(self.temp_data['status']))
-
-        self.conversation.temp_for_conv_controller = json.dumps(self.temp_data)
-        self.conversation.save()
-
-        # don't add anything here. status already changed.
-
-        return serialize(log_items), "Unavailable of this scenario", good_english, conv_done # response, exmample response, correct english, conversation done?
-
-    def generate_prompt_for_aibou(self, number_of_messages_to_include):
-
-       prompt = AIbouConvController.AI_TEACHER_PROMPT
-       for i in range(number_of_messages_to_include):
-           message_index = self.conversation.current_log_number() - number_of_messages_to_include + i + 1
-           if self.conversation.logitem_set.get(log_number=message_index).type == "AI":
-               prompt += "\nAI: " + self.conversation.logitem_set.get(log_number=message_index).text
-           elif self.conversation.logitem_set.get(log_number=message_index).type == "User":
-               prompt += "\nHuman: " + self.conversation.logitem_set.get(log_number=message_index).text
-       prompt += "\nAI:"
-       return prompt
-
-class ArticleDiscussionConvController(QConvController):
-    # new temp data added: question_number
-    def initialise(self):
-        self.temp_data["question_number"] = 0
-
-        first_question = self.choose_question()
-
-        first_log = LogItem.objects.create(
-            log_number = 1,
-            scenario = None,
-            conversation = self.conversation,
-            type = "AI",
-            name = "Question",
-            text = first_question,
-            visible = True,
-            editable = True,
-            send = True,
-            include_name = True
-        )
-
-        first_log.save()
-
-        self.conversation.temp_for_conv_controller = json.dumps({'status': 2, 'question': first_question, 'first_answer': "", 'followup': "", 'second_answer': "", 'second_followup': "", 'question_number': 1})
-        self.conversation.save()
-
-        return serialize([first_log])
-
-    def choose_question(self):
-        questions = self.scenario_options.get("questions")
-        question = questions[self.temp_data["question_number"]]
-        self.temp_data["question_number"] = self.temp_data["question_number"] + 1 # refactor someday
-        return question
-
-    def conversation_is_done(self): # call after choose_question()
-        return self.temp_data["status"] == 1 and self.temp_data["question_number"] == len(self.scenario_options.get("questions"))
-        # disable the conversation
 
 
 class ArticleQuestionConvController(ConvController):
@@ -581,147 +478,3 @@ class ArticleQuestionConvController(ConvController):
          self.conversation.save()
 
          return serialize(logitems_ai), "Unavailable", good_english, conv_done
-
-
-
-
-class AIbouConvControllerOLD(QConvController): # Not used. (Not stable.)
-     AI_TEACHER_PROMPT= """The following is a conversation with an AI assistant. The AI assistant is helpful, creative, clever, talkative, and very friendly.
-
-AI: I will be your friend. Let's chat!
-Human: """
-
-
-
-
-     MAX_REGENERATE = 2
-
-     def initialise(self):
-         first_question = self.choose_question()
-
-
-
-         first_log = LogItem.objects.create(
-             log_number = 1,
-             scenario = None,
-             conversation = self.conversation,
-             type = "AI",
-             name = "Question",
-             text = first_question,
-             visible = True,
-             editable = True,
-             send = True,
-             include_name = True
-         )
-
-         first_log.save()
-
-         self.conversation.temp_for_conv_controller = json.dumps({'status': 2, 'question': first_question, 'first_user_answer_modified': ""})
-         self.conversation.save()
-
-         return serialize([first_log])
-
-     def chat(self, message):
-
-        logitem_human = LogItem.objects.create(text=message, name="Human", type="User",
-                                               log_number=self.conversation.current_log_number() + 1, conversation=self.conversation)
-        logitem_human.save()
-
-        log_items = [] # put response from AI here.
-
-        status = self.temp_data['status']
-        if status == 1: #final comment and Question
-            prompt = self.generate_prompt_for_aibou(7)
-
-            # Can't be a qeustion. 話題が次にうつるので質問はNG
-            for i in range(AIbouConvController.MAX_REGENERATE):
-                response = completion(prompt_=prompt, temperature = self.scenario.temperature, presence_penalty = self.scenario.presence_penalty, frequency_penalty = self.scenario.frequency_penalty, top_p = self.scenario.top_p)
-                if '?' not in response:
-                    break
-                if i == AIbouConvController.MAX_REGENERATE - 1:
-                    response = "Interesting"
-
-
-            logitem_ai = LogItem.objects.create(text=response, name="AI", type="AI",
-                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
-            logitem_ai.save()
-
-            good_english = self.generate_correct_english()
-
-
-            question = self.choose_question()
-
-            logitem_ai2 = LogItem.objects.create(text=question, name="AI", type="AI",
-                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
-            logitem_ai2.save()
-            log_items = [logitem_ai, logitem_ai2]
-
-            self.temp_data['question'] = question
-
-        if status == 2:
-
-            prompt = QConvController.first_followup_prompt + "Question: " + self.temp_data['question'] + "\nAnswer: " + message  + "\nComment and Follow-up question:"
-
-            response = completion(prompt_=prompt, temperature = self.scenario.temperature, presence_penalty = self.scenario.presence_penalty, frequency_penalty = self.scenario.frequency_penalty, top_p = self.scenario.top_p)
-            logitem_ai = LogItem.objects.create(text=response, name="AI", type="AI",
-                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
-            logitem_ai.save()
-
-            self.temp_data['first_user_answer_modified'] = gpthelpers.conver_question_answer_to_full_sentence(self.temp_data['question'], message)
-
-            good_english = self.generate_correct_english()
-
-            log_items = [logitem_ai]
-
-        elif 3 <= status and status <= 4:
-
-
-            number_of_messages_to_include = (status-1)*2 - 1
-            prompt = self.generate_prompt_for_aibou(number_of_messages_to_include)
-
-            response = completion(prompt_=prompt, temperature = self.scenario.temperature, presence_penalty = self.scenario.presence_penalty, frequency_penalty = self.scenario.frequency_penalty, top_p = self.scenario.top_p)
-
-            logitem_ai = LogItem.objects.create(text=response, name="AI", type="AI",
-                                                log_number=self.conversation.current_log_number() + 1, conversation=self.conversation, safety=0)
-            logitem_ai.save()
-
-            good_english = self.generate_correct_english()
-
-            log_items = [logitem_ai]
-            self.temp_data['first_answer'] = message
-            self.temp_data['followup'] = response
-
-
-        conv_done = self.conversation_is_done()
-
-        status = self.temp_data['status']
-
-        if 1 <= self.temp_data['status'] == 2 or self.temp_data['status'] <= 3:
-            self.temp_data['status'] = self.temp_data['status'] + 1
-        elif self.temp_data['status'] == 4:
-            self.temp_data['status'] = 1
-        else:
-            print("status error")
-            self.temp_data['status'] = 1
-        print("-------status" + str(self.temp_data['status']))
-
-        self.conversation.temp_for_conv_controller = json.dumps(self.temp_data)
-        self.conversation.save()
-
-        # don't add anything here. status already changed.
-
-        return serialize(log_items), "Unavailable", good_english, conv_done # response, exmample response, correct english, conversation done?
-
-     def generate_prompt_for_aibou(self, number_of_messages_to_include):
-
-        prompt = AIbouConvController.AI_TEACHER_PROMPT
-        prompt += self.temp_data['first_user_answer_modified']
-        number_of_messages_to_include = number_of_messages_to_include - 1
-        for i in range(number_of_messages_to_include):
-            message_index = self.conversation.current_log_number() - number_of_messages_to_include + i + 1
-            if self.conversation.logitem_set.get(log_number=message_index).type == "AI":
-                prompt += "\nAI: " + self.conversation.logitem_set.get(log_number=message_index).text
-            elif self.conversation.logitem_set.get(log_number=message_index).type == "User":
-                prompt += "\nHuman: " + self.conversation.logitem_set.get(log_number=message_index).text
-        prompt += "\nAI:"
-        return prompt # Old not used anymore

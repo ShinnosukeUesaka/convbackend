@@ -70,15 +70,15 @@ def assert_keys(data: Dict, keys: Dict[str, type]) -> Tuple[JsonResponse, bool]:
 
 def instantiate_controller(type: str, conv: Conversation):
     if conv.scenario.controller_type == "simple":
-        return convcontrollers.ConvController(conv)
-    elif conv.scenario.controller_type == "q_exercise":
-        return convcontrollers.QConvController(conv)
+        return convcontrollers.Simple(conv)
     elif conv.scenario.controller_type == "article_discussion":
-        return convcontrollers.ArticleDiscussionConvController(conv)
+        return convcontrollers.Question(conv)
     elif conv.scenario.controller_type == "article_question":
         return convcontrollers.ArticleQuestionConvController(conv)
     elif conv.scenario.controller_type == "aibou":
-        return convcontrollers.AIbouConvController(conv)
+        return convcontrollers.Aibou(conv)
+    elif conv.scenario.controller_type == "test":
+        return convcontrollers.Question(conv)
     return
 
 
@@ -104,36 +104,6 @@ def scenarios(request: HttpRequest) -> HttpResponse:
 
 
     return JsonResponse(serialize(Scenario.objects.all()), safe=False)
-
-
-
-@csrf_exempt  # REST-like API anyway, who cares lol
-def scenario(request: HttpRequest) -> HttpResponse:
-    if not request.method == 'GET':
-        return HttpResponseBadRequest(make_must_get())
-
-    data = json.loads(request.body)
-    err, ok = assert_keys(data, {
-        'scenario_id': int,
-        'password': str,
-    })
-    if not ok:
-        return HttpResponseBadRequest(err)
-    if not check_pass(data['password']):
-        return HttpResponseForbidden('incorrect password')
-
-    scenario_id: int = data['scenario_id']
-    if scenario_id == -1:
-        return JsonResponse(
-            {'scenarios': list((s.to_dict() if s is not None else None) for s in Scenario.objects.all()), 'db_queries': len(connection.queries)})
-    else:
-        try:
-            s = Scenario.objects.filter(pk=scenario_id).first()
-        except ObjectDoesNotExist:
-            return JsonResponse(make_error('error.db.not_found', 'Conversation with id not found.'))
-        else:
-            return JsonResponse({'scenario': s.to_dict(), 'db_queries': len(connection.queries)})
-
 
 
 #@ratelimit(key='ip', rate='60/h')
@@ -212,7 +182,7 @@ def rephrase(request: HttpRequest) -> HttpResponse:
 
     return JsonResponse(sentences, safe=False)
 
-# Below not used.
+
 
 @ratelimit(key='ip', rate='60/h')
 @csrf_exempt  # REST-like API anyway, who cares lol
@@ -248,6 +218,49 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
 
 
         return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario), 'initial_messages': initial_messages})
+
+
+
+
+
+
+
+
+
+
+
+
+# Below not used.
+
+@csrf_exempt  # REST-like API anyway, who cares lol
+def scenario(request: HttpRequest) -> HttpResponse:
+    if not request.method == 'GET':
+        return HttpResponseBadRequest(make_must_get())
+
+    data = json.loads(request.body)
+    err, ok = assert_keys(data, {
+        'scenario_id': int,
+        'password': str,
+    })
+    if not ok:
+        return HttpResponseBadRequest(err)
+    if not check_pass(data['password']):
+        return HttpResponseForbidden('incorrect password')
+
+    scenario_id: int = data['scenario_id']
+    if scenario_id == -1:
+        return JsonResponse(
+            {'scenarios': list((s.to_dict() if s is not None else None) for s in Scenario.objects.all()), 'db_queries': len(connection.queries)})
+    else:
+        try:
+            s = Scenario.objects.filter(pk=scenario_id).first()
+        except ObjectDoesNotExist:
+            return JsonResponse(make_error('error.db.not_found', 'Conversation with id not found.'))
+        else:
+            return JsonResponse({'scenario': s.to_dict(), 'db_queries': len(connection.queries)})
+
+
+
 
 
 @ratelimit(key='ip', rate='60/h')

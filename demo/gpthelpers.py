@@ -61,7 +61,7 @@ GoodEnglish: Let's have breakfast together tomorrow!
         corrections = [li for li in difflib.ndiff(broken_english, correct_english) if li[0] != ' ']
 
         for i in corrections:
-            if i != '+ .' and i != '+ ?' and i != '+ ,' and i != '+ !' and i != '- .' and i != '- ?' and i != '- ,' and i != '- !':
+            if i != '+ .' and i != '+ ?' and i != '+ ,' and i != '+ !' and i != '+ \'' and i != '+ ‘' and i != '- .' and i != '- ?' and i != '- ,' and i != '- !' and i != '- ‘' and i != '- \'':
                 return False
         return True
 

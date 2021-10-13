@@ -361,8 +361,17 @@ class Aibou(Question):
                                       ai_name="Friend"
                                       human_name="You",
                                       end_sequence=["Let's not get off topic"])
-        
+
         return self.session
+
+
+
+
+
+
+
+
+# ここから下の　conversation controller を新しい方式にする。
 
 class ConvController:
    MAX_REGENERATE = 2
@@ -480,8 +489,6 @@ class ConvController:
        return False
 
 
-
-# TODO: session controller に移行する。
 class ArticleQuestionConvController(ConvController):
     def initialise(self):
         self.temp_data["question_number"] = 0

@@ -256,16 +256,19 @@ class Welcome(Session):
 
         if self.session_status["session_chat_sent"] == 1:
             first_name = gpthelpers.extract_first_name(message)
-            text = "Nice to meet you, " + first_name + " I will do my best to help you practice English!"
+            text = "Nice to meet you, " + first_name + ". I will do my best to help you practice English!"
 
             logitem = create_logitem_dictionary(text=text, name="AI", type="AI")
             self.new_logitems.append(logitem)
 
-            logitem = create_logitem_dictionary(text="右上のボタンを押してメニュー画面に飛べます。このままAIbouと会話を続けることもできます！", name="Narration", type="Narration")
+            logitem = create_logitem_dictionary(text="右上のバツボタンを押してメニュー画面に飛べます。このままAIbouと会話を続けることもできます！", name="Narration", type="Narration")
+            self.new_logitems.append(logitem)
+
+            logitem = create_logitem_dictionary(text="Let's start learning", type="AI")
             self.new_logitems.append(logitem)
 
 
             self.session_status["session_is_done"] = True
 
 
-            return "Yes!", message
+            return "Unavailable", message

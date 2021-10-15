@@ -5,6 +5,9 @@ from django.db import models
 from demo.types import LogText
 
 
+from django.core.exceptions import ValidationError
+
+
 class Scenario(models.Model):
 
     class ScenarioManager(models.Manager):
@@ -61,7 +64,7 @@ class Scenario(models.Model):
     options = models.TextField(max_length=10000, default='{}')
 
     first_example_response = models.CharField(max_length=100, default='Unavailable')
-    
+
 
 
 
@@ -229,6 +232,16 @@ class LogItem(models.Model):
             return f'{self.name}: {self.text}'
         else:
             return f'{self.text}'
+
+class Coupon(models.Model):
+    def validate_digit_length(code):
+        if not (len(str(code)) == 4):
+            raise ValidationError('must be 4 digits', params={'code': code},)
+
+    code = models.IntegerField(validators=[validate_digit_length], unique=True)
+    used = models.BooleanField(default=False)
+    recipient = models.CharField(null=True, blank=True, max_length=100)
+
 
 class Session(models.Model):
     message = models.CharField(max_length=50, blank=True)

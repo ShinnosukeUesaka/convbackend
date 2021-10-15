@@ -22,7 +22,7 @@ from . import gpt3
 from .gpt3 import completion, content_filter_profanity, ContentSafetyPresets
 
 # DB Models & Types
-from .models import Conversation, Scenario, LogItem
+from .models import Conversation, Scenario, LogItem, Coupon
 from .types import LogText
 
 from . import convcontrollers
@@ -218,6 +218,62 @@ def conversations_view(request: HttpRequest) -> HttpResponse:
 
 
         return JsonResponse({'conversation_id': conversation.id, 'scenario_data': serialize(scenario), 'initial_messages': initial_messages})
+
+@csrf_exempt  # REST-like API anyway, who cares lol
+def check_coupon(request: HttpRequest):
+    if not request.method == 'POST':
+        return HttpResponseBadRequest(make_must_post())
+    # create new conversation
+    data = json.loads(request.body)
+    err, ok = assert_keys(data, {
+        'code': int,
+        'password': str,
+    })
+
+    try:
+        coupon = Coupon.objects.get(code=data['code'])
+        valid = not coupon.used
+    except:
+        valid =  False
+
+    return JsonResponse({
+        'valid': valid
+    })
+
+
+
+
+@csrf_exempt  # REST-like API anyway, who cares lol
+def use_coupon(request: HttpRequest):
+    if not request.method == 'POST':
+        return HttpResponseBadRequest(make_must_post())
+    # create new conversation
+    data = json.loads(request.body)
+    err, ok = assert_keys(data, {
+        'code': int,
+        'password': str,
+    })
+
+    try:
+        coupon = Coupon.objects.get(code=data['code'])
+        valid = not coupon.used
+    except:
+        valid =  False
+
+    if valid:
+        coupon.used = True
+        coupon.save()
+
+
+
+    return JsonResponse({
+        'valid': valid
+    })
+
+
+
+
+
 
 
 

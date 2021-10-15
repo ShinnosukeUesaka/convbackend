@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Scenario, Conversation, LogItem
+from .models import Scenario, Conversation, LogItem, Coupon
 
 
 class FirstLogitemInline(admin.TabularInline):
@@ -47,10 +47,16 @@ class ConversationAdmin(admin.ModelAdmin):
         LogitemInline,
     ]
 
+class CouponAdmin(admin.ModelAdmin):
+    list_filter = [
+        'used',
+    ]
+
 
 
 
 admin.site.register(Scenario, ScenarioAdmin)
 #admin.site.register(Scenario)
 admin.site.register(Conversation, ConversationAdmin)
-#admin.site.register(LogItem, LogItemAdmin)
+admin.site.register(LogItem, LogItemAdmin)
+admin.site.register(Coupon, CouponAdmin)

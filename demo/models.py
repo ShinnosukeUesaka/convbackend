@@ -239,8 +239,10 @@ class Coupon(models.Model):
             raise ValidationError('must be 4 digits', params={'code': code},)
 
     code = models.IntegerField(validators=[validate_digit_length], unique=True)
+    amount = models.IntegerField(default=100)
     used = models.BooleanField(default=False)
     recipient = models.CharField(null=True, blank=True, max_length=100)
+
 
 
 class Session(models.Model):

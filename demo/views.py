@@ -233,11 +233,14 @@ def check_coupon(request: HttpRequest):
     try:
         coupon = Coupon.objects.get(code=data['code'])
         valid = not coupon.used
+        amount = coupon.amount
     except:
         valid =  False
+        amount = 0
 
     return JsonResponse({
-        'valid': valid
+        'valid': valid,
+        'amount': amount
     })
 
 
@@ -257,8 +260,10 @@ def use_coupon(request: HttpRequest):
     try:
         coupon = Coupon.objects.get(code=data['code'])
         valid = not coupon.used
+        amount = coupon.amount
     except:
         valid =  False
+        amount = 0
 
     if valid:
         coupon.used = True
@@ -267,7 +272,8 @@ def use_coupon(request: HttpRequest):
 
 
     return JsonResponse({
-        'valid': valid
+        'valid': valid,
+        'amount': amount
     })
 
 

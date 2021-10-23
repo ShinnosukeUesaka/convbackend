@@ -274,7 +274,7 @@ class Aibou(Question):
         return super().initialise()
 
     def choose_question(self):
-        question_index = self.conversation_status["chat_sent"] % len(self.scenario_settings["questions"])
+        question_index = (self.conversation_status["chat_sent"] -1) % len(self.scenario_settings["questions"])
         return self.scenario_settings["questions"][question_index]
 
     def choose_session(self):

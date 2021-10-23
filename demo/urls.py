@@ -8,6 +8,8 @@ urlpatterns = [
     path('rephrase', views.rephrase, name='rephrase'),
     path('coupon/use', views.use_coupon, name='use_coupon'),
     path('coupon/check', views.check_coupon, name='check_coupon'),
+    path('server_info', views.server_info, name='server_info'),
+
 
     path('conversation/log/view', views.log_view, name='log_view'), # Not used
     path('conversation/', views.conversations_view, name='conversations_view'), # Not used

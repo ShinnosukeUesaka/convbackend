@@ -29,6 +29,9 @@ from . import convcontrollers
 from . import gpthelpers
 
 
+MINIMUM_VERSION = "1.6.0"
+
+
 def make_error(id_: str, msg: str, **kwargs) -> Dict:
     return {
         'type': id_,
@@ -246,7 +249,7 @@ def check_coupon(request: HttpRequest):
 
 
 
-@csrf_exempt  # REST-like API anyway, who cares lol
+@csrf_exempt
 def use_coupon(request: HttpRequest):
     if not request.method == 'POST':
         return HttpResponseBadRequest(make_must_post())
@@ -277,7 +280,19 @@ def use_coupon(request: HttpRequest):
     })
 
 
+@csrf_exempt
+def server_info(request: HttpRequest):
+    if not request.method == 'POST':
+        return HttpResponseBadRequest(make_must_post())
+    # create new conversation
+    data = json.loads(request.body)
+    err, ok = assert_keys(data, {
+        'password': str,
+    })
 
+    return JsonResponse({
+        'minimum_version': MINIMUM_VERSION
+    })
 
 
 

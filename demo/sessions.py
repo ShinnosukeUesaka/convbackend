@@ -264,9 +264,6 @@ class Welcome(Session):
             logitem = create_logitem_dictionary(text="右上のバツボタンを押してメニュー画面に飛べます。このままAIbouと会話を続けることもできます！", name="Narration", type="Narration")
             self.new_logitems.append(logitem)
 
-            logitem = create_logitem_dictionary(text="Let's start learning", type="AI")
-            self.new_logitems.append(logitem)
-
 
             self.session_status["session_is_done"] = True
 

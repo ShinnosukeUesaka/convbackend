@@ -23,7 +23,7 @@ Comment and Follow-up question: That is a great habit! How often do you go to th
 --
 Question: What is your favorite movie?
 Answer: My favorite movie is The Lord of the Rings.
-Comment and Follow-up question: I love the movie too. My favorite character is Legolas. He is mischievous, has a sense of humour! What is your favorite character?
+Comment and Follow-up question: Yes, it is one of the best movies in the world! My favorite character is Legolas. He is mischievous, has a sense of humour! What is your favorite character?
 --
 """
 

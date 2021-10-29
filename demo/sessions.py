@@ -179,7 +179,7 @@ class SimpleChat(Session):
 
 
             # 3回連続で質問でない時は質問を強制的に生成する。
-            if self.conversation_status["chat_sent"] >=3 and self.force_question and "?" not in logitem_ai["text"] and '?' not in self.logitems[len(self.logitems)-1].text and '?' not in self.logitems[len(self.logitems)-3].text:
+            if self.conversation_status["chat_sent"] >=2 and self.force_question and "?" not in logitem_ai["text"] and '?' not in self.logitems[len(self.logitems)-1].text:
                 prompt = ''
                 for log_item in self.logitems:
                     if log_item.send == True:

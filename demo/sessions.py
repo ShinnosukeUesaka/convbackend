@@ -23,7 +23,7 @@ Comment and Follow-up question: That is a great habit! How often do you go to th
 --
 Question: What is your favorite movie?
 Answer: My favorite movie is The Lord of the Rings.
-Comment and Follow-up question: It is one of the best movies in the world! My favorite character is Legolas. He is mischievous, has a sense of humour! What is your favorite character?
+Comment and Follow-up question: It is one of the best movies in the world! My favorite character is Legolas. He is mischievous, has a sense of humour! What do you like about the movie?
 --
 """
 
@@ -35,11 +35,9 @@ Comment and Follow-up question: Soccer is pretty hard. Why do you like soccer?
 Answer: I used to watch soccer players on TV. I admired them so much. I wanted to be like them one day.
 Comment and Follow-up question: You can one day be like Messi! Who is your favorite soccer player?
 --
-Question: What is your hobby?
-Answer: I like playing the piano.
-Comment and Follow-up question: Playing piano seems very difficult. How long have you been practicing playing the piano?
-Answer: More than an hour everyday!
-Comment and Follow-up question: You are very hard working! Which piano song are you practicing right now?
+Question: What is your favorite movie?
+Answer: My favorite movie is The Lord of the Rings.
+Comment and Follow-up question: It is one of the best movies in the world! My favorite character is Legolas. He is mischievous, has a sense of humour! What do you like about the movie?
 --
 """
 

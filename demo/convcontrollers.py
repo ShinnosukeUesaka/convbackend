@@ -329,6 +329,7 @@ class Aibou(Question):
         else:
             self.conversation_status["current_session"] = "AskingQuestions"
             self.session = sessions.AskingQuestions(logitems=[],
+                                                    conversation_status=self.conversation_status,
                                           session_status=self.conversation_status["session_status"],
                                           gpt_parameters=self.gpt_parameters)
 

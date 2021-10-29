@@ -145,6 +145,7 @@ class Controller:
         return logitems
 
     def assess_conversation_is_done(self):
+        print("LIMIT" + str(self.scenario.message_limit))
         if self.scenario.message_limit:
             if self.scenario.message_limit <= self.conversation_status["chat_sent"]:
                 return True
@@ -189,7 +190,9 @@ class Simple(Controller):
                                       human_name=self.scenario.human_name,
                                       off_topic_keywords=self.scenario_settings["end sequence"] if "end sequence" in self.scenario_settings else [],
                                       session_message_limit=self.scenario.message_limit,
-                                      force_question=self.scenario_settings["force question"] if "force question" in self.scenario_settings else True)
+                                      force_question=self.scenario_settings["force question"] if "force question" in self.scenario_settings else True,
+                                      conversation_end=self.scenario.message_limit <= self.conversation_status["chat_sent"],
+                                      last_message_generator=self.scenario_settings["last message generator"] if "last message generator" in self.scenario_settings else "")
         return session
 
     def start_new_session(self):
@@ -207,7 +210,9 @@ class Simple(Controller):
                                           human_name=self.scenario.human_name,
                                           off_topic_keywords=self.scenario_settings["end sequence"] if "end sequence" in self.scenario_settings else [],
                                           session_message_limit=self.scenario.message_limit,
-                                          force_question=self.scenario_settings["force question"] if "force question" in self.scenario_settings else True)
+                                          force_question=self.scenario_settings["force question"] if "force question" in self.scenario_settings else True,
+                                          conversation_end=self.scenario.message_limit <= self.conversation_status["chat_sent"],
+                                          last_message_generator=self.scenario_settings["last message generator"] if "last message generator" in self.scenario_settings else "")
 
         self.session.start_session()
         self.responses += self.save_session_logitems()

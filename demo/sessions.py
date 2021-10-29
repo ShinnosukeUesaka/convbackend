@@ -114,13 +114,17 @@ class SimpleChat(Session):
                  gpt_parameters,
                  conversation_status,
                  session_status={},
-                 force_question=True):
+                 force_question=True,
+                 conversation_end=False,
+                 last_message_generator=""):
 
         self.ai_name = ai_name
         self.human_name = human_name
         self.off_topic_keywords = off_topic_keywords
         self.session_message_limit = session_message_limit
         self.force_question = force_question
+        self.conversation_end=conversation_end
+        self.last_message_generator=last_message_generator
 
         super().__init__(conversation_status=conversation_status, session_status=session_status, logitems=logitems, gpt_parameters=gpt_parameters)
 
@@ -135,35 +139,32 @@ class SimpleChat(Session):
         logitem_human = create_logitem_dictionary(text=message, corrected_text = corrected_text, name=self.human_name, type="User")
         self.new_logitems.append(logitem_human)
 
-        prompt = ''
-        for log_item in self.logitems:
-            if log_item.send == True:
-                prompt += str(log_item) + "\n"
 
-        prompt += logitem_human['name'] + ": " +  logitem_human['text'] + "\n"
-        prompt += f'{self.ai_name}:'
-
-        for i in range(MAX_RETRY):
-            response, example_response = gpthelpers.generate_response_and_example_response(prompt=prompt, gpt_parameters = self.gpt_parameters, ai_name = self.ai_name, user_name = self.human_name)
-
-            if self.logitems[len(self.logitems)-1].text not in response: # 前の（AIの）リスポンスと同じだったら、生成し直し
-                break
-
-        logitem_ai = create_logitem_dictionary(text=response, name=self.ai_name, type="AI")
-        self.new_logitems.append(logitem_ai)
-
-
-
-        # 3回連続で質問でない時は質問を強制的に生成する。
-        if self.conversation_status["chat_sent"] >=3 and self.force_question and "?" not in logitem_ai["text"] and '?' not in self.logitems[len(self.logitems)-1].text and '?' not in self.logitems[len(self.logitems)-3].text:
+        if self.conversation_end and self.last_message_generator is not "":
             prompt = ''
             for log_item in self.logitems:
                 if log_item.send == True:
                     prompt += str(log_item) + "\n"
 
             prompt += logitem_human['name'] + ": " +  logitem_human['text'] + "\n"
-            prompt += logitem_ai['name'] + ": " +  logitem_ai['text'] + "\n"
-            prompt += logitem_ai['name'] + " asks a question.\n"
+            prompt += self.last_message_generator + "\n"
+            prompt += f'{self.ai_name}:'
+            for i in range(MAX_RETRY):
+                response, example_response = gpthelpers.generate_response_and_example_response(prompt=prompt, gpt_parameters = self.gpt_parameters, ai_name = self.ai_name, user_name = self.human_name)
+
+                if self.logitems[len(self.logitems)-1].text not in response: # 前の（AIの）リスポンスと同じだったら、生成し直し
+                    break
+            logitem_ai = create_logitem_dictionary(text=response, name=self.ai_name, type="AI")
+            self.new_logitems.append(logitem_ai)
+
+        else:
+
+            prompt = ''
+            for log_item in self.logitems:
+                if log_item.send == True:
+                    prompt += str(log_item) + "\n"
+
+            prompt += logitem_human['name'] + ": " +  logitem_human['text'] + "\n"
             prompt += f'{self.ai_name}:'
 
             for i in range(MAX_RETRY):
@@ -172,8 +173,31 @@ class SimpleChat(Session):
                 if self.logitems[len(self.logitems)-1].text not in response: # 前の（AIの）リスポンスと同じだったら、生成し直し
                     break
 
-            logitem_ai_question = create_logitem_dictionary(text=response, name=self.ai_name, type="AI")
-            self.new_logitems.append(logitem_ai_question)
+            logitem_ai = create_logitem_dictionary(text=response, name=self.ai_name, type="AI")
+            self.new_logitems.append(logitem_ai)
+
+
+
+            # 3回連続で質問でない時は質問を強制的に生成する。
+            if self.conversation_status["chat_sent"] >=3 and self.force_question and "?" not in logitem_ai["text"] and '?' not in self.logitems[len(self.logitems)-1].text and '?' not in self.logitems[len(self.logitems)-3].text:
+                prompt = ''
+                for log_item in self.logitems:
+                    if log_item.send == True:
+                        prompt += str(log_item) + "\n"
+
+                prompt += logitem_human['name'] + ": " +  logitem_human['text'] + "\n"
+                prompt += logitem_ai['name'] + ": " +  logitem_ai['text'] + "\n"
+                prompt += logitem_ai['name'] + " asks a question.\n"
+                prompt += f'{self.ai_name}:'
+
+                for i in range(MAX_RETRY):
+                    response, example_response = gpthelpers.generate_response_and_example_response(prompt=prompt, gpt_parameters = self.gpt_parameters, ai_name = self.ai_name, user_name = self.human_name)
+
+                    if self.logitems[len(self.logitems)-1].text not in response: # 前の（AIの）リスポンスと同じだったら、生成し直し
+                        break
+
+                logitem_ai_question = create_logitem_dictionary(text=response, name=self.ai_name, type="AI")
+                self.new_logitems.append(logitem_ai_question)
 
 
         self.session_status["session_is_done"] = self.assess_session_is_done()

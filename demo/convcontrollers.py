@@ -180,13 +180,16 @@ class Simple(Controller):
     def choose_session(self):
         logitems = self.conversation.logitem_set.all()[self.conversation_status["session_start_log_number"]:]
 
+
         session = sessions.SimpleChat(logitems=logitems,
+                                      conversation_status=self.conversation_status,
                                       session_status=self.conversation_status["session_status"],
                                       gpt_parameters=self.gpt_parameters,
                                       ai_name=self.scenario.ai_name,
                                       human_name=self.scenario.human_name,
                                       off_topic_keywords=self.scenario_settings["end sequence"] if "end sequence" in self.scenario_settings else [],
-                                      session_message_limit=self.scenario.message_limit)
+                                      session_message_limit=self.scenario.message_limit,
+                                      force_question=self.scenario_settings["force question"] if "force question" in self.scenario_settings else True)
         return session
 
     def start_new_session(self):
@@ -197,12 +200,14 @@ class Simple(Controller):
         self.conversation_status["session_status"] = {}
 
         self.session = sessions.SimpleChat(logitems=session_logitems,
-                                      session_status=self.conversation_status["session_status"],
-                                      gpt_parameters=self.gpt_parameters,
-                                      ai_name=self.scenario.ai_name,
-                                      human_name=self.scenario.human_name,
-                                      off_topic_keywords=self.scenario_settings["end sequence"] if "end sequence" in self.scenario_settings else [],
-                                      session_message_limit=self.scenario.message_limit)
+                                           conversation_status=self.conversation_status,
+                                          session_status=self.conversation_status["session_status"],
+                                          gpt_parameters=self.gpt_parameters,
+                                          ai_name=self.scenario.ai_name,
+                                          human_name=self.scenario.human_name,
+                                          off_topic_keywords=self.scenario_settings["end sequence"] if "end sequence" in self.scenario_settings else [],
+                                          session_message_limit=self.scenario.message_limit,
+                                          force_question=self.scenario_settings["force question"] if "force question" in self.scenario_settings else True)
 
         self.session.start_session()
         self.responses += self.save_session_logitems()
@@ -284,11 +289,13 @@ class Aibou(Question):
         if self.conversation_status["current_session"] == "AskingQuestions":
 
             self.session = sessions.AskingQuestions(logitems=session_logitems,
-                                          session_status=self.conversation_status["session_status"],
-                                          gpt_parameters=self.gpt_parameters)
+                                                    conversation_status=self.conversation_status,
+                                                      session_status=self.conversation_status["session_status"],
+                                                      gpt_parameters=self.gpt_parameters)
 
         elif self.conversation_status["current_session"] == "Welcome":
             self.session = sessions.Welcome(logitems=session_logitems,
+                                            conversation_status=self.conversation_status,
                                           session_status=self.conversation_status["session_status"],
                                           gpt_parameters=self.gpt_parameters)
         else:

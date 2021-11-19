@@ -320,6 +320,7 @@ class Aibou(Question):
         if self.conversation_status["session_number"] == 1:
             self.conversation_status["current_session"] = "Welcome"
             self.session = sessions.Welcome(logitems=[],
+                                            conversation_status=self.conversation_status,
                                           session_status=self.conversation_status["session_status"],
                                           gpt_parameters=self.gpt_parameters)
             self.session.start_session()

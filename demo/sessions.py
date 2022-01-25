@@ -302,12 +302,12 @@ class Welcome(Session):
 
         if self.session_status["session_chat_sent"] == 1:
             first_name = gpthelpers.extract_first_name(message)
-            text = "Nice to meet you, " + first_name + ". I will do my best to help you practice English!"
+            text = "Nice to meet you, " + first_name + ". Let's learn English together!"
 
             logitem = create_logitem_dictionary(text=text, name="AI", type="AI")
             self.new_logitems.append(logitem)
 
-            logitem = create_logitem_dictionary(text="右上のバツボタンを押してメニュー画面に飛べます。このままAIbouと会話を続けることもできます！", name="Narration", type="Narration")
+            logitem = create_logitem_dictionary(text="メッセージをクッリクすると翻訳などメニューが表示されます！Enjoy!", name="Narration", type="Narration")
             self.new_logitems.append(logitem)
 
 
